@@ -99,7 +99,8 @@
                             <div class="col-md-4 mb-2">
                                 <label for="plate_{{ $i }}" class="form-label">ID Piastra {{ $i }}</label>
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text"><i class="far fa-dot-circle"></i></span>
+                                    {{-- Sostituiamo l'icona Font Awesome con un'immagine personalizzata --}}
+                                    <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
                                     {{-- L'input è numerico, obbligatorio e filtra i caratteri non numerici in tempo reale --}}
                                     <input
                                         type="text"
