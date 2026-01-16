@@ -46,7 +46,7 @@
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
                                     @foreach ($errors->all() as $error)
-                                        {{-- Mostriamo solo la parte "umana" del messaggio di errore, nascondendo il debug tecnico --}}
+                                        {{-- Mostriamo solo la parte "umana" del messaggio di errore, nascondendo tutto il debug tecnico --}}
                                         <li>{{ \Illuminate\Support\Str::before($error, ' [Debug Info:') }}</li>
                                     @endforeach
                                 </ul>
