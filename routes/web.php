@@ -31,3 +31,7 @@ use App\Http\Controllers\AcceptanceController; // Aggiungi questo in cima al fil
 Route::get('/acceptance/create', [AcceptanceController::class, 'create'])
     ->name('acceptance.create')
     ->middleware('auth.api'); // Proteggiamo la rotta
+
+Route::post('/acceptance', [AcceptanceController::class, 'store'])
+    ->name('acceptance.store')
+    ->middleware('auth.api'); // Proteggiamo la rotta

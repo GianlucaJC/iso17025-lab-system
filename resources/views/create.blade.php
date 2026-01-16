@@ -106,8 +106,11 @@
                                         inputmode="numeric"
                                         pattern="[0-9]*"
                                         class="form-control"
-                                        id="plate_{{ $i }}" name="plates[]" placeholder="Solo numeri"
-                                        required
+                                        id="plate_{{ $i }}"
+                                        name="plates[]"
+                                        placeholder="Solo numeri"
+                                        {{-- 'required' verrà gestito dinamicamente via JS e validazione server-side --}}
+                                        data-test-group="{{ ceil($i / 5) }}" {{-- Group 1 for plates 1-5, Group 2 for 6-10, Group 3 for 11-15 --}}
                                         oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                     <div class="invalid-feedback">ID Piastra {{ $i }} è obbligatorio.</div>
                                 </div>
@@ -120,28 +123,31 @@
                     <div class="row mb-4">
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="test1" id="test1" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]">
                                 <label class="form-check-label" for="test1">
-                                    Test A (es. Carica Batterica)
+                                    Test A (Controllo del pH)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="test2" id="test2" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]">
                                 <label class="form-check-label" for="test2">
-                                    Test B (es. Ricerca Salmonella)
+                                    Test B (Produttività, Metodo Qualitativo)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="test3" id="test3" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]">
                                 <label class="form-check-label" for="test3">
-                                    Test C (es. Ricerca Listeria)
+                                    Test C (Controllo della contaminazione microbica)
                                 </label>
                             </div>
                         </div>
+                    </div>
+                    <div class="alert alert-danger d-none" id="no-test-selected-alert">
+                        Seleziona almeno un test per procedere.
                     </div>
 
                     <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
@@ -163,7 +169,49 @@
           Array.prototype.slice.call(forms)
             .forEach(function (form) {
               form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
+                let isValid = form.checkValidity(); // Validazione HTML5 standard
+                let customValidationPassed = true; // Flag per la nostra validazione personalizzata
+
+                // 1. Validazione: Almeno un test deve essere selezionato
+                const testCheckboxes = form.querySelectorAll('.test-checkbox');
+                const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
+                let anyTestSelected = Array.from(testCheckboxes).some(cb => cb.checked);
+
+                if (!anyTestSelected) {
+                    noTestSelectedAlert.classList.remove('d-none');
+                    customValidationPassed = false;
+                } else {
+                    noTestSelectedAlert.classList.add('d-none');
+                }
+
+                // 2. Validazione: ID Piastre basati sui test selezionati
+                const plateInputs = form.querySelectorAll('input[name="plates[]"]');
+                
+                // Resetta lo stato di validazione delle piastre prima di ricontrollare
+                plateInputs.forEach(input => {
+                    input.setCustomValidity(''); // Rimuove messaggi di errore custom
+                    input.classList.remove('is-invalid'); // Rimuove lo stile di errore
+                });
+
+                testCheckboxes.forEach((checkbox, index) => {
+                    if (checkbox.checked) {
+                        // Mappa l'indice del checkbox al gruppo di piastre (0-4 per test1, 5-9 per test2, 10-14 per test3)
+                        const groupIndexStart = index * 5;
+                        const groupIndexEnd = groupIndexStart + 5;
+
+                        for (let i = groupIndexStart; i < groupIndexEnd; i++) {
+                            const plateInput = plateInputs[i];
+                            if (plateInput && plateInput.value.trim() === '') {
+                                plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                plateInput.classList.add('is-invalid');
+                                customValidationPassed = false;
+                            }
+                        }
+                    }
+                });
+
+                // Se la validazione HTML5 o la nostra validazione custom falliscono, impediamo l'invio
+                if (!isValid || !customValidationPassed) {
                   event.preventDefault()
                   event.stopPropagation()
                 }
@@ -171,6 +219,24 @@
                 form.classList.add('was-validated')
               }, false)
             })
+
+            // Aggiungi event listeners ai checkbox dei test per aggiornare la validazione delle piastre
+            const testCheckboxes = form.querySelectorAll('.test-checkbox');
+            testCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // Quando un test cambia, forziamo una ri-validazione del form
+                    // per aggiornare lo stato visivo degli input delle piastre.
+                    // Questo è un modo semplice per riattivare la logica di validazione.
+                    if (form.classList.contains('was-validated')) {
+                        // Simula un submit per far rieseguire la validazione senza inviare il form
+                        const tempSubmit = document.createElement('button');
+                        tempSubmit.style.display = 'none';
+                        form.appendChild(tempSubmit);
+                        tempSubmit.click();
+                        form.removeChild(tempSubmit);
+                    }
+                });
+            });
         })()
     </script>
 
