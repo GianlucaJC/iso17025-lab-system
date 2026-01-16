@@ -1,0 +1,25 @@
+# Dependencies
+/node_modules
+/vendor
+
+# Compiled assets
+/public/hot
+/public/build
+/public/storage
+
+# Environment files
+.env
+.env.backup
+.env.testing
+
+# Log and cache files
+/storage/framework/
+/storage/logs/
+*.log
+
+# IDEs and system files
+.idea/
+.vscode/
+Homestead.json
+Homestead.yaml
+.phpunit.result.cache
