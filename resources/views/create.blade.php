@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">Pannello</a>
@@ -46,7 +46,7 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <main class="container mt-4 flex-grow-1">
         <div class="card">
             <div class="card-header">
                 <h3><i class="fas fa-clipboard-list me-2"></i>Nuova Scheda di Accettazione Campioni</h3>
@@ -148,7 +148,7 @@
                 </form>
             </div>
         </div>
-    </div>
+    </main>
 
     {{-- Script per attivare la validazione Bootstrap --}}
     <script>
@@ -173,5 +173,9 @@
             })
         })()
     </script>
+
+    <footer class="mt-auto text-center py-3 bg-light">
+        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
+    </footer>
 </body>
 </html>

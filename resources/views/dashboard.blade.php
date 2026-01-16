@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">Pannello</a>
@@ -49,7 +49,7 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <main class="container mt-4 flex-grow-1">
         @if(Session::has('user'))
             <h1>Benvenuto, {{ Session::get('user')['operatore'] ?? Session::get('user')['username'] }}!</h1>
             <p>Sei stato autenticato con successo.</p>
@@ -66,6 +66,10 @@
             </div>
 
         @endif
-    </div>
+    </main>
+
+    <footer class="mt-auto text-center py-3 bg-light">
+        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
+    </footer>
 </body>
 </html>
