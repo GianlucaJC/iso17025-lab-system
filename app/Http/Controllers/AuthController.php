@@ -65,7 +65,6 @@ class AuthController extends Controller
             if (config('app.debug')) {
                 $errorMessage .= ' [Debug Info: ' . $response->body() . ']';
             }
-
             return back()->withErrors(['credentials' => $errorMessage])->withInput();
         }
 
@@ -83,12 +82,7 @@ class AuthController extends Controller
         Session::put('user', $userData);
         Session::regenerate();
 
-        return redirect()->intended(route('dashboard'));
-    }
-
-    public function dashboard()
-    {
-        return view('dashboard');
+        return redirect()->intended(route('acceptance.index'));
     }
 
     public function logout(Request $request)

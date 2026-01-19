@@ -11,7 +11,10 @@
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">Pannello</a>
+            <div>
+                <a class="navbar-brand" href="{{ route('dashboard') }}">Pannello</a>
+                <a class="nav-link d-inline-block" href="{{ route('acceptance.index') }}">Elenco Accettazioni</a>
+            </div>
             <div class="d-flex align-items-center">
                 @if(Session::has('user'))
                     @php
@@ -51,19 +54,12 @@
 
     <main class="container mt-4 flex-grow-1">
         @if(Session::has('user'))
-            <h1>Benvenuto, {{ Session::get('user')['operatore'] ?? Session::get('user')['username'] }}!</h1>
-            <p>Sei stato autenticato con successo.</p>
 
-            <div class="card mt-4">
-                <div class="card-header">Azioni Rapide</div>
-                <div class="card-body">
-                    
-                    <a href="{{route('acceptance.create')}}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-2"></i>
-                        Nuova Accettazione Campioni
-                    </a>
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
                 </div>
-            </div>
+            @endif
 
         @endif
     </main>

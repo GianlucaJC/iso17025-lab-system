@@ -17,7 +17,7 @@ class RedirectIfApiAuthenticated
     public function handle(Request $request, Closure $next): Response
     {
         if (Session::has('user')) {
-            return redirect()->route('dashboard');
+            return redirect()->route('acceptance.index');
         }
 
         return $next($request);

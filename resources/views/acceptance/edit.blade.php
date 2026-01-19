@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
-    <title>Nuova Accettazione</title>
+    @php
+        // Determina se la vista è in modalità di sola lettura
+        $is_readonly = $is_readonly ?? false;
+    @endphp
+    <title>{{ $is_readonly ? 'Visualizza' : 'Modifica' }} Accettazione</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -54,12 +58,29 @@
     <main class="container mt-4 flex-grow-1">
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-clipboard-list me-2"></i>Nuova Scheda di Accettazione Campioni</h3>
+                <h3>
+                    @if($is_readonly)
+                        <i class="fas fa-eye me-2"></i>Visualizza Scheda di Accettazione Campioni
+                    @else
+                        <i class="fas fa-edit me-2"></i>Modifica Scheda di Accettazione Campioni
+                    @endif
+                </h3>
             </div>
             <div class="card-body">
-                {{-- Abilitiamo la validazione client-side di Bootstrap --}}
-                <form method="POST" action="{{route('acceptance.store')}}" class="needs-validation" novalidate>
+                {{-- Mostra errori di validazione --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('acceptance.update', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
+                    @method('PUT')
 
                     {{-- SEZIONE DATI GENERALI --}}
                     <h5>Dati Generali</h5>
@@ -68,7 +89,7 @@
                             <label for="acceptance_number" class="form-label">Numero Accettazione</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                                <input type="text" class="form-control" id="acceptance_number" name="acceptance_number" required>
+                                <input type="text" class="form-control" id="acceptance_number" name="acceptance_number" value="{{ old('acceptance_number', $acceptance->acceptance_number) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 <div class="invalid-feedback">Per favore, inserisci il numero di accettazione.</div>
                             </div>
                         </div>
@@ -76,7 +97,7 @@
                             <label for="lotto" class="form-label">Lotto</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-box"></i></span>
-                                <input type="text" class="form-control" id="lotto" name="lotto" required>
+                                <input type="text" class="form-control" id="lotto" name="lotto" value="{{ old('lotto', $acceptance->lotto) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 <div class="invalid-feedback">Per favore, inserisci il lotto.</div>
                             </div>
                         </div>
@@ -84,7 +105,7 @@
                             <label for="sampling_date" class="form-label">Data Campionamento</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" required>
+                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date', \Carbon\Carbon::parse($acceptance->sampling_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 <div class="invalid-feedback">Per favore, inserisci la data di campionamento.</div>
                             </div>
                         </div>
@@ -92,7 +113,7 @@
                             <label for="acceptance_date" class="form-label">Data Accettazione</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
-                                <input type="date" class="form-control" id="acceptance_date" name="acceptance_date" value="{{ date('Y-m-d') }}" required>
+                                <input type="date" class="form-control" id="acceptance_date" name="acceptance_date" value="{{ old('acceptance_date', \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
                         </div>
                     </div>
@@ -100,7 +121,10 @@
                     {{-- SEZIONE IDENTIFICAZIONE PIASTRE --}}
                     <h5>Identificazione Piastre</h5>
                     <div id="plates-section">
-                        @php $test_groups = ['Test A (Piastre 1-5)', 'Test B (Piastre 6-10)', 'Test C (Piastre 11-15)']; @endphp
+                        @php
+                            $plates = old('plates', $acceptance->plates ?? []);
+                            $test_groups = ['Test A (Piastre 1-5)', 'Test B (Piastre 6-10)', 'Test C (Piastre 11-15)'];
+                        @endphp
                         @for ($g = 0; $g < 3; $g++)
                             <div id="plates-group-{{ $g + 1 }}" class="row mb-3 d-none">
                                 <h6>{{ $test_groups[$g] }}</h6>
@@ -117,8 +141,10 @@
                                                 id="plate_{{ $i }}"
                                                 name="plates[{{ $i - 1 }}]"
                                                 placeholder="Solo numeri"
+                                                value="{{ $plates[$i - 1] ?? '' }}"
                                                 data-test-group="{{ $g + 1 }}"
-                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                                {{ $is_readonly ? 'disabled' : '' }}>
                                             <div class="invalid-feedback">ID Piastra {{ $i }} è obbligatorio.</div>
                                         </div>
                                     </div>
@@ -130,9 +156,12 @@
                     {{-- SEZIONE TEST DA ESEGUIRE --}}
                     <h5>Test da Eseguire</h5>
                     <div class="row mb-4">
+                        @php
+                            $selectedTests = old('tests', $acceptance->tests ?? []);
+                        @endphp
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]" @if(in_array('test1', $selectedTests)) checked @endif {{ $is_readonly ? 'disabled' : '' }}>
                                 <label class="form-check-label" for="test1">
                                     Test A (Controllo del pH)
                                 </label>
@@ -140,7 +169,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]" @if(in_array('test2', $selectedTests)) checked @endif {{ $is_readonly ? 'disabled' : '' }}>
                                 <label class="form-check-label" for="test2">
                                     Test B (Produttività, Metodo Qualitativo)
                                 </label>
@@ -148,7 +177,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]" @if(in_array('test3', $selectedTests)) checked @endif {{ $is_readonly ? 'disabled' : '' }}>
                                 <label class="form-check-label" for="test3">
                                     Test C (Controllo della contaminazione microbica)
                                 </label>
@@ -159,29 +188,32 @@
                         Seleziona almeno un test per procedere.
                     </div>
 
-                    <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
+                    @if(!$is_readonly)
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Modifiche</button>
+                    @endif
+                    <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
+                        @if($is_readonly)
+                            <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
+                        @else
+                            Annulla
+                        @endif
+                    </a>
                 </form>
             </div>
         </div>
     </main>
 
-    {{-- Script per attivare la validazione Bootstrap --}}
+    {{-- Script per attivare la validazione Bootstrap (identico a create.blade.php) --}}
     <script>
-        // Esempio di JavaScript di base per disabilitare l'invio di moduli se ci sono campi non validi
         (function () {
           'use strict'
-        
-          // Recupera tutti i moduli a cui vogliamo applicare stili di convalida Bootstrap personalizzati
           var forms = document.querySelectorAll('.needs-validation')
-        
-          // Scansiona i moduli e impedisci l'invio
           Array.prototype.slice.call(forms)
             .forEach(function (form) {
               form.addEventListener('submit', function (event) {
-                let isValid = form.checkValidity(); // Validazione HTML5 standard
-                let customValidationPassed = true; // Flag per la nostra validazione personalizzata
+                let isValid = form.checkValidity();
+                let customValidationPassed = true;
 
-                // 1. Validazione: Almeno un test deve essere selezionato
                 const testCheckboxes = form.querySelectorAll('.test-checkbox');
                 const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
                 let anyTestSelected = Array.from(testCheckboxes).some(cb => cb.checked);
@@ -193,18 +225,15 @@
                     noTestSelectedAlert.classList.add('d-none');
                 }
 
-                // 2. Validazione: ID Piastre basati sui test selezionati
                 const plateInputs = form.querySelectorAll('input[name="plates[]"]');
                 
-                // Resetta lo stato di validazione delle piastre prima di ricontrollare
                 plateInputs.forEach(input => {
-                    input.setCustomValidity(''); // Rimuove messaggi di errore custom
-                    input.classList.remove('is-invalid'); // Rimuove lo stile di errore
+                    input.setCustomValidity('');
+                    input.classList.remove('is-invalid');
                 });
 
                 testCheckboxes.forEach((checkbox, index) => {
                     if (checkbox.checked) {
-                        // Mappa l'indice del checkbox al gruppo di piastre (0-4 per test1, 5-9 per test2, 10-14 per test3)
                         const groupIndexStart = index * 5;
                         const groupIndexEnd = groupIndexStart + 5;
 
@@ -219,7 +248,6 @@
                     }
                 });
 
-                // Se la validazione HTML5 o la nostra validazione custom falliscono, impediamo l'invio
                 if (!isValid || !customValidationPassed) {
                   event.preventDefault()
                   event.stopPropagation()
@@ -228,24 +256,6 @@
                 form.classList.add('was-validated')
               }, false)
             })
-
-            // Aggiungi event listeners ai checkbox dei test per aggiornare la validazione delle piastre
-            const testCheckboxes = form.querySelectorAll('.test-checkbox');
-            testCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    // Quando un test cambia, forziamo una ri-validazione del form
-                    // per aggiornare lo stato visivo degli input delle piastre.
-                    // Questo è un modo semplice per riattivare la logica di validazione.
-                    if (form.classList.contains('was-validated')) {
-                        // Simula un submit per far rieseguire la validazione senza inviare il form
-                        const tempSubmit = document.createElement('button');
-                        tempSubmit.style.display = 'none';
-                        form.appendChild(tempSubmit);
-                        tempSubmit.click();
-                        form.removeChild(tempSubmit);
-                    }
-                });
-            });
         })()
     </script>
 
@@ -271,6 +281,7 @@
                 checkbox.addEventListener('change', updatePlateVisibility);
             });
 
+            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati.
             updatePlateVisibility();
         });
     </script>
