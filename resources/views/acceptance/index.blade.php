@@ -84,9 +84,16 @@
                                 <td>{{ $acceptance->lotto }}</td>
                                 <td>{{ \Carbon\Carbon::parse($acceptance->acceptance_date)->format('d/m/Y') }}</td>
                                 <td>
-                                    @foreach($acceptance->tests as $testKey)
-                                        <span class="badge bg-secondary">{{ $testNameMap[$testKey] ?? $testKey }}</span>
-                                    @endforeach
+                                    @if(!empty($acceptance->tests))
+                                        @foreach($acceptance->tests as $testKey)
+                                            <div class="mb-1">
+                                                <span class="badge bg-secondary">{{ $testNameMap[$testKey] ?? $testKey }}</span>
+                                                @if(is_array($acceptance->double_tests) && in_array($testKey, $acceptance->double_tests))
+                                                    <span class="badge bg-info text-dark" title="Eseguito in doppio">2x</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </td>
                                 {{-- Usiamo la mappa degli utenti passata dal controller per trovare il nome --}}
                                 <td>{{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}</td>
