@@ -118,46 +118,12 @@
                         </div>
                     </div>
 
-                    {{-- SEZIONE IDENTIFICAZIONE PIASTRE --}}
-                    <h5>Identificazione Piastre</h5>
-                    <div id="plates-section">
-                        @php
-                            $plates = old('plates', $acceptance->plates ?? []);
-                            $test_groups = ['Test A (Piastre 1-5)', 'Test B (Piastre 6-10)', 'Test C (Piastre 11-15)'];
-                        @endphp
-                        @for ($g = 0; $g < 3; $g++)
-                            <div id="plates-group-{{ $g + 1 }}" class="row mb-3 d-none">
-                                <h6>{{ $test_groups[$g] }}</h6>
-                                @for ($i = ($g * 5) + 1; $i <= ($g + 1) * 5; $i++)
-                                    <div class="col-md-4 mb-2">
-                                        <label for="plate_{{ $i }}" class="form-label">ID Piastra {{ $i }}</label>
-                                        <div class="input-group has-validation">
-                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                            <input
-                                                type="text"
-                                                inputmode="numeric"
-                                                pattern="[0-9]*"
-                                                class="form-control"
-                                                id="plate_{{ $i }}"
-                                                name="plates[{{ $i - 1 }}]"
-                                                placeholder="Solo numeri"
-                                                value="{{ $plates[$i - 1] ?? '' }}"
-                                                data-test-group="{{ $g + 1 }}"
-                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                                {{ $is_readonly ? 'disabled' : '' }}>
-                                            <div class="invalid-feedback">ID Piastra {{ $i }} è obbligatorio.</div>
-                                        </div>
-                                    </div>
-                                @endfor
-                                </div>
-                        @endfor
-                    </div>
-
                     {{-- SEZIONE TEST DA ESEGUIRE --}}
                     <h5>Test da Eseguire</h5>
                     <div class="row mb-4">
                         @php
                             $selectedTests = old('tests', $acceptance->tests ?? []);
+                            $doubleTests = old('double_tests', $acceptance->double_tests ?? []);
                         @endphp
                         <div class="col-md-4">
                             <div class="form-check">
@@ -165,6 +131,10 @@
                                 <label class="form-check-label" for="test1">
                                     Test A (Controllo del pH)
                                 </label>
+                            </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test1-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test1" id="double_test1" name="double_tests[]" @if(in_array('test1', $doubleTests)) checked @endif {{ $is_readonly ? 'disabled' : '' }}>
+                                <label class="form-check-label" for="double_test1">Esegui in doppio</label>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -174,6 +144,10 @@
                                     Test B (Produttività, Metodo Qualitativo)
                                 </label>
                             </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test2-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test2" id="double_test2" name="double_tests[]" @if(in_array('test2', $doubleTests)) checked @endif {{ $is_readonly ? 'disabled' : '' }}>
+                                <label class="form-check-label" for="double_test2">Esegui in doppio</label>
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
@@ -182,11 +156,73 @@
                                     Test C (Controllo della contaminazione microbica)
                                 </label>
                             </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test3-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test3" id="double_test3" name="double_tests[]" @if(in_array('test3', $doubleTests)) checked @endif {{ $is_readonly ? 'disabled' : '' }}>
+                                <label class="form-check-label" for="double_test3">Esegui in doppio</label>
+                            </div>
                         </div>
                     </div>
                     <div class="alert alert-danger d-none" id="no-test-selected-alert">
                         Seleziona almeno un test per procedere.
                     </div>
+
+                    {{-- SEZIONE IDENTIFICAZIONE PIASTRE --}}
+                    <h5>Identificazione Piastre</h5>
+                    <div id="plates-section">
+                        @php
+                            $plates = old('plates', $acceptance->plates ?? array_fill(0, 30, null));
+                            $test_groups = [
+                                'Test A (Piastre 1-5)', 'Test A - Doppio (Piastre 6-10)',
+                                'Test B (Piastre 11-15)', 'Test B - Doppio (Piastre 16-20)',
+                                'Test C (Piastre 21-25)', 'Test C - Doppio (Piastre 26-30)'
+                            ];
+                        @endphp
+                        @for ($g = 0; $g < 6; $g++)
+                            @php
+                                $test_index = floor($g / 2);
+                                $is_double_group = $g % 2 != 0;
+                            @endphp
+                            <div id="plates-group-{{ $g + 1 }}" class="row mb-3 d-none" data-test-id="test{{ $test_index + 1 }}" data-is-double="{{ $is_double_group ? 'true' : 'false' }}">
+                                <h6>{{ $test_groups[$g] }}</h6>
+                                @for ($i = ($g * 5); $i < ($g + 1) * 5; $i++)
+                                    <div class="col-md-4 mb-2">
+                                        <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
+                                        <div class="input-group has-validation">
+                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                            <input
+                                                type="text"
+                                                inputmode="numeric"
+                                                pattern="[0-9]*"
+                                                class="form-control plate-input"
+                                                id="plate_{{ $i + 1 }}"
+                                                name="plates[{{ $i }}]"
+                                                placeholder="Solo numeri"
+                                                value="{{ $plates[$i] ?? '' }}"
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                                {{ $is_readonly ? 'disabled' : '' }}>
+                                            <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                                        </div>
+                                    </div>
+                                @endfor
+                                </div>
+                        @endfor
+                    </div>
+
+                    {{-- SEZIONE MOTIVAZIONE MODIFICA (solo in edit mode) --}}
+                    @if(!$is_readonly)
+                    <fieldset class="mb-4">
+                        <legend class="h5">Motivazione della Modifica</legend>
+                        <div class="form-group">
+                            <label for="modification_reason" class="form-label">La modifica di una scheda già salvata richiede una motivazione (min. 10 caratteri).</label>
+                            <textarea class="form-control @error('modification_reason') is-invalid @enderror" id="modification_reason" name="modification_reason" rows="3" required minlength="10">{{ old('modification_reason') }}</textarea>
+                            @error('modification_reason')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @else
+                                <div class="invalid-feedback">Per favore, inserisci una motivazione per la modifica.</div>
+                            @enderror
+                        </div>
+                    </fieldset>
+                    @endif
 
                     @if(!$is_readonly)
                         <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Modifiche</button>
@@ -225,24 +261,41 @@
                     noTestSelectedAlert.classList.add('d-none');
                 }
 
-                const plateInputs = form.querySelectorAll('input[name="plates[]"]');
+                const plateInputs = form.querySelectorAll('input[name^="plates["]');
                 
                 plateInputs.forEach(input => {
                     input.setCustomValidity('');
                     input.classList.remove('is-invalid');
                 });
 
-                testCheckboxes.forEach((checkbox, index) => {
+                testCheckboxes.forEach((checkbox) => {
                     if (checkbox.checked) {
-                        const groupIndexStart = index * 5;
-                        const groupIndexEnd = groupIndexStart + 5;
+                        const testId = checkbox.value;
+                        const doubleCheckbox = document.getElementById('double_' + testId);
 
-                        for (let i = groupIndexStart; i < groupIndexEnd; i++) {
-                            const plateInput = plateInputs[i];
-                            if (plateInput && plateInput.value.trim() === '') {
-                                plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
-                                plateInput.classList.add('is-invalid');
-                                customValidationPassed = false;
+                        // Validate main plate group
+                        const mainPlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="false"]`);
+                        if (mainPlateGroup) {
+                            mainPlateGroup.querySelectorAll('.plate-input').forEach(plateInput => {
+                                if (plateInput.value.trim() === '') {
+                                    plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                    plateInput.classList.add('is-invalid');
+                                    customValidationPassed = false;
+                                }
+                            });
+                        }
+
+                        // Validate double plate group if checked
+                        if (doubleCheckbox && doubleCheckbox.checked) {
+                            const doublePlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="true"]`);
+                            if (doublePlateGroup) {
+                                doublePlateGroup.querySelectorAll('.plate-input').forEach(plateInput => {
+                                    if (plateInput.value.trim() === '') {
+                                        plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                        plateInput.classList.add('is-invalid');
+                                        customValidationPassed = false;
+                                    }
+                                });
                             }
                         }
                     }
@@ -262,22 +315,39 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const testCheckboxes = document.querySelectorAll('.test-checkbox');
+            const doubleTestCheckboxes = document.querySelectorAll('.double-test-checkbox');
 
             function updatePlateVisibility() {
                 testCheckboxes.forEach((checkbox, index) => {
-                    const groupNumber = index + 1;
-                    const plateGroup = document.getElementById('plates-group-' + groupNumber);
-                    if (plateGroup) {
-                        if (checkbox.checked) {
-                            plateGroup.classList.remove('d-none');
+                    const testId = checkbox.value;
+                    const doubleContainer = document.getElementById('double-' + testId + '-container');
+                    const doubleCheckbox = document.getElementById('double_' + testId);
+
+                    const plateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="false"]`);
+                    const doublePlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="true"]`);
+
+                    if (checkbox.checked) {
+                        if (doubleContainer) doubleContainer.style.display = 'inline-block';
+                        if (plateGroup) plateGroup.classList.remove('d-none');
+
+                        if (doubleCheckbox && doubleCheckbox.checked) {
+                            if (doublePlateGroup) doublePlateGroup.classList.remove('d-none');
                         } else {
-                            plateGroup.classList.add('d-none');
+                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
                         }
+                    } else {
+                        if (doubleContainer) doubleContainer.style.display = 'none';
+                        if (plateGroup) plateGroup.classList.add('d-none');
+                        if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
+                        if (doubleCheckbox) doubleCheckbox.checked = false;
                     }
                 });
             }
 
             testCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updatePlateVisibility);
+            });
+            doubleTestCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', updatePlateVisibility);
             });
 

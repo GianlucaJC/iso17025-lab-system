@@ -63,3 +63,9 @@ Route::get('/test-a/{test_a_result}/edit', [TestAController::class, 'edit'])
 Route::put('/test-a/{test_a_result}', [TestAController::class, 'update'])
     ->name('test-a.update')
     ->middleware('auth.api');
+
+// Rotta per la cronologia delle modifiche
+use App\Http\Controllers\AuditController;
+Route::get('/history/{modelNameShort}/{id}', [AuditController::class, 'show'])
+    ->name('history.show')
+    ->middleware('auth.api');

@@ -121,12 +121,20 @@
                                                 <i class="fas fa-vial"></i> Test A
                                             </a>
                                         @endif
+                                        {{-- Pulsante Cronologia per Test A --}}
+                                        @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
+                                            @if($acceptance->testAResult)
+                                                <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $acceptance->testAResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test A">
+                                                    <i class="fas fa-history"></i>
+                                                </a>
+                                            @endif
+                                        @endif
                                     @endif
                                     {{-- Qui verranno aggiunti i link per gli altri test --}}
                                     {{-- @if(in_array('test2', $acceptance->tests)) <a href... >Test B</a> @endif --}}
                                     {{-- @if(in_array('test3', $acceptance->tests)) <a href... >Test C</a> @endif --}}
                                 </td>
-                                <td>
+                                <td class="text-nowrap">
                                     @if($currentUser && ($acceptance->user_id == $currentUser['id']))
                                         <a href="{{ route('acceptance.edit', $acceptance) }}" class="btn btn-primary btn-sm" title="Modifica">
                                             <i class="fas fa-edit"></i>
@@ -134,6 +142,12 @@
                                     @else
                                         <a href="{{ route('acceptance.edit', $acceptance) }}" class="btn btn-info btn-sm" title="Visualizza">
                                             <i class="fas fa-eye"></i>
+                                        </a>
+                                    @endif
+                                    {{-- Pulsante Cronologia per Accettazione (solo admin) --}}
+                                    @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
+                                        <a href="{{ route('history.show', ['modelNameShort' => 'acceptance', 'id' => $acceptance->id]) }}" class="btn btn-secondary btn-sm" title="Cronologia Modifiche Accettazione">
+                                            <i class="fas fa-history"></i>
                                         </a>
                                     @endif
                                 </td>

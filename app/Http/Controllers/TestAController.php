@@ -25,7 +25,7 @@ class TestAController extends Controller
 
         $currentUser = Session::get('user');
 
-        return view('tests.test_a.create', [
+        return view('acceptance.create', [
             'acceptance' => $acceptance,
             'currentUser' => $currentUser
         ]);
@@ -85,7 +85,7 @@ class TestAController extends Controller
         // Carichiamo l'accettazione associata per avere i dati di contesto
         $acceptance = $test_a_result->acceptance;
 
-        return view('tests.test_a.create', [
+        return view('acceptance.create', [
             'acceptance' => $acceptance,
             'test_a_result' => $test_a_result, // Passiamo il risultato esistente alla vista
             'currentUser' => $currentUser,
@@ -116,6 +116,7 @@ class TestAController extends Controller
             'ph_value' => 'required|numeric|min:0|max:14',
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
+            'modification_reason' => 'required|string|min:10|max:500',
         ]);
 
         // 3. Aggiorniamo il record esistente

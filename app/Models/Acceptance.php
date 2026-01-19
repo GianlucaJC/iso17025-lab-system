@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Acceptance extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +24,9 @@ class Acceptance extends Model
         'acceptance_date',
         'plates',
         'tests',
+        'double_tests',
         'user_id',
+        'modification_reason',
     ];
 
     /**
@@ -34,6 +37,7 @@ class Acceptance extends Model
     protected $casts = [
         'plates' => 'array',
         'tests' => 'array',
+        'double_tests' => 'array',
     ];
 
     /**

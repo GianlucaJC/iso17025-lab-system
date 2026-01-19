@@ -74,30 +74,39 @@ class AcceptanceController extends Controller
             'acceptance_date' => 'required|date',
             'tests' => 'required|array|min:1', // Almeno un test deve essere selezionato
             'tests.*' => 'string|in:test1,test2,test3', // Valori validi per i test
+            'double_tests' => 'nullable|array',
+            'double_tests.*' => 'string|in:test1,test2,test3',
         ];
 
         // Regole di validazione condizionali per gli ID delle piastre
         $selectedTests = $request->input('tests', []);
+        $doubleTests = $request->input('double_tests', []);
 
         // Test A (plates 1-5, indices 0-4)
         for ($i = 0; $i < 5; $i++) {
-            $rules["plates.{$i}"] = in_array('test1', $selectedTests)
-                ? 'required|numeric'
-                : 'nullable|numeric';
+            $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
         }
-
-        // Test B (plates 6-10, indices 5-9)
+        // Test A Doppio (plates 6-10, indices 5-9)
         for ($i = 5; $i < 10; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $selectedTests)
-                ? 'required|numeric'
-                : 'nullable|numeric';
+            $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
         }
 
-        // Test C (plates 11-15, indices 10-14)
+        // Test B (plates 11-15, indices 10-14)
         for ($i = 10; $i < 15; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $selectedTests)
-                ? 'required|numeric'
-                : 'nullable|numeric';
+            $rules["plates.{$i}"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+        }
+        // Test B Doppio (plates 16-20, indices 15-19)
+        for ($i = 15; $i < 20; $i++) {
+            $rules["plates.{$i}"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+        }
+
+        // Test C (plates 21-25, indices 20-24)
+        for ($i = 20; $i < 25; $i++) {
+            $rules["plates.{$i}"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+        }
+        // Test C Doppio (plates 26-30, indices 25-29)
+        for ($i = 25; $i < 30; $i++) {
+            $rules["plates.{$i}"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
         }
 
         $validatedData = $request->validate($rules);
@@ -160,18 +169,39 @@ class AcceptanceController extends Controller
             'acceptance_date' => 'required|date',
             'tests' => 'required|array|min:1',
             'tests.*' => 'string|in:test1,test2,test3',
+            'double_tests' => 'nullable|array',
+            'double_tests.*' => 'string|in:test1,test2,test3',
+            'modification_reason' => 'required|string|min:10|max:500',
         ];
 
         $selectedTests = $request->input('tests', []);
+        $doubleTests = $request->input('double_tests', []);
 
+        // Test A (plates 1-5, indices 0-4)
         for ($i = 0; $i < 5; $i++) {
             $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
         }
+        // Test A Doppio (plates 6-10, indices 5-9)
         for ($i = 5; $i < 10; $i++) {
+            $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+        }
+
+        // Test B (plates 11-15, indices 10-14)
+        for ($i = 10; $i < 15; $i++) {
             $rules["plates.{$i}"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
         }
-        for ($i = 10; $i < 15; $i++) {
+        // Test B Doppio (plates 16-20, indices 15-19)
+        for ($i = 15; $i < 20; $i++) {
+            $rules["plates.{$i}"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+        }
+
+        // Test C (plates 21-25, indices 20-24)
+        for ($i = 20; $i < 25; $i++) {
             $rules["plates.{$i}"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+        }
+        // Test C Doppio (plates 26-30, indices 25-29)
+        for ($i = 25; $i < 30; $i++) {
+            $rules["plates.{$i}"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
         }
 
         $validatedData = $request->validate($rules);

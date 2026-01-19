@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
-    <title>Nuova Accettazione</title>
+    <title>Nuova Scheda di Accettazione Campioni</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -54,11 +54,23 @@
     <main class="container mt-4 flex-grow-1">
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-clipboard-list me-2"></i>Nuova Scheda di Accettazione Campioni</h3>
+                <h3>
+                    <i class="fas fa-plus-circle me-2"></i>Nuova Scheda di Accettazione Campioni
+                </h3>
             </div>
             <div class="card-body">
-                {{-- Abilitiamo la validazione client-side di Bootstrap --}}
-                <form method="POST" action="{{route('acceptance.store')}}" class="needs-validation" novalidate>
+                {{-- Mostra errori di validazione --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('acceptance.store') }}" class="needs-validation" novalidate>
                     @csrf
 
                     {{-- SEZIONE DATI GENERALI --}}
@@ -68,7 +80,7 @@
                             <label for="acceptance_number" class="form-label">Numero Accettazione</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                                <input type="text" class="form-control" id="acceptance_number" name="acceptance_number" required>
+                                <input type="text" class="form-control" id="acceptance_number" name="acceptance_number" value="{{ old('acceptance_number') }}" required>
                                 <div class="invalid-feedback">Per favore, inserisci il numero di accettazione.</div>
                             </div>
                         </div>
@@ -76,7 +88,7 @@
                             <label for="lotto" class="form-label">Lotto</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-box"></i></span>
-                                <input type="text" class="form-control" id="lotto" name="lotto" required>
+                                <input type="text" class="form-control" id="lotto" name="lotto" value="{{ old('lotto') }}" required>
                                 <div class="invalid-feedback">Per favore, inserisci il lotto.</div>
                             </div>
                         </div>
@@ -84,7 +96,7 @@
                             <label for="sampling_date" class="form-label">Data Campionamento</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" required>
+                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date') }}" required>
                                 <div class="invalid-feedback">Per favore, inserisci la data di campionamento.</div>
                             </div>
                         </div>
@@ -92,66 +104,52 @@
                             <label for="acceptance_date" class="form-label">Data Accettazione</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
-                                <input type="date" class="form-control" id="acceptance_date" name="acceptance_date" value="{{ date('Y-m-d') }}" required>
+                                <input type="date" class="form-control" id="acceptance_date" name="acceptance_date" value="{{ old('acceptance_date', date('Y-m-d')) }}" required>
                             </div>
                         </div>
-                    </div>
-
-                    {{-- SEZIONE IDENTIFICAZIONE PIASTRE --}}
-                    <h5>Identificazione Piastre</h5>
-                    <div id="plates-section">
-                        @php $test_groups = ['Test A (Piastre 1-5)', 'Test B (Piastre 6-10)', 'Test C (Piastre 11-15)']; @endphp
-                        @for ($g = 0; $g < 3; $g++)
-                            <div id="plates-group-{{ $g + 1 }}" class="row mb-3 d-none">
-                                <h6>{{ $test_groups[$g] }}</h6>
-                                @for ($i = ($g * 5) + 1; $i <= ($g + 1) * 5; $i++)
-                                    <div class="col-md-4 mb-2">
-                                        <label for="plate_{{ $i }}" class="form-label">ID Piastra {{ $i }}</label>
-                                        <div class="input-group has-validation">
-                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                            <input
-                                                type="text"
-                                                inputmode="numeric"
-                                                pattern="[0-9]*"
-                                                class="form-control"
-                                                id="plate_{{ $i }}"
-                                                name="plates[{{ $i - 1 }}]"
-                                                placeholder="Solo numeri"
-                                                data-test-group="{{ $g + 1 }}"
-                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                            <div class="invalid-feedback">ID Piastra {{ $i }} è obbligatorio.</div>
-                                        </div>
-                                    </div>
-                                @endfor
-                                </div>
-                        @endfor
                     </div>
 
                     {{-- SEZIONE TEST DA ESEGUIRE --}}
                     <h5>Test da Eseguire</h5>
                     <div class="row mb-4">
+                        @php
+                            $selectedTests = old('tests', []);
+                            $doubleTests = old('double_tests', []);
+                        @endphp
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]" @if(in_array('test1', $selectedTests)) checked @endif>
                                 <label class="form-check-label" for="test1">
                                     Test A (Controllo del pH)
                                 </label>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]">
-                                <label class="form-check-label" for="test2">
-                                    Test B (Produttività, Metodo Qualitativo)
-                                </label>
+                            <div class="form-check form-check-inline ms-3" id="double-test1-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test1" id="double_test1" name="double_tests[]" @if(in_array('test1', $doubleTests)) checked @endif>
+                                <label class="form-check-label" for="double_test1">Esegui in doppio</label>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]" @if(in_array('test2', $selectedTests)) checked @endif>
+                                <label class="form-check-label" for="test2">
+                                    Test B (Produttività, Metodo Qualitativo)
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test2-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test2" id="double_test2" name="double_tests[]" @if(in_array('test2', $doubleTests)) checked @endif>
+                                <label class="form-check-label" for="double_test2">Esegui in doppio</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]" @if(in_array('test3', $selectedTests)) checked @endif>
                                 <label class="form-check-label" for="test3">
                                     Test C (Controllo della contaminazione microbica)
                                 </label>
+                            </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test3-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test3" id="double_test3" name="double_tests[]" @if(in_array('test3', $doubleTests)) checked @endif>
+                                <label class="form-check-label" for="double_test3">Esegui in doppio</label>
                             </div>
                         </div>
                     </div>
@@ -159,29 +157,65 @@
                         Seleziona almeno un test per procedere.
                     </div>
 
-                    <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
+                    {{-- SEZIONE IDENTIFICAZIONE PIASTRE --}}
+                    <h5>Identificazione Piastre</h5>
+                    <div id="plates-section">
+                        @php
+                            $plates = old('plates', array_fill(0, 30, null));
+                            $test_groups = [
+                                'Test A (Piastre 1-5)', 'Test A - Doppio (Piastre 6-10)',
+                                'Test B (Piastre 11-15)', 'Test B - Doppio (Piastre 16-20)',
+                                'Test C (Piastre 21-25)', 'Test C - Doppio (Piastre 26-30)'
+                            ];
+                        @endphp
+                        @for ($g = 0; $g < 6; $g++)
+                            @php
+                                $test_index = floor($g / 2);
+                                $is_double_group = $g % 2 != 0;
+                            @endphp
+                            <div id="plates-group-{{ $g + 1 }}" class="row mb-3 d-none" data-test-id="test{{ $test_index + 1 }}" data-is-double="{{ $is_double_group ? 'true' : 'false' }}">
+                                <h6>{{ $test_groups[$g] }}</h6>
+                                @for ($i = ($g * 5); $i < ($g + 1) * 5; $i++)
+                                    <div class="col-md-4 mb-2">
+                                        <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
+                                        <div class="input-group has-validation">
+                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                            <input
+                                                type="text"
+                                                inputmode="numeric"
+                                                pattern="[0-9]*"
+                                                class="form-control plate-input"
+                                                id="plate_{{ $i + 1 }}"
+                                                name="plates[{{ $i }}]"
+                                                placeholder="Solo numeri"
+                                                value="{{ $plates[$i] ?? '' }}"
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                            <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                                        </div>
+                                    </div>
+                                @endfor
+                                </div>
+                        @endfor
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
+                    <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">Annulla</a>
                 </form>
             </div>
         </div>
     </main>
 
-    {{-- Script per attivare la validazione Bootstrap --}}
+    {{-- Script per la validazione --}}
     <script>
-        // Esempio di JavaScript di base per disabilitare l'invio di moduli se ci sono campi non validi
         (function () {
           'use strict'
-        
-          // Recupera tutti i moduli a cui vogliamo applicare stili di convalida Bootstrap personalizzati
           var forms = document.querySelectorAll('.needs-validation')
-        
-          // Scansiona i moduli e impedisci l'invio
           Array.prototype.slice.call(forms)
             .forEach(function (form) {
               form.addEventListener('submit', function (event) {
-                let isValid = form.checkValidity(); // Validazione HTML5 standard
-                let customValidationPassed = true; // Flag per la nostra validazione personalizzata
+                let isValid = form.checkValidity();
+                let customValidationPassed = true;
 
-                // 1. Validazione: Almeno un test deve essere selezionato
                 const testCheckboxes = form.querySelectorAll('.test-checkbox');
                 const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
                 let anyTestSelected = Array.from(testCheckboxes).some(cb => cb.checked);
@@ -193,33 +227,46 @@
                     noTestSelectedAlert.classList.add('d-none');
                 }
 
-                // 2. Validazione: ID Piastre basati sui test selezionati
-                const plateInputs = form.querySelectorAll('input[name="plates[]"]');
+                const plateInputs = form.querySelectorAll('input[name^="plates["]');
                 
-                // Resetta lo stato di validazione delle piastre prima di ricontrollare
                 plateInputs.forEach(input => {
-                    input.setCustomValidity(''); // Rimuove messaggi di errore custom
-                    input.classList.remove('is-invalid'); // Rimuove lo stile di errore
+                    input.setCustomValidity('');
+                    input.classList.remove('is-invalid');
                 });
 
-                testCheckboxes.forEach((checkbox, index) => {
+                testCheckboxes.forEach((checkbox) => {
                     if (checkbox.checked) {
-                        // Mappa l'indice del checkbox al gruppo di piastre (0-4 per test1, 5-9 per test2, 10-14 per test3)
-                        const groupIndexStart = index * 5;
-                        const groupIndexEnd = groupIndexStart + 5;
+                        const testId = checkbox.value;
+                        const doubleCheckbox = document.getElementById('double_' + testId);
 
-                        for (let i = groupIndexStart; i < groupIndexEnd; i++) {
-                            const plateInput = plateInputs[i];
-                            if (plateInput && plateInput.value.trim() === '') {
-                                plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
-                                plateInput.classList.add('is-invalid');
-                                customValidationPassed = false;
+                        // Validate main plate group
+                        const mainPlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="false"]`);
+                        if (mainPlateGroup) {
+                            mainPlateGroup.querySelectorAll('.plate-input').forEach(plateInput => {
+                                if (plateInput.value.trim() === '') {
+                                    plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                    plateInput.classList.add('is-invalid');
+                                    customValidationPassed = false;
+                                }
+                            });
+                        }
+
+                        // Validate double plate group if checked
+                        if (doubleCheckbox && doubleCheckbox.checked) {
+                            const doublePlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="true"]`);
+                            if (doublePlateGroup) {
+                                doublePlateGroup.querySelectorAll('.plate-input').forEach(plateInput => {
+                                    if (plateInput.value.trim() === '') {
+                                        plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                        plateInput.classList.add('is-invalid');
+                                        customValidationPassed = false;
+                                    }
+                                });
                             }
                         }
                     }
                 });
 
-                // Se la validazione HTML5 o la nostra validazione custom falliscono, impediamo l'invio
                 if (!isValid || !customValidationPassed) {
                   event.preventDefault()
                   event.stopPropagation()
@@ -228,41 +275,37 @@
                 form.classList.add('was-validated')
               }, false)
             })
-
-            // Aggiungi event listeners ai checkbox dei test per aggiornare la validazione delle piastre
-            const testCheckboxes = form.querySelectorAll('.test-checkbox');
-            testCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    // Quando un test cambia, forziamo una ri-validazione del form
-                    // per aggiornare lo stato visivo degli input delle piastre.
-                    // Questo è un modo semplice per riattivare la logica di validazione.
-                    if (form.classList.contains('was-validated')) {
-                        // Simula un submit per far rieseguire la validazione senza inviare il form
-                        const tempSubmit = document.createElement('button');
-                        tempSubmit.style.display = 'none';
-                        form.appendChild(tempSubmit);
-                        tempSubmit.click();
-                        form.removeChild(tempSubmit);
-                    }
-                });
-            });
         })()
     </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const testCheckboxes = document.querySelectorAll('.test-checkbox');
+            const doubleTestCheckboxes = document.querySelectorAll('.double-test-checkbox');
 
             function updatePlateVisibility() {
                 testCheckboxes.forEach((checkbox, index) => {
-                    const groupNumber = index + 1;
-                    const plateGroup = document.getElementById('plates-group-' + groupNumber);
-                    if (plateGroup) {
-                        if (checkbox.checked) {
-                            plateGroup.classList.remove('d-none');
+                    const testId = checkbox.value;
+                    const doubleContainer = document.getElementById('double-' + testId + '-container');
+                    const doubleCheckbox = document.getElementById('double_' + testId);
+
+                    const plateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="false"]`);
+                    const doublePlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="true"]`);
+
+                    if (checkbox.checked) {
+                        if (doubleContainer) doubleContainer.style.display = 'inline-block';
+                        if (plateGroup) plateGroup.classList.remove('d-none');
+
+                        if (doubleCheckbox && doubleCheckbox.checked) {
+                            if (doublePlateGroup) doublePlateGroup.classList.remove('d-none');
                         } else {
-                            plateGroup.classList.add('d-none');
+                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
                         }
+                    } else {
+                        if (doubleContainer) doubleContainer.style.display = 'none';
+                        if (plateGroup) plateGroup.classList.add('d-none');
+                        if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
+                        if (doubleCheckbox) doubleCheckbox.checked = false;
                     }
                 });
             }
@@ -270,7 +313,11 @@
             testCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', updatePlateVisibility);
             });
+            doubleTestCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updatePlateVisibility);
+            });
 
+            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati (in caso di errori di validazione).
             updatePlateVisibility();
         });
     </script>

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class TestAResult extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     /**
      * The table associated with the model.
@@ -28,6 +29,7 @@ class TestAResult extends Model
         'ph_value',
         'outcome',
         'non_compliance_ref',
+        'modification_reason',
     ];
 
     /**
