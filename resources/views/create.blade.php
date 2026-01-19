@@ -161,41 +161,50 @@
                     <h5>Identificazione Piastre</h5>
                     <div id="plates-section">
                         @php
-                            $plates = old('plates', array_fill(0, 30, null));
-                            $test_groups = [
-                                'Test A (Piastre 1-5)', 'Test A - Doppio (Piastre 6-10)',
-                                'Test B (Piastre 11-15)', 'Test B - Doppio (Piastre 16-20)',
-                                'Test C (Piastre 21-25)', 'Test C - Doppio (Piastre 26-30)'
+                            $plates = old('plates', array_fill(0, 30, null)); // Assicura che l'array abbia sempre 30 elementi
+                            $test_definitions = [
+                                'test1' => ['name' => 'Test A (Controllo del pH)', 'std_start' => 0, 'dbl_start' => 5],
+                                'test2' => ['name' => 'Test B (Produttività, Metodo Qualitativo)', 'std_start' => 10, 'dbl_start' => 15],
+                                'test3' => ['name' => 'Test C (Controllo della contaminazione microbica)', 'std_start' => 20, 'dbl_start' => 25],
                             ];
                         @endphp
-                        @for ($g = 0; $g < 6; $g++)
-                            @php
-                                $test_index = floor($g / 2);
-                                $is_double_group = $g % 2 != 0;
-                            @endphp
-                            <div id="plates-group-{{ $g + 1 }}" class="row mb-3 d-none" data-test-id="test{{ $test_index + 1 }}" data-is-double="{{ $is_double_group ? 'true' : 'false' }}">
-                                <h6>{{ $test_groups[$g] }}</h6>
-                                @for ($i = ($g * 5); $i < ($g + 1) * 5; $i++)
-                                    <div class="col-md-4 mb-2">
-                                        <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
-                                        <div class="input-group has-validation">
-                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                            <input
-                                                type="text"
-                                                inputmode="numeric"
-                                                pattern="[0-9]*"
-                                                class="form-control plate-input"
-                                                id="plate_{{ $i + 1 }}"
-                                                name="plates[{{ $i }}]"
-                                                placeholder="Solo numeri"
-                                                value="{{ $plates[$i] ?? '' }}"
-                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                            <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                        @foreach ($test_definitions as $test_id => $def)
+                            <fieldset id="plates-group-{{ $test_id }}" class="mb-4 p-3 border rounded d-none" data-test-id="{{ $test_id }}">
+                                <legend class="h6 w-auto px-2 bg-primary-subtle text-primary-emphasis rounded">{{ $def['name'] }}</legend>
+                                
+                                {{-- Standard Plates --}}
+                                <div class="row standard-plates-row">
+                                    @for ($i = $def['std_start']; $i < $def['std_start'] + 5; $i++)
+                                        <div class="col-md-4 mb-2">
+                                            <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
+                                            <div class="input-group has-validation">
+                                                <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i + 1 }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                @endfor
+                                    @endfor
                                 </div>
-                        @endfor
+
+                                {{-- Double Plates --}}
+                                <div id="double-plates-group-{{ $test_id }}" class="d-none double-plates-container">
+                                    <hr class="my-3">
+                                    <h6 class="text-muted mb-3">Piastre per test in doppio</h6>
+                                    <div class="row">
+                                        @for ($i = $def['dbl_start']; $i < $def['dbl_start'] + 5; $i++)
+                                            <div class="col-md-4 mb-2">
+                                                <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
+                                                <div class="input-group has-validation">
+                                                    <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i + 1 }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                    <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                                                </div>
+                                            </div>
+                                        @endfor
+                                    </div>
+                                </div>
+                            </fieldset>
+                        @endforeach
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
@@ -239,23 +248,22 @@
                         const testId = checkbox.value;
                         const doubleCheckbox = document.getElementById('double_' + testId);
 
-                        // Validate main plate group
-                        const mainPlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="false"]`);
-                        if (mainPlateGroup) {
-                            mainPlateGroup.querySelectorAll('.plate-input').forEach(plateInput => {
+                        const plateGroup = document.getElementById('plates-group-' + testId);
+                        if (plateGroup) {
+                            // Validate standard plates
+                            const standardInputs = plateGroup.querySelectorAll('.standard-plates-row .plate-input');
+                            standardInputs.forEach(plateInput => {
                                 if (plateInput.value.trim() === '') {
                                     plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
                                     plateInput.classList.add('is-invalid');
                                     customValidationPassed = false;
                                 }
                             });
-                        }
 
-                        // Validate double plate group if checked
-                        if (doubleCheckbox && doubleCheckbox.checked) {
-                            const doublePlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="true"]`);
-                            if (doublePlateGroup) {
-                                doublePlateGroup.querySelectorAll('.plate-input').forEach(plateInput => {
+                            // Validate double plates if checked
+                            if (doubleCheckbox && doubleCheckbox.checked) {
+                                const doubleInputs = plateGroup.querySelectorAll('.double-plates-container .plate-input');
+                                doubleInputs.forEach(plateInput => {
                                     if (plateInput.value.trim() === '') {
                                         plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
                                         plateInput.classList.add('is-invalid');
@@ -284,13 +292,12 @@
             const doubleTestCheckboxes = document.querySelectorAll('.double-test-checkbox');
 
             function updatePlateVisibility() {
-                testCheckboxes.forEach((checkbox, index) => {
+                testCheckboxes.forEach((checkbox) => {
                     const testId = checkbox.value;
                     const doubleContainer = document.getElementById('double-' + testId + '-container');
                     const doubleCheckbox = document.getElementById('double_' + testId);
-
-                    const plateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="false"]`);
-                    const doublePlateGroup = document.querySelector(`div[data-test-id="${testId}"][data-is-double="true"]`);
+                    const plateGroup = document.getElementById('plates-group-' + testId);
+                    const doublePlateGroup = document.getElementById('double-plates-group-' + testId);
 
                     if (checkbox.checked) {
                         if (doubleContainer) doubleContainer.style.display = 'inline-block';
@@ -304,7 +311,7 @@
                     } else {
                         if (doubleContainer) doubleContainer.style.display = 'none';
                         if (plateGroup) plateGroup.classList.add('d-none');
-                        if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
+                        // Non nascondere doublePlateGroup qui, è già dentro plateGroup
                         if (doubleCheckbox) doubleCheckbox.checked = false;
                     }
                 });
