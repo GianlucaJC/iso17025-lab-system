@@ -1,10 +1,14 @@
+@php
+    $is_edit = isset($test_a_result);
+    $is_readonly = $is_readonly ?? false;
+@endphp
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
-    <title>Esecuzione Test A - Controllo pH</title>
+    <title>{{ $is_readonly ? 'Visualizza' : ($is_edit ? 'Modifica' : 'Esecuzione') }} Test A - Controllo pH</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -92,12 +96,21 @@
 
     <main class="container mt-4 flex-grow-1">
         <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h3><i class="fas fa-vial me-2"></i>Esecuzione Test A: Controllo del pH</h3>
+            <div class="card-header {{ $is_readonly ? 'bg-info text-dark' : ($is_edit ? 'bg-warning text-dark' : 'bg-primary text-white') }}">
+                <h3>
+                    @if($is_readonly)
+                        <i class="fas fa-eye me-2"></i>Visualizza Risultati Test A: Controllo del pH
+                    @else
+                        <i class="fas fa-vial me-2"></i>{{ $is_edit ? 'Modifica Risultati' : 'Esecuzione' }} Test A: Controllo del pH
+                    @endif
+                </h3>
             </div>
             <div class="card-body p-4">
-                <form method="POST" action="{{ route('test-a.store', $acceptance->id) }}">
+                <form method="POST" action="{{ $is_edit ? route('test-a.update', $test_a_result->id) : route('test-a.store', $acceptance->id) }}">
                     @csrf
+                    @if($is_edit)
+                        @method('PUT')
+                    @endif
 
                     <!-- SEZIONE DATI EREDITATI -->
                     <fieldset class="mb-4">
@@ -120,7 +133,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="test_date" class="form-label">Data Prova</label>
-                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ date('Y-m-d') }}" required>
+                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? $test_a_result->test_date : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
                             <div class="col-md-6">
                                 <label for="operator" class="form-label">Operatore</label>
@@ -128,11 +141,14 @@
                             </div>
                             <div class="col-12">
                                 <label for="ph_value_slider" class="form-label">Misura pH</label>
+                                @php
+                                    $ph_value = old('ph_value', $test_a_result->ph_value ?? '7.0');
+                                @endphp
                                 <div class="ph-slider-container p-3 border rounded">
                                     <i class="fas fa-tint text-muted"></i>
-                                    <input type="range" class="form-range" id="ph_value_slider" min="0" max="14" step="0.1" value="7.0">
-                                    <span id="ph_value_display" class="ph-value-display bg-primary-subtle border rounded px-2">7.0</span>
-                                    <input type="hidden" id="ph_value" name="ph_value" value="7.0">
+                                    <input type="range" class="form-range" id="ph_value_slider" min="0" max="14" step="0.1" value="{{ $ph_value }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <span id="ph_value_display" class="ph-value-display bg-primary-subtle border rounded px-2">{{ $ph_value }}</span>
+                                    <input type="hidden" id="ph_value" name="ph_value" value="{{ $ph_value }}">
                                 </div>
                             </div>
                         </div>
@@ -141,10 +157,13 @@
                     <!-- SEZIONE ESITO -->
                     <fieldset class="mb-4">
                         <legend class="h5">Esito</legend>
+                        @php
+                            $outcome = old('outcome', $test_a_result->outcome ?? 'idoneo');
+                        @endphp
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" checked>
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" @if($outcome === 'idoneo') checked @endif {{ $is_readonly ? 'disabled' : '' }}>
                                     <label class="form-check-label text-success" for="outcome_idoneo">
                                         <i class="fas fa-check-circle icon"></i>
                                         Idoneo
@@ -153,7 +172,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo">
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" @if($outcome === 'non_idoneo') checked @endif {{ $is_readonly ? 'disabled' : '' }}>
                                     <label class="form-check-label text-danger" for="outcome_non_idoneo">
                                         <i class="fas fa-times-circle icon"></i>
                                         Non Idoneo
@@ -165,7 +184,7 @@
                             <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
-                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC">
+                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC" value="{{ old('non_compliance_ref', $test_a_result->non_compliance_ref ?? '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
                         </div>
                     </fieldset>
@@ -187,11 +206,17 @@
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-times me-2"></i>Annulla
+                            @if($is_readonly)
+                                <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
+                            @else
+                                <i class="fas fa-times me-2"></i>Annulla
+                            @endif
                         </a>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-2"></i>Salva Risultati
-                        </button>
+                        @if(!$is_readonly)
+                            <button type="submit" class="btn {{ $is_edit ? 'btn-warning' : 'btn-primary' }} btn-lg">
+                                <i class="fas fa-save me-2"></i>{{ $is_edit ? 'Salva Modifiche' : 'Salva Risultati' }}
+                            </button>
+                        @endif
                     </div>
                 </form>
             </div>
@@ -238,4 +263,3 @@
     </script>
 </body>
 </html>
-

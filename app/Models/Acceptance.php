@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
 
 class Acceptance extends Model
@@ -41,5 +42,13 @@ class Acceptance extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the Test A result associated with the acceptance.
+     */
+    public function testAResult(): HasOne
+    {
+        return $this->hasOne(TestAResult::class);
     }
 }

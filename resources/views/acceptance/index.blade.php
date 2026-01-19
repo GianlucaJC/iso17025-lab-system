@@ -93,10 +93,34 @@
                                 <td>{{ $acceptance->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
                                     @if(in_array('test1', $acceptance->tests))
-                                        {{-- In futuro, qui si potrà verificare se il test è già stato completato --}}
-                                        <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test A: Controllo pH">
-                                            <i class="fas fa-vial"></i> Test A
-                                        </a>
+                                        {{-- Controlla se il risultato del test esiste tramite la relazione --}}
+                                        @if($acceptance->testAResult)
+                                            @php
+                                                $isOwner = $acceptance->testAResult->operator_id == $currentUser['id'];
+                                            @endphp
+                                            @if($acceptance->testAResult->validator_id)
+                                                {{-- Test completato e validato (sola lettura per tutti) --}}
+                                                <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test A (Validato)">
+                                                    <i class="fas fa-user-check"></i> Test A
+                                                </a>
+                                            @else
+                                                @if($isOwner)
+                                                    {{-- Test completato, non validato, modificabile dal proprietario --}}
+                                                    <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test A">
+                                                        <i class="fas fa-edit"></i> Test A
+                                                    </a>
+                                                @else
+                                                    {{-- Test completato, non validato, in sola lettura per gli altri --}}
+                                                    <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test A">
+                                                        <i class="fas fa-eye"></i> Test A
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        @else
+                                            <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test A: Controllo pH">
+                                                <i class="fas fa-vial"></i> Test A
+                                            </a>
+                                        @endif
                                     @endif
                                     {{-- Qui verranno aggiunti i link per gli altri test --}}
                                     {{-- @if(in_array('test2', $acceptance->tests)) <a href... >Test B</a> @endif --}}

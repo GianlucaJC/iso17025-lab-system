@@ -55,3 +55,11 @@ Route::get('/acceptance/{acceptance}/test-a/create', [TestAController::class, 'c
 Route::post('/acceptance/{acceptance}/test-a', [TestAController::class, 'store'])
     ->name('test-a.store')
     ->middleware('auth.api');
+
+Route::get('/test-a/{test_a_result}/edit', [TestAController::class, 'edit'])
+    ->name('test-a.edit')
+    ->middleware('auth.api');
+
+Route::put('/test-a/{test_a_result}', [TestAController::class, 'update'])
+    ->name('test-a.update')
+    ->middleware('auth.api');
