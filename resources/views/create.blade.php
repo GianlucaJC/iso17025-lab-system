@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
-    <title>Nuova Scheda di Accettazione Campioni</title>
+    <title>Nuova Accettazione</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom width for the main content area */
+        main.container {
+            max-width: 1340px; /* Default Bootstrap container-xl is 1140px, adding 200px */
+        }
+        /* Adjust for larger screens (xxl breakpoint and above) */
+        @media (min-width: 1400px) {
+            main.container {
+                max-width: 1520px; /* Default Bootstrap container-xxl is 1320px, adding 200px */
+            }
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -96,7 +108,7 @@
                             <label for="sampling_date" class="form-label">Data Campionamento</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date') }}" required>
+                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date', date('Y-m-d')) }}" required>
                                 <div class="invalid-feedback">Per favore, inserisci la data di campionamento.</div>
                             </div>
                         </div>
@@ -161,46 +173,76 @@
                     <h5>Identificazione Piastre</h5>
                     <div id="plates-section">
                         @php
-                            $plates = old('plates', array_fill(0, 30, null)); // Assicura che l'array abbia sempre 30 elementi
+                            $plates = old('plates', array_fill(0, 40, null));
                             $test_definitions = [
-                                'test1' => ['name' => 'Test A (Controllo del pH)', 'std_start' => 0, 'dbl_start' => 5],
-                                'test2' => ['name' => 'Test B (Produttività, Metodo Qualitativo)', 'std_start' => 10, 'dbl_start' => 15],
-                                'test3' => ['name' => 'Test C (Controllo della contaminazione microbica)', 'std_start' => 20, 'dbl_start' => 25],
+                                'test1' => [
+                                    'name' => 'Test A (Controllo del pH)',
+                                    'std_plates' => [
+                                        0 => 'ID Piastra',
+                                        1 => 'ID Piastra Controllo TSA',
+                                    ],
+                                    'dbl_plates' => [
+                                        2 => 'ID Piastra (Doppio)',
+                                        3 => 'ID Piastra Controllo TSA (Doppio)',
+                                    ],
+                                ],
+                                'test2' => [
+                                    'name' => 'Test B (Produttività, Metodo Qualitativo)',
+                                    'std_plates' => array_fill_keys(range(4, 15), 'ID Piastra'), // 12 plates
+                                    'dbl_plates' => array_fill_keys(range(16, 27), 'ID Piastra (Doppio)'), // 12 plates
+                                ],
+                                'test3' => [
+                                    'name' => 'Test C (Controllo della contaminazione microbica)',
+                                    'std_plates' => [
+                                        28 => 'ID Piastra 1',
+                                        29 => 'ID Piastra 2',
+                                        30 => 'ID Piastra 3',
+                                        31 => 'ID Piastra Controllo Bianco',
+                                    ],
+                                    'dbl_plates' => [
+                                        32 => 'ID Piastra 1 (Doppio)',
+                                        33 => 'ID Piastra 2 (Doppio)',
+                                        34 => 'ID Piastra 3 (Doppio)',
+                                        35 => 'ID Piastra Controllo Bianco (Doppio)',
+                                    ],
+                                ],
                             ];
                         @endphp
                         @foreach ($test_definitions as $test_id => $def)
                             <fieldset id="plates-group-{{ $test_id }}" class="mb-4 p-3 border rounded d-none" data-test-id="{{ $test_id }}">
                                 <legend class="h6 w-auto px-2 bg-primary-subtle text-primary-emphasis rounded">{{ $def['name'] }}</legend>
-                                
+
                                 {{-- Standard Plates --}}
                                 <div class="row standard-plates-row">
-                                    @for ($i = $def['std_start']; $i < $def['std_start'] + 5; $i++)
+                                    @php $plate_counter = 1; @endphp
+                                    @foreach($def['std_plates'] as $i => $label)
                                         <div class="col-md-4 mb-2">
-                                            <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
+                                            <label for="plate_{{ $i }}" class="form-label">{{ $test_id === 'test2' ? $label . ' ' . $plate_counter++ : $label }}</label>
                                             <div class="input-group has-validation">
                                                 <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i + 1 }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                                <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                                                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
                                             </div>
                                         </div>
-                                    @endfor
+                                    @endforeach
                                 </div>
 
                                 {{-- Double Plates --}}
-                                <div id="double-plates-group-{{ $test_id }}" class="d-none double-plates-container">
+                                <div id="double-plates-group-{{ $test_id }}" class="d-none double-plates-container" data-test-id="{{ $test_id }}">
                                     <hr class="my-3">
                                     <h6 class="text-muted mb-3">Piastre per test in doppio</h6>
                                     <div class="row">
-                                        @for ($i = $def['dbl_start']; $i < $def['dbl_start'] + 5; $i++)
+                                        @php $plate_counter = 1; @endphp
+                                        @foreach($def['dbl_plates'] as $i => $label)
                                             <div class="col-md-4 mb-2">
-                                                <label for="plate_{{ $i + 1 }}" class="form-label">ID Piastra {{ $i + 1 }}</label>
+                                                <label for="plate_{{ $i }}" class="form-label">{{ $test_id === 'test2' ? 'ID Piastra ' . $plate_counter++ . ' (Doppio)' : $label }}</label>
                                                 <div class="input-group has-validation">
                                                     <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i + 1 }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                                    <div class="invalid-feedback">ID Piastra {{ $i + 1 }} è obbligatorio.</div>
+                                                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                    <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
                                                 </div>
                                             </div>
-                                        @endfor
+                                        @endforeach
                                     </div>
                                 </div>
                             </fieldset>
@@ -214,7 +256,7 @@
         </div>
     </main>
 
-    {{-- Script per la validazione --}}
+    {{-- Script per attivare la validazione Bootstrap e la logica dei checkbox --}}
     <script>
         (function () {
           'use strict'
@@ -311,7 +353,6 @@
                     } else {
                         if (doubleContainer) doubleContainer.style.display = 'none';
                         if (plateGroup) plateGroup.classList.add('d-none');
-                        // Non nascondere doublePlateGroup qui, è già dentro plateGroup
                         if (doubleCheckbox) doubleCheckbox.checked = false;
                     }
                 });
@@ -324,7 +365,7 @@
                 checkbox.addEventListener('change', updatePlateVisibility);
             });
 
-            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati (in caso di errori di validazione).
+            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati.
             updatePlateVisibility();
         });
     </script>

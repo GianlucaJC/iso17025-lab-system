@@ -7,6 +7,18 @@
     <title>Elenco Accettazioni</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom width for the main content area */
+        main.container {
+            max-width: 1340px; /* Default Bootstrap container-xl is 1140px, adding 200px */
+        }
+        /* Adjust for larger screens (xxl breakpoint and above) */
+        @media (min-width: 1400px) {
+            main.container {
+                max-width: 1520px; /* Default Bootstrap container-xxl is 1320px, adding 200px */
+            }
+        }
+    </style>
     {{-- Dipendenze per DataTables --}}
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 </head>
@@ -137,9 +149,40 @@
                                             @endif
                                         @endif
                                     @endif
-                                    {{-- Qui verranno aggiunti i link per gli altri test --}}
-                                    {{-- @if(in_array('test2', $acceptance->tests)) <a href... >Test B</a> @endif --}}
-                                    {{-- @if(in_array('test3', $acceptance->tests)) <a href... >Test C</a> @endif --}}
+                                    @if(in_array('test2', $acceptance->tests))
+                                        {{-- Controlla se il risultato del test esiste tramite la relazione --}}
+                                        @if($acceptance->testBResult)
+                                            @php
+                                                $isOwner = $acceptance->testBResult->operator_id == $currentUser['id'];
+                                            @endphp
+                                            @if($acceptance->testBResult->validator_id)
+                                                {{-- Test completato e validato (sola lettura per tutti) --}}
+                                                <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test B (Validato)">
+                                                    <i class="fas fa-user-check"></i> Test B
+                                                </a>
+                                            @else
+                                                @if($isOwner)
+                                                    {{-- Test completato, non validato, modificabile dal proprietario --}}
+                                                    <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test B">
+                                                        <i class="fas fa-edit"></i> Test B
+                                                    </a>
+                                                @else
+                                                    {{-- Test completato, non validato, in sola lettura per gli altri --}}
+                                                    <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test B">
+                                                        <i class="fas fa-eye"></i> Test B
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        @else
+                                            <a href="{{ route('test-b.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test B: Produttività">
+                                                <i class="fas fa-vial"></i> Test B
+                                            </a>
+                                        @endif
+                                        {{-- Pulsante Cronologia per Test B --}}
+                                        @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testBResult)
+                                            <a href="{{ route('history.show', ['modelNameShort' => 'test-b-result', 'id' => $acceptance->testBResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test B"><i class="fas fa-history"></i></a>
+                                        @endif
+                                    @endif
                                 </td>
                                 <td class="text-nowrap">
                                     @if($currentUser && ($acceptance->user_id == $currentUser['id']))

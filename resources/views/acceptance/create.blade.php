@@ -13,6 +13,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Custom width for the main content area */
+        main.container {
+            max-width: 1340px; /* Default Bootstrap container-xl is 1140px, adding 200px */
+        }
+        /* Adjust for larger screens (xxl breakpoint and above) */
+        @media (min-width: 1400px) {
+            main.container {
+                max-width: 1520px; /* Default Bootstrap container-xxl is 1320px, adding 200px */
+            }
+        }
+    </style>
+    <style>
         .ph-slider-container {
             display: flex;
             align-items: center;

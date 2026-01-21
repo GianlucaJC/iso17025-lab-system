@@ -47,6 +47,7 @@ Route::put('/acceptance/{acceptance}', [AcceptanceController::class, 'update'])
 
 // Rotte per i test specifici
 use App\Http\Controllers\TestAController;
+use App\Http\Controllers\TestBController;
 
 Route::get('/acceptance/{acceptance}/test-a/create', [TestAController::class, 'create'])
     ->name('test-a.create')
@@ -62,6 +63,22 @@ Route::get('/test-a/{test_a_result}/edit', [TestAController::class, 'edit'])
 
 Route::put('/test-a/{test_a_result}', [TestAController::class, 'update'])
     ->name('test-a.update')
+    ->middleware('auth.api');
+
+Route::get('/acceptance/{acceptance}/test-b/create', [TestBController::class, 'create'])
+    ->name('test-b.create')
+    ->middleware('auth.api');
+
+Route::post('/acceptance/{acceptance}/test-b', [TestBController::class, 'store'])
+    ->name('test-b.store')
+    ->middleware('auth.api');
+
+Route::get('/test-b/{test_b_result}/edit', [TestBController::class, 'edit'])
+    ->name('test-b.edit')
+    ->middleware('auth.api');
+
+Route::put('/test-b/{test_b_result}', [TestBController::class, 'update'])
+    ->name('test-b.update')
     ->middleware('auth.api');
 
 // Rotta per la cronologia delle modifiche
