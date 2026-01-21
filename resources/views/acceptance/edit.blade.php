@@ -199,26 +199,26 @@
                                     'name' => 'Test B (Produttività, Metodo Qualitativo)',
                                     'std_plates' => [
                                         '35°C' => [
-                                            'Inizio' => [4, 5],
-                                            'Metà' => [6, 7],
-                                            'Fine' => [8, 9],
+                                            '1° Gruppo Piastre' => [4, 5],
+                                            '2° Gruppo Piastre' => [6, 7],
+                                            '3° Gruppo Piastre' => [8, 9],
                                         ],
                                         '22°C' => [
-                                            'Inizio' => [10, 11],
-                                            'Metà' => [12, 13],
-                                            'Fine' => [14, 15],
+                                            '1° Gruppo Piastre' => [10, 11],
+                                            '2° Gruppo Piastre' => [12, 13],
+                                            '3° Gruppo Piastre' => [14, 15],
                                         ],
                                     ],
                                     'dbl_plates' => [
                                         '35°C' => [
-                                            'Inizio' => [16, 17],
-                                            'Metà' => [18, 19],
-                                            'Fine' => [20, 21],
+                                            '1° Gruppo Piastre' => [16, 17],
+                                            '2° Gruppo Piastre' => [18, 19],
+                                            '3° Gruppo Piastre' => [20, 21],
                                         ],
                                         '22°C' => [
-                                            'Inizio' => [22, 23],
-                                            'Metà' => [24, 25],
-                                            'Fine' => [26, 27],
+                                            '1° Gruppo Piastre' => [22, 23],
+                                            '2° Gruppo Piastre' => [24, 25],
+                                            '3° Gruppo Piastre' => [26, 27],
                                         ],
                                     ],
                                 ],
