@@ -182,7 +182,7 @@
                     <h5>Identificazione Piastre</h5>
                     <div id="plates-section">
                         @php
-                            $plates = old('plates', $acceptance->plates ?? array_fill(0, 40, null)); // Aumentato a 40 per la nuova logica
+                            $plates = old('plates', $acceptance->plates ?? array_fill(0, 40, null));
                             $test_definitions = [
                                 'test1' => [
                                     'name' => 'Test A (Controllo del pH)',
@@ -197,8 +197,30 @@
                                 ],
                                 'test2' => [
                                     'name' => 'Test B (Produttività, Metodo Qualitativo)',
-                                    'std_plates' => array_fill_keys(range(4, 15), 'ID Piastra'), // 12 plates
-                                    'dbl_plates' => array_fill_keys(range(16, 27), 'ID Piastra (Doppio)'), // 12 plates
+                                    'std_plates' => [
+                                        '35°C' => [
+                                            'Inizio' => [4, 5],
+                                            'Metà' => [6, 7],
+                                            'Fine' => [8, 9],
+                                        ],
+                                        '22°C' => [
+                                            'Inizio' => [10, 11],
+                                            'Metà' => [12, 13],
+                                            'Fine' => [14, 15],
+                                        ],
+                                    ],
+                                    'dbl_plates' => [
+                                        '35°C' => [
+                                            'Inizio' => [16, 17],
+                                            'Metà' => [18, 19],
+                                            'Fine' => [20, 21],
+                                        ],
+                                        '22°C' => [
+                                            'Inizio' => [22, 23],
+                                            'Metà' => [24, 25],
+                                            'Fine' => [26, 27],
+                                        ],
+                                    ],
                                 ],
                                 'test3' => [
                                     'name' => 'Test C (Controllo della contaminazione microbica)',
@@ -223,28 +245,34 @@
 
                                 {{-- Standard Plates --}}
                                 <div class="row standard-plates-row">
-                                    @php $plate_counter = 1; @endphp
-                                    @foreach($def['std_plates'] as $i => $label)
-                                        <div class="col-md-4 mb-2">
-                                            <label for="plate_{{ $i }}" class="form-label">{{ $test_id === 'test2' ? $label . ' ' . $plate_counter++ : $label }}</label>
-                                            <div class="input-group has-validation">
-                                                <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
-                                                <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                    @if($test_id === 'test2')
+                                        {{-- Special layout for Test B --}}
+                                        @foreach($def['std_plates'] as $temp => $positions)
+                                            <div class="col-md-6 mb-3">
+                                                <div class="p-2 border rounded h-100">
+                                                    <h6 class="text-muted">{{ $temp }}</h6>
+                                                    @foreach($positions as $position => $indices)
+                                                        <div class="row mb-2 align-items-center">
+                                                            <div class="col-sm-3"><label class="form-label mb-0">{{ $position }}</label></div>
+                                                            @foreach($indices as $k => $i)
+                                                                <div class="col-sm-4">
+                                                                    <div class="input-group has-validation">
+                                                                        <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="P{{$k+1}}" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
+                                                                        <div class="invalid-feedback">ID Obbligatorio.</div>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-
-                                {{-- Double Plates --}}
-                                <div id="double-plates-group-{{ $test_id }}" class="d-none double-plates-container" data-test-id="{{ $test_id }}">
-                                    <hr class="my-3">
-                                    <h6 class="text-muted mb-3">Piastre per test in doppio</h6>
-                                    <div class="row">
-                                        @php $plate_counter = 1; @endphp
-                                        @foreach($def['dbl_plates'] as $i => $label)
+                                        @endforeach
+                                    @else
+                                        {{-- Generic layout for Test A and C --}}
+                                        @foreach($def['std_plates'] as $i => $label)
                                             <div class="col-md-4 mb-2">
-                                                <label for="plate_{{ $i }}" class="form-label">{{ $test_id === 'test2' ? 'ID Piastra ' . $plate_counter++ . ' (Doppio)' : $label }}</label>
+                                                <label for="plate_{{ $i }}" class="form-label">{{ $label }}</label>
                                                 <div class="input-group has-validation">
                                                     <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
                                                     <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
@@ -252,6 +280,50 @@
                                                 </div>
                                             </div>
                                         @endforeach
+                                    @endif
+                                </div>
+
+                                {{-- Double Plates --}}
+                                <div id="double-plates-group-{{ $test_id }}" class="d-none double-plates-container" data-test-id="{{ $test_id }}">
+                                    <hr class="my-3">
+                                    <h6 class="text-muted mb-3">Piastre per test in doppio</h6>
+                                    <div class="row">
+                                        @if($test_id === 'test2')
+                                            {{-- Special layout for Test B Double --}}
+                                            @foreach($def['dbl_plates'] as $temp => $positions)
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="p-2 border rounded h-100">
+                                                        <h6 class="text-muted">{{ $temp }}</h6>
+                                                        @foreach($positions as $position => $indices)
+                                                            <div class="row mb-2 align-items-center">
+                                                                <div class="col-sm-3"><label class="form-label mb-0">{{ $position }}</label></div>
+                                                                @foreach($indices as $k => $i)
+                                                                    <div class="col-sm-4">
+                                                                        <div class="input-group has-validation">
+                                                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="P{{$k+1}}" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
+                                                                            <div class="invalid-feedback">ID Obbligatorio.</div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            {{-- Generic layout for Test A and C Double --}}
+                                            @foreach($def['dbl_plates'] as $i => $label)
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="plate_{{ $i }}" class="form-label">{{ $label }}</label>
+                                                    <div class="input-group has-validation">
+                                                        <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
+                                                        <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @endif
                                     </div>
                                 </div>
                             </fieldset>
