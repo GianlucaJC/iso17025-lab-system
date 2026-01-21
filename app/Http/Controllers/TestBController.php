@@ -26,10 +26,43 @@ class TestBController extends Controller
         $available_plates_run1 = array_slice($plate_ids, 4, 12); // Test B standard: 12 plates from index 4
         $available_plates_run2 = $is_double_test_b ? array_slice($plate_ids, 16, 12) : []; // Test B double: 12 plates from index 16
 
-        // Quando si crea, non c'è un test_b_result esistente, quindi passiamo array vuoti per le piastre selezionate
-        $selected_plates_run1 = [];
-        $selected_plates_run2 = [];
-
+        // Quando si crea, pre-popoliamo i valori di default in base all'ordine di accettazione per 35C e 22C
+        $selected_plates_run1 = [
+            '35' => [
+                'start_plate1' => $available_plates_run1[0] ?? null,
+                'start_plate2' => $available_plates_run1[1] ?? null,
+                'mid_plate1'   => $available_plates_run1[2] ?? null,
+                'mid_plate2'   => $available_plates_run1[3] ?? null,
+                'end_plate1'   => $available_plates_run1[4] ?? null,
+                'end_plate2'   => $available_plates_run1[5] ?? null,
+            ],
+            '22' => [
+                'start_plate1' => $available_plates_run1[6] ?? null,
+                'start_plate2' => $available_plates_run1[7] ?? null,
+                'mid_plate1'   => $available_plates_run1[8] ?? null,
+                'mid_plate2'   => $available_plates_run1[9] ?? null,
+                'end_plate1'   => $available_plates_run1[10] ?? null,
+                'end_plate2'   => $available_plates_run1[11] ?? null,
+            ],
+        ];
+        $selected_plates_run2 = [
+            '35' => [
+                'start_plate1' => $available_plates_run2[0] ?? null,
+                'start_plate2' => $available_plates_run2[1] ?? null,
+                'mid_plate1'   => $available_plates_run2[2] ?? null,
+                'mid_plate2'   => $available_plates_run2[3] ?? null,
+                'end_plate1'   => $available_plates_run2[4] ?? null,
+                'end_plate2'   => $available_plates_run2[5] ?? null,
+            ],
+            '22' => [
+                'start_plate1' => $available_plates_run2[6] ?? null,
+                'start_plate2' => $available_plates_run2[7] ?? null,
+                'mid_plate1'   => $available_plates_run2[8] ?? null,
+                'mid_plate2'   => $available_plates_run2[9] ?? null,
+                'end_plate1'   => $available_plates_run2[10] ?? null,
+                'end_plate2'   => $available_plates_run2[11] ?? null,
+            ],
+        ];
         $test_b_plates = []; // Questa variabile non è più usata direttamente per la visualizzazione
 
         return view('tests.test_b.create', [
@@ -83,17 +116,42 @@ class TestBController extends Controller
         $available_plates_run2 = $is_double_test_b ? array_slice($plate_ids, 16, 12) : []; // Test B double: 12 plates from index 16
 
         // Populate selected plates for the dropdowns when editing
-        $selected_plates_run1 = [
-            'start' => $test_b_result->plate_id_start_run1,
-            'mid'   => $test_b_result->plate_id_mid_run1,
-            'end'   => $test_b_result->plate_id_end_run1,
+        $selected_plates_run1 = [ // Nested by temperature
+            '35' => [
+                'start_plate1' => $test_b_result->plate_id_start_plate1_35_run1,
+                'start_plate2' => $test_b_result->plate_id_start_plate2_35_run1,
+                'mid_plate1'   => $test_b_result->plate_id_mid_plate1_35_run1,
+                'mid_plate2'   => $test_b_result->plate_id_mid_plate2_35_run1,
+                'end_plate1'   => $test_b_result->plate_id_end_plate1_35_run1,
+                'end_plate2'   => $test_b_result->plate_id_end_plate2_35_run1,
+            ],
+            '22' => [
+                'start_plate1' => $test_b_result->plate_id_start_plate1_22_run1,
+                'start_plate2' => $test_b_result->plate_id_start_plate2_22_run1,
+                'mid_plate1'   => $test_b_result->plate_id_mid_plate1_22_run1,
+                'mid_plate2'   => $test_b_result->plate_id_mid_plate2_22_run1,
+                'end_plate1'   => $test_b_result->plate_id_end_plate1_22_run1,
+                'end_plate2'   => $test_b_result->plate_id_end_plate2_22_run1,
+            ],
         ];
-        $selected_plates_run2 = [
-            'start' => $test_b_result->plate_id_start_run2,
-            'mid'   => $test_b_result->plate_id_mid_run2,
-            'end'   => $test_b_result->plate_id_end_run2,
+        $selected_plates_run2 = [ // Nested by temperature
+            '35' => [
+                'start_plate1' => $test_b_result->plate_id_start_plate1_35_run2,
+                'start_plate2' => $test_b_result->plate_id_start_plate2_35_run2,
+                'mid_plate1'   => $test_b_result->plate_id_mid_plate1_35_run2,
+                'mid_plate2'   => $test_b_result->plate_id_mid_plate2_35_run2,
+                'end_plate1'   => $test_b_result->plate_id_end_plate1_35_run2,
+                'end_plate2'   => $test_b_result->plate_id_end_plate2_35_run2,
+            ],
+            '22' => [
+                'start_plate1' => $test_b_result->plate_id_start_plate1_22_run2,
+                'start_plate2' => $test_b_result->plate_id_start_plate2_22_run2,
+                'mid_plate1'   => $test_b_result->plate_id_mid_plate1_22_run2,
+                'mid_plate2'   => $test_b_result->plate_id_mid_plate2_22_run2,
+                'end_plate1'   => $test_b_result->plate_id_end_plate1_22_run2,
+                'end_plate2'   => $test_b_result->plate_id_end_plate2_22_run2,
+            ],
         ];
-
         $test_b_plates = []; // This variable is no longer directly used for display in the same way
 
         return view('tests.test_b.create', [
@@ -134,6 +192,7 @@ class TestBController extends Controller
      */
     private function validateRequest(Request $request, bool $isUpdate = false): array
     {
+        // Regole di validazione
         $growthRule = ['nullable', Rule::in(['rilevata', 'non_rilevata'])];
         $plateIdRule = 'required|numeric';
 
@@ -152,61 +211,203 @@ class TestBController extends Controller
             'test_start_time' => 'required|date_format:H:i',
             'test_end_date' => 'required|date|after_or_equal:test_start_date',
             'test_end_time' => 'required|date_format:H:i',
-            'plate_id_start_run1' => $plateIdRule,
-            'plate_id_mid_run1' => $plateIdRule,
-            'plate_id_end_run1' => $plateIdRule,
+            'plate_id_start_plate1_35_run1' => $plateIdRule,
+            'plate_id_start_plate2_35_run1' => $plateIdRule,
+            'plate_id_mid_plate1_35_run1' => $plateIdRule,
+            'plate_id_mid_plate2_35_run1' => $plateIdRule,
+            'plate_id_end_plate1_35_run1' => $plateIdRule,
+            'plate_id_end_plate2_35_run1' => $plateIdRule,
             'incubator_35_run1' => 'nullable|string|max:255',
             'incubation_start_date_35_run1' => 'nullable|date',
             'incubation_start_time_35_run1' => 'nullable|date_format:H:i',
             'incubation_end_date_35_run1' => 'nullable|date|after_or_equal:incubation_start_date_35_run1',
             'incubation_end_time_35_run1' => 'nullable|date_format:H:i',
             'temperature_35_run1' => 'nullable|numeric|min:0|max:50',
-            'growth_result_35_start_run1' => $growthRule,
-            'growth_result_35_mid_run1' => $growthRule,
-            'growth_result_35_end_run1' => $growthRule,
-            'incubator_22_run1' => 'nullable|string|max:255',
-            'incubation_start_date_22_run1' => 'nullable|date',
-            'incubation_start_time_22_run1' => 'nullable|date_format:H:i',
-            'incubation_end_date_22_run1' => 'nullable|date|after_or_equal:incubation_start_date_22_run1',
-            'incubation_end_time_22_run1' => 'nullable|date_format:H:i',
-            'temperature_22_run1' => 'nullable|numeric|min:0|max:50',
-            'growth_result_22_start_run1' => $growthRule,
-            'growth_result_22_mid_run1' => $growthRule,
-            'growth_result_22_end_run1' => $growthRule,
+            'growth_result_35_start_plate1_run1' => $growthRule, // Growth rules for 35C
+            'growth_result_35_start_plate2_run1' => $growthRule,
+            'growth_result_35_mid_plate1_run1' => $growthRule,
+            'growth_result_35_mid_plate2_run1' => $growthRule,
+            'growth_result_35_end_plate1_run1' => $growthRule,
+            'growth_result_35_end_plate2_run1' => $growthRule,
+            'plate_id_start_plate1_22_run1' => $plateIdRule, // Plates for 22C
+            'plate_id_start_plate2_22_run1' => $plateIdRule,
+            'plate_id_mid_plate1_22_run1' => $plateIdRule,
+            'plate_id_mid_plate2_22_run1' => $plateIdRule,
+            'plate_id_end_plate1_22_run1' => $plateIdRule,
+            'plate_id_end_plate2_22_run1' => $plateIdRule, 
+            'incubator_22_run1' => 'required|string|max:255', // Dati Incubazione
+            'incubation_start_date_22_run1' => 'required|date', // Dati Incubazione
+            'incubation_start_time_22_run1' => 'required|date_format:H:i', // Dati Incubazione
+            'incubation_end_date_22_run1' => 'required|date|after_or_equal:incubation_start_date_22_run1', // Dati Incubazione
+            'incubation_end_time_22_run1' => 'required|date_format:H:i', // Dati Incubazione
+            'temperature_22_run1' => 'required|numeric|min:0|max:50', // Dati Incubazione
+            'growth_result_22_start_plate1_run1' => $growthRule, // Growth rules for 22C
+            'growth_result_22_start_plate2_run1' => $growthRule,
+            'growth_result_22_mid_plate1_run1' => $growthRule,
+            'growth_result_22_mid_plate2_run1' => $growthRule,
+            'growth_result_22_end_plate1_run1' => $growthRule,
+            'growth_result_22_end_plate2_run1' => $growthRule,
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
             'notes' => 'nullable|string|max:2000',
         ];
 
+
         if ($is_double_test_b) {
-            $rules['plate_id_start_run2'] = $plateIdRule;
-            $rules['plate_id_mid_run2'] = $plateIdRule;
-            $rules['plate_id_end_run2'] = $plateIdRule;
-            $rules['incubator_35_run2'] = 'nullable|string|max:255';
-            $rules['incubation_start_date_35_run2'] = 'nullable|date';
-            $rules['incubation_start_time_35_run2'] = 'nullable|date_format:H:i';
-            $rules['incubation_end_date_35_run2'] = 'nullable|date|after_or_equal:incubation_start_date_35_run2';
-            $rules['incubation_end_time_35_run2'] = 'nullable|date_format:H:i';
-            $rules['temperature_35_run2'] = 'nullable|numeric|min:0|max:50';
-            $rules['growth_result_35_start_run2'] = $growthRule;
-            $rules['growth_result_35_mid_run2'] = $growthRule;
-            $rules['growth_result_35_end_run2'] = $growthRule;
-            $rules['incubator_22_run2'] = 'nullable|string|max:255';
-            $rules['incubation_start_date_22_run2'] = 'nullable|date';
-            $rules['incubation_start_time_22_run2'] = 'nullable|date_format:H:i';
-            $rules['incubation_end_date_22_run2'] = 'nullable|date|after_or_equal:incubation_start_date_22_run2';
-            $rules['incubation_end_time_22_run2'] = 'nullable|date_format:H:i';
-            $rules['temperature_22_run2'] = 'nullable|numeric|min:0|max:50';
-            $rules['growth_result_22_start_run2'] = $growthRule;
-            $rules['growth_result_22_mid_run2'] = $growthRule;
-            $rules['growth_result_22_end_run2'] = $growthRule;
+            $rules['plate_id_start_plate1_35_run2'] = $plateIdRule; // Plates for 35C
+            $rules['plate_id_start_plate1_35_run2'] = $plateIdRule;
+            $rules['plate_id_start_plate2_35_run2'] = $plateIdRule;
+            $rules['plate_id_mid_plate1_35_run2'] = $plateIdRule;
+            $rules['plate_id_mid_plate2_35_run2'] = $plateIdRule;
+            $rules['plate_id_end_plate1_35_run2'] = $plateIdRule;
+            $rules['plate_id_end_plate2_35_run2'] = $plateIdRule;
+            $rules['incubator_35_run2'] = 'required|string|max:255';
+            $rules['incubation_start_date_35_run2'] = 'required|date';
+            $rules['incubation_start_time_35_run2'] = 'required|date_format:H:i';
+            $rules['incubation_end_date_35_run2'] = 'required|date|after_or_equal:incubation_start_date_35_run2';
+            $rules['incubation_end_time_35_run2'] = 'required|date_format:H:i';
+            $rules['temperature_35_run2'] = 'required|numeric|min:0|max:50';
+            $rules['growth_result_35_start_plate1_run2'] = $growthRule;
+            $rules['growth_result_35_start_plate2_run2'] = $growthRule;
+            $rules['growth_result_35_mid_plate1_run2'] = $growthRule;
+            $rules['growth_result_35_mid_plate2_run2'] = $growthRule;
+            $rules['growth_result_35_end_plate1_run2'] = $growthRule;
+            $rules['growth_result_35_end_plate2_run2'] = $growthRule;
+
+            $rules['plate_id_start_plate1_22_run2'] = $plateIdRule;
+            $rules['plate_id_start_plate2_22_run2'] = $plateIdRule;
+            $rules['plate_id_mid_plate1_22_run2'] = $plateIdRule;
+            $rules['plate_id_mid_plate2_22_run2'] = $plateIdRule;
+            $rules['plate_id_end_plate1_22_run2'] = $plateIdRule;
+            $rules['plate_id_end_plate2_22_run2'] = $plateIdRule;
+            $rules['incubator_22_run2'] = 'required|string|max:255';
+            $rules['incubation_start_date_22_run2'] = 'required|date';
+            $rules['incubation_start_time_22_run2'] = 'required|date_format:H:i';
+            $rules['incubation_end_date_22_run2'] = 'required|date|after_or_equal:incubation_start_date_22_run2';
+            $rules['incubation_end_time_22_run2'] = 'required|date_format:H:i';
+            $rules['temperature_22_run2'] = 'required|numeric|min:0|max:50';
+            $rules['growth_result_22_start_plate1_run2'] = $growthRule;
+            $rules['growth_result_22_start_plate2_run2'] = $growthRule;
+            $rules['growth_result_22_mid_plate1_run2'] = $growthRule;
+            $rules['growth_result_22_mid_plate2_run2'] = $growthRule;
+            $rules['growth_result_22_end_plate1_run2'] = $growthRule;
+            $rules['growth_result_22_end_plate2_run2'] = $growthRule;
         }
 
         if ($isUpdate) {
             $rules['modification_reason'] = 'required|string|min:10|max:500';
         }
 
-        return $request->validate($rules);
+        // Messaggi di errore personalizzati in italiano
+        $messages = [
+            'required' => 'Il campo :attribute è obbligatorio.',
+            'string' => 'Il campo :attribute deve essere una stringa.',
+            'max' => 'Il campo :attribute non può superare i :max caratteri.',
+            'date' => 'Il campo :attribute deve essere una data valida.',
+            'date_format' => 'Il campo :attribute deve essere nel formato HH:MM.',
+            'after_or_equal' => 'Il campo :attribute deve essere una data successiva o uguale a :date.',
+            'numeric' => 'Il campo :attribute deve essere un numero.',
+            'min' => 'Il campo :attribute deve essere almeno :min.',
+            'in' => 'Il valore selezionato per :attribute non è valido.',
+            'required_if' => 'Il campo :attribute è obbligatorio quando :other è :value.',
+            'modification_reason.min' => 'La motivazione della modifica deve contenere almeno :min caratteri.',
+
+            // Messaggi specifici per i campi
+            'test_start_date.required' => 'La data di inizio prova è obbligatoria.',
+            'test_start_time.required' => 'L\'ora di inizio prova è obbligatoria.',
+            'test_end_date.required' => 'La data di fine prova è obbligatoria.',
+            'test_end_date.after_or_equal' => 'La data di fine prova deve essere successiva o uguale alla data di inizio prova.',
+            'test_end_time.required' => 'L\'ora di fine prova è obbligatoria.',
+
+            'plate_id_start_plate1_35_run1.required' => 'L\'ID della piastra di inizio (P1, 35°C, Run 1) è obbligatorio.',
+            'plate_id_start_plate2_35_run1.required' => 'L\'ID della piastra di inizio (P2, 35°C, Run 1) è obbligatorio.',
+            'plate_id_mid_plate1_35_run1.required' => 'L\'ID della piastra di metà (P1, 35°C, Run 1) è obbligatorio.',
+            'plate_id_mid_plate2_35_run1.required' => 'L\'ID della piastra di metà (P2, 35°C, Run 1) è obbligatorio.',
+            'plate_id_end_plate1_35_run1.required' => 'L\'ID della piastra di fine (P1, 35°C, Run 1) è obbligatorio.',
+            'plate_id_end_plate2_35_run1.required' => 'L\'ID della piastra di fine (P2, 35°C, Run 1) è obbligatorio.',
+            'incubator_35_run1.required' => 'L\'incubatore (35°C, Run 1) è obbligatorio.',
+            'incubation_start_date_35_run1.required' => 'La data di inizio incubazione (35°C, Run 1) è obbligatoria.',
+            'incubation_start_time_35_run1.required' => 'L\'ora di inizio incubazione (35°C, Run 1) è obbligatoria.',
+            'incubation_end_date_35_run1.required' => 'La data di fine incubazione (35°C, Run 1) è obbligatoria.',
+            'incubation_end_date_35_run1.after_or_equal' => 'La data di fine incubazione (35°C, Run 1) deve essere successiva o uguale alla data di inizio.',
+            'incubation_end_time_35_run1.required' => 'L\'ora di fine incubazione (35°C, Run 1) è obbligatoria.',
+            'temperature_35_run1.required' => 'La temperatura (35°C, Run 1) è obbligatoria.',
+            'growth_result_35_start_plate1_run1.required' => 'Il risultato di crescita (Inizio, P1, 35°C, Run 1) è obbligatorio.',
+            'growth_result_35_start_plate2_run1.required' => 'Il risultato di crescita (Inizio, P2, 35°C, Run 1) è obbligatorio.',
+            'growth_result_35_mid_plate1_run1.required' => 'Il risultato di crescita (Metà, P1, 35°C, Run 1) è obbligatorio.',
+            'growth_result_35_mid_plate2_run1.required' => 'Il risultato di crescita (Metà, P2, 35°C, Run 1) è obbligatorio.',
+            'growth_result_35_end_plate1_run1.required' => 'Il risultato di crescita (Fine, P1, 35°C, Run 1) è obbligatorio.',
+            'growth_result_35_end_plate2_run1.required' => 'Il risultato di crescita (Fine, P2, 35°C, Run 1) è obbligatorio.',
+
+            'plate_id_start_plate1_22_run1.required' => 'L\'ID della piastra di inizio (P1, 22°C, Run 1) è obbligatorio.',
+            'plate_id_start_plate2_22_run1.required' => 'L\'ID della piastra di inizio (P2, 22°C, Run 1) è obbligatorio.',
+            'plate_id_mid_plate1_22_run1.required' => 'L\'ID della piastra di metà (P1, 22°C, Run 1) è obbligatorio.',
+            'plate_id_mid_plate2_22_run1.required' => 'L\'ID della piastra di metà (P2, 22°C, Run 1) è obbligatorio.',
+            'plate_id_end_plate1_22_run1.required' => 'L\'ID della piastra di fine (P1, 22°C, Run 1) è obbligatorio.',
+            'plate_id_end_plate2_22_run1.required' => 'L\'ID della piastra di fine (P2, 22°C, Run 1) è obbligatorio.',
+            'incubator_22_run1.required' => 'L\'incubatore (22°C, Run 1) è obbligatorio.',
+            'incubation_start_date_22_run1.required' => 'La data di inizio incubazione (22°C, Run 1) è obbligatoria.',
+            'incubation_start_time_22_run1.required' => 'L\'ora di inizio incubazione (22°C, Run 1) è obbligatoria.',
+            'incubation_end_date_22_run1.required' => 'La data di fine incubazione (22°C, Run 1) è obbligatoria.',
+            'incubation_end_date_22_run1.after_or_equal' => 'La data di fine incubazione (22°C, Run 1) deve essere successiva o uguale alla data di inizio.',
+            'incubation_end_time_22_run1.required' => 'L\'ora di fine incubazione (22°C, Run 1) è obbligatoria.',
+            'temperature_22_run1.required' => 'La temperatura (22°C, Run 1) è obbligatoria.',
+            'growth_result_22_start_plate1_run1.required' => 'Il risultato di crescita (Inizio, P1, 22°C, Run 1) è obbligatorio.',
+            'growth_result_22_start_plate2_run1.required' => 'Il risultato di crescita (Inizio, P2, 22°C, Run 1) è obbligatorio.',
+            'growth_result_22_mid_plate1_run1.required' => 'Il risultato di crescita (Metà, P1, 22°C, Run 1) è obbligatorio.',
+            'growth_result_22_mid_plate2_run1.required' => 'Il risultato di crescita (Metà, P2, 22°C, Run 1) è obbligatorio.',
+            'growth_result_22_end_plate1_run1.required' => 'Il risultato di crescita (Fine, P1, 22°C, Run 1) è obbligatorio.',
+            'growth_result_22_end_plate2_run1.required' => 'Il risultato di crescita (Fine, P2, 22°C, Run 1) è obbligatorio.',
+
+            'outcome.required' => 'L\'esito del test è obbligatorio.',
+            'non_compliance_ref.required_if' => 'Il riferimento di non conformità è obbligatorio quando l\'esito è "Non Idoneo".',
+
+            // Messaggi per il Run 2 (se doppio test)
+            'plate_id_start_plate1_35_run2.required' => 'L\'ID della piastra di inizio (P1, 35°C, Run 2) è obbligatorio.',
+            'plate_id_start_plate2_35_run2.required' => 'L\'ID della piastra di inizio (P2, 35°C, Run 2) è obbligatorio.',
+            'plate_id_mid_plate1_35_run2.required' => 'L\'ID della piastra di metà (P1, 35°C, Run 2) è obbligatorio.',
+            'plate_id_mid_plate2_35_run2.required' => 'L\'ID della piastra di metà (P2, 35°C, Run 2) è obbligatorio.',
+            'plate_id_end_plate1_35_run2.required' => 'L\'ID della piastra di fine (P1, 35°C, Run 2) è obbligatorio.',
+            'plate_id_end_plate2_35_run2.required' => 'L\'ID della piastra di fine (P2, 35°C, Run 2) è obbligatorio.',
+            'incubator_35_run2.required' => 'L\'incubatore (35°C, Run 2) è obbligatorio.',
+            'incubation_start_date_35_run2.required' => 'La data di inizio incubazione (35°C, Run 2) è obbligatoria.',
+            'incubation_start_time_35_run2.required' => 'L\'ora di inizio incubazione (35°C, Run 2) è obbligatoria.',
+            'incubation_end_date_35_run2.required' => 'La data di fine incubazione (35°C, Run 2) è obbligatoria.',
+            'incubation_end_date_35_run2.after_or_equal' => 'La data di fine incubazione (35°C, Run 2) deve essere successiva o uguale alla data di inizio.',
+            'incubation_end_time_35_run2.required' => 'L\'ora di fine incubazione (35°C, Run 2) è obbligatoria.',
+            'temperature_35_run2.required' => 'La temperatura (35°C, Run 2) è obbligatoria.',
+            'growth_result_35_start_plate1_run2.required' => 'Il risultato di crescita (Inizio, P1, 35°C, Run 2) è obbligatorio.',
+            'growth_result_35_start_plate2_run2.required' => 'Il risultato di crescita (Inizio, P2, 35°C, Run 2) è obbligatorio.',
+            'growth_result_35_mid_plate1_run2.required' => 'Il risultato di crescita (Metà, P1, 35°C, Run 2) è obbligatorio.',
+            'growth_result_35_mid_plate2_run2.required' => 'Il risultato di crescita (Metà, P2, 35°C, Run 2) è obbligatorio.',
+            'growth_result_35_end_plate1_run2.required' => 'Il risultato di crescita (Fine, P1, 35°C, Run 2) è obbligatorio.',
+            'growth_result_35_end_plate2_run2.required' => 'Il risultato di crescita (Fine, P2, 35°C, Run 2) è obbligatorio.',
+
+            'plate_id_start_plate1_22_run2.required' => 'L\'ID della piastra di inizio (P1, 22°C, Run 2) è obbligatorio.',
+            'plate_id_start_plate2_22_run2.required' => 'L\'ID della piastra di inizio (P2, 22°C, Run 2) è obbligatorio.',
+            'plate_id_mid_plate1_22_run2.required' => 'L\'ID della piastra di metà (P1, 22°C, Run 2) è obbligatorio.',
+            'plate_id_mid_plate2_22_run2.required' => 'L\'ID della piastra di metà (P2, 22°C, Run 2) è obbligatorio.',
+            'plate_id_end_plate1_22_run2.required' => 'L\'ID della piastra di fine (P1, 22°C, Run 2) è obbligatorio.',
+            'plate_id_end_plate2_22_run2.required' => 'L\'ID della piastra di fine (P2, 22°C, Run 2) è obbligatorio.',
+            'incubator_22_run2.required' => 'L\'incubatore (22°C, Run 2) è obbligatorio.',
+            'incubation_start_date_22_run2.required' => 'La data di inizio incubazione (22°C, Run 2) è obbligatoria.',
+            'incubation_start_time_22_run2.required' => 'L\'ora di inizio incubazione (22°C, Run 2) è obbligatorio.',
+            'incubation_end_date_22_run2.required' => 'La data di fine incubazione (22°C, Run 2) è obbligatoria.',
+            'incubation_end_date_22_run2.after_or_equal' => 'La data di fine incubazione (22°C, Run 2) deve essere successiva o uguale alla data di inizio.',
+            'incubation_end_time_22_run2.required' => 'L\'ora di fine incubazione (22°C, Run 2) è obbligatoria.',
+            'temperature_22_run2.required' => 'La temperatura (22°C, Run 2) è obbligatoria.',
+            'growth_result_22_start_plate1_run2.required' => 'Il risultato di crescita (Inizio, P1, 22°C, Run 2) è obbligatorio.',
+            'growth_result_22_start_plate2_run2.required' => 'Il risultato di crescita (Inizio, P2, 22°C, Run 2) è obbligatorio.',
+            'growth_result_22_mid_plate1_run2.required' => 'Il risultato di crescita (Metà, P1, 22°C, Run 2) è obbligatorio.',
+            'growth_result_22_mid_plate2_run2.required' => 'Il risultato di crescita (Metà, P2, 22°C, Run 2) è obbligatorio.',
+            'growth_result_22_end_plate1_run2.required' => 'Il risultato di crescita (Fine, P1, 22°C, Run 2) è obbligatorio.',
+            'growth_result_22_end_plate2_run2.required' => 'Il risultato di crescita (Fine, P2, 22°C, Run 2) è obbligatorio.',
+
+            'modification_reason.required' => 'La motivazione della modifica è obbligatoria.',
+            'modification_reason.min' => 'La motivazione della modifica deve contenere almeno :min caratteri.',
+        ];
+
+        return $request->validate($rules, $messages);
     }
 
     /**
