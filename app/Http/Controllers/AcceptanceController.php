@@ -17,7 +17,13 @@ class AcceptanceController extends Controller
      */
     public function create()
     {
-        return view('acceptance.create');
+        $currentUser = Session::get('user');
+        // Gli amministratori (ruolo 1) non possono creare nuove accettazioni.
+        if (isset($currentUser['user17025']) && $currentUser['user17025'] == 1) {
+            return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuove accettazioni.');
+        }
+
+        return view('acceptance.create', ['currentUser' => $currentUser]);
     }
 
     /**
@@ -43,6 +49,8 @@ class AcceptanceController extends Controller
                 'api_token' => env('API_LOGIN_SHARED_SECRET'),
                 'action' => 'get_users'
             ]);
+
+  
 
             if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
                 $usersData = $usersResponse->json('users');
@@ -116,6 +124,7 @@ class AcceptanceController extends Controller
 
         return view('acceptance.index', [
             'acceptances' => $acceptances,
+            'currentUser' => Session::get('user'), // Pass currentUser to the view
             'usersMap' => $usersMap,
             'filterTestAStatus' => $filterTestAStatus,
             'filterTestBStatus' => $filterTestBStatus,
@@ -191,12 +200,14 @@ class AcceptanceController extends Controller
     {
         // Policy di autorizzazione: solo il creatore può modificare.
         $user = Session::get('user');
+        $isAdmin = isset($user['user17025']) && $user['user17025'] == 1;
         $isOwner = $acceptance->user_id === $user['id'];
 
         return view('acceptance.edit', [
             'acceptance' => $acceptance,
+            'currentUser' => $user, // Passa currentUser alla vista
             // Passa un flag alla vista per renderla di sola lettura se l'utente non è il proprietario
-            'is_readonly' => !$isOwner
+            'is_readonly' => !$isOwner || $isAdmin
         ]);
     }
 
@@ -211,9 +222,10 @@ class AcceptanceController extends Controller
     {
         // Policy di autorizzazione: solo il creatore può modificare.
         $user = Session::get('user');
+        $isAdmin = isset($user['user17025']) && $user['user17025'] == 1;
         $isOwner = $acceptance->user_id === $user['id'];
 
-        if (!$isOwner) {
+        if (!$isOwner || $isAdmin) {
             abort(403, 'Azione non autorizzata.');
         }
 

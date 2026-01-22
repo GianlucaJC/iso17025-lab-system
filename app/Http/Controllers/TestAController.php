@@ -27,6 +27,12 @@ class TestAController extends Controller
         }
 
         $currentUser = Session::get('user');
+        // Gli amministratori (ruolo 1) non possono creare test.
+        if (isset($currentUser['user17025']) && $currentUser['user17025'] == 1) {
+            return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuovi test.');
+        }
+
+        $currentUser = Session::get('user');
 
         return view('tests.test_a.create', [
             'acceptance' => $acceptance,
@@ -82,8 +88,9 @@ class TestAController extends Controller
         $currentUser = Session::get('user');
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
         
+        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
         // Il form è in sola lettura se l'utente non è il proprietario, o se il test è stato firmato o validato.
-        $is_readonly = !$isOwner || ($test_a_result->lab_signed_at && !$isOwner) || $test_a_result->rl_signature_id;
+        $is_readonly = $isAdmin || !$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id;
 
         // --- Inizio blocco recupero utenti via API ---
         $usersMap = [];
@@ -138,9 +145,10 @@ class TestAController extends Controller
     {
         $currentUser = Session::get('user');
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
-
+        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+        
         // 1. Policy di sicurezza: non si può modificare se non si è proprietari o se il test è firmato/validato.
-        if (!$isOwner || ($test_a_result->lab_signed_at && !$isOwner) || $test_a_result->rl_signature_id) {
+        if (!$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id || $isAdmin) {
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 

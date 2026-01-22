@@ -22,6 +22,12 @@ class TestBController extends Controller
             return redirect()->route('acceptance.index')->with('error', 'Il Test B non è previsto per questa accettazione.');
         }
 
+        $currentUser = Session::get('user');
+        // Gli amministratori (ruolo 1) non possono creare test.
+        if (isset($currentUser['user17025']) && $currentUser['user17025'] == 1) {
+            return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuovi test.');
+        }
+
         $is_double_test_b = in_array('test2', $acceptance->double_tests ?? []);
 
         // Recupera gli ID delle piastre per il Test B
@@ -107,7 +113,8 @@ class TestBController extends Controller
     {
         $currentUser = Session::get('user');
         $isOwner = $test_b_result->operator_id === $currentUser['id'];
-        $is_readonly = !$isOwner || ($test_b_result->lab_signed_at && !$isOwner) || $test_b_result->rl_signature_id;
+        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+        $is_readonly = $isAdmin || !$isOwner || $test_b_result->lab_signed_at || $test_b_result->rl_signature_id;
 
         // --- Inizio blocco recupero utenti via API (re-added) ---
         $usersMap = [];
@@ -214,7 +221,9 @@ class TestBController extends Controller
     public function update(Request $request, TestBResult $test_b_result)
     {
         $currentUser = Session::get('user');
-        if ($test_b_result->operator_id !== $currentUser['id'] || ($test_b_result->lab_signed_at && $test_b_result->operator_id !== $currentUser['id']) || $test_b_result->rl_signature_id) {
+        $isOwner = $test_b_result->operator_id === $currentUser['id'];
+        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+        if (!$isOwner || $test_b_result->lab_signed_at || $test_b_result->rl_signature_id || $isAdmin) {
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 
