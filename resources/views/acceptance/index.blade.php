@@ -131,6 +131,12 @@
                             $currentUser = Session::get('user');
                         @endphp
                         @foreach ($acceptances as $acceptance)
+                            @php
+                                // Define common variables for the entire row to ensure they are always available
+                                $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+                                $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
+                                $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
+                            @endphp
                             <tr>
                                 <td>{{ $acceptance->acceptance_number }}</td>
                                 <td>{{ $acceptance->lotto }}</td>
@@ -193,10 +199,7 @@
                                         {{-- Controlla se il risultato del test esiste tramite la relazione --}}
                                         @if($acceptance->testAResult)
                                             @php
-                                                $isOwnerA = $acceptance->testAResult->operator_id == $currentUser['id'];
-                                                $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
-                                                $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
-                                                $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+                                                $isOwnerA = $acceptance->testAResult->operator_id == $currentUser['id']; // isLabTechnician, isLabManager, isAdmin are already defined
                                             @endphp
                                             @if($acceptance->testAResult->rl_signature_id)
                                                 <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test A (Validato)">
@@ -252,10 +255,7 @@
                                         {{-- Controlla se il risultato del test esiste tramite la relazione --}}
                                         @if($acceptance->testBResult)
                                             @php
-                                                $isOwner = $acceptance->testBResult->operator_id == $currentUser['id'];
-                                                $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
-                                                $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
-                                                $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+                                                $isOwner = $acceptance->testBResult->operator_id == $currentUser['id']; // isLabTechnician, isLabManager, isAdmin are already defined
                                             @endphp
                                             @if($acceptance->testBResult->rl_signature_id)
                                                 <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test B (Validato)">
@@ -306,8 +306,7 @@
                                         @endif
                                     @endif
                                 </td>
-                                <td class="text-nowrap">
-                                    @php $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1; @endphp
+                                <td class="text-nowrap"> {{-- $isAdmin is already defined --}}
                                     @if($currentUser && ($acceptance->user_id == $currentUser['id']))
                                         @if(!$isAdmin)
                                             <a href="{{ route('acceptance.edit', $acceptance) }}" class="btn btn-primary btn-sm" title="Modifica">
