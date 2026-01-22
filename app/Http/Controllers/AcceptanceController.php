@@ -7,6 +7,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log; // Import the Log facade
 use Illuminate\Validation\Rule;
 
 class AcceptanceController extends Controller
@@ -44,13 +45,22 @@ class AcceptanceController extends Controller
             ]);
 
             if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
-                // Crea una mappa 'user_id' => ['operatore' => 'Nome Operatore', ...]
-                $usersMap = collect($usersResponse->json('users'))->keyBy('id')->all();
+                $usersData = $usersResponse->json('users');
+                if (!empty($usersData)) {
+                    // Crea una mappa 'user_id' => ['operatore' => 'Nome Operatore', ...]
+                    $usersMap = collect($usersData)->keyBy('id')->all();
+                } else {
+                    // API returned successful but 'users' array is empty or not present
+                    Log::warning("API call for users was successful but returned empty or missing 'users' data. Response: " . $usersResponse->body());
+                }
+            } else {
+                // API call failed (e.g., 4xx, 5xx status code)
+                Log::error("API call to get users failed with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
             }
         } catch (ConnectionException $e) {
-            // In caso di errore di connessione, la mappa utenti sarà vuota.
-            // Potremmo loggare l'errore qui per debug futuro.
-            // \Log::error("Impossibile recuperare la lista utenti dall'API: " . $e->getMessage());
+            Log::error("Impossibile recuperare la lista utenti dall'API (Connection Error): " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("Errore inatteso durante il recupero della lista utenti dall'API: " . $e->getMessage());
         }
         // --- Fine blocco recupero utenti ---
 
