@@ -18,8 +18,8 @@ class AcceptanceController extends Controller
     public function create()
     {
         $currentUser = Session::get('user');
-        // Gli amministratori (ruolo 1) non possono creare nuove accettazioni.
-        if (isset($currentUser['user17025']) && $currentUser['user17025'] == 1) {
+        // Gli amministratori (ruolo 1) e i Responsabili Laboratorio (ruolo 4) non possono creare nuove accettazioni.
+        if (isset($currentUser['user17025']) && ($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4)) {
             return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuove accettazioni.');
         }
 
@@ -201,13 +201,14 @@ class AcceptanceController extends Controller
         // Policy di autorizzazione: solo il creatore può modificare.
         $user = Session::get('user');
         $isAdmin = isset($user['user17025']) && $user['user17025'] == 1;
+        $isLabManager = isset($user['user17025']) && $user['user17025'] == 4;
         $isOwner = $acceptance->user_id === $user['id'];
 
         return view('acceptance.edit', [
             'acceptance' => $acceptance,
             'currentUser' => $user, // Passa currentUser alla vista
             // Passa un flag alla vista per renderla di sola lettura se l'utente non è il proprietario
-            'is_readonly' => !$isOwner || $isAdmin
+            'is_readonly' => !$isOwner || $isAdmin || $isLabManager
         ]);
     }
 
@@ -223,9 +224,10 @@ class AcceptanceController extends Controller
         // Policy di autorizzazione: solo il creatore può modificare.
         $user = Session::get('user');
         $isAdmin = isset($user['user17025']) && $user['user17025'] == 1;
+        $isLabManager = isset($user['user17025']) && $user['user17025'] == 4;
         $isOwner = $acceptance->user_id === $user['id'];
 
-        if (!$isOwner || $isAdmin) {
+        if (!$isOwner || $isAdmin || $isLabManager) {
             abort(403, 'Azione non autorizzata.');
         }
 

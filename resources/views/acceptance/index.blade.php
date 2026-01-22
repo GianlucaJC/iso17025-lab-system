@@ -28,7 +28,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <div>
-                @if(!($currentUser['user17025'] == 1))
+                @if(!($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4))
                     <a href="{{ route('acceptance.create') }}" class="btn btn-success">
                         <i class="fas fa-plus-circle me-2"></i>Nuova Accettazione
                     </a>
@@ -210,7 +210,7 @@
                                                     <i class="fas fa-signature"></i> Test A
                                                 </a>
                                                 @if($isLabManager && !$isAdmin)
-                                                    <form action="{{ route('test-a.validate', $acceptance->testAResult) }}" method="POST" class="d-inline validate-form">
+                                                    <form action="{{ route('test-a.validate', $acceptance->testAResult) }}" method="POST" class="d-inline validate-form ms-1">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Valida Test A">
                                                             <i class="fas fa-user-check"></i> Valida

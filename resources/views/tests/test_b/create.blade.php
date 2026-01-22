@@ -32,7 +32,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <div>
-                @if(!($currentUser['user17025'] == 1))
+                @if(!($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4))
                     <a href="{{ route('acceptance.create') }}" class="btn btn-success"><i class="fas fa-plus-circle me-2"></i>Nuova Accettazione</a>
                 @endif
                 <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('acceptance.index') }}">Elenco Accettazioni</a>

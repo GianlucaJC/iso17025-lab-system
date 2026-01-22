@@ -27,8 +27,8 @@ class TestAController extends Controller
         }
 
         $currentUser = Session::get('user');
-        // Gli amministratori (ruolo 1) non possono creare test.
-        if (isset($currentUser['user17025']) && $currentUser['user17025'] == 1) {
+        // Gli amministratori (ruolo 1) e i Responsabili Laboratorio (ruolo 4) non possono creare test.
+        if (isset($currentUser['user17025']) && ($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4)) {
             return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuovi test.');
         }
 
@@ -89,8 +89,9 @@ class TestAController extends Controller
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
         
         $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
         // Il form è in sola lettura se l'utente non è il proprietario, o se il test è stato firmato o validato.
-        $is_readonly = $isAdmin || !$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id;
+        $is_readonly = $isAdmin || $isLabManager || !$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id;
 
         // --- Inizio blocco recupero utenti via API ---
         $usersMap = [];
@@ -146,9 +147,10 @@ class TestAController extends Controller
         $currentUser = Session::get('user');
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
         $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
         
         // 1. Policy di sicurezza: non si può modificare se non si è proprietari o se il test è firmato/validato.
-        if (!$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id || $isAdmin) {
+        if (!$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id || $isAdmin || $isLabManager) {
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 
