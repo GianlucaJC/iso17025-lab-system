@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
-    @php
-        $is_edit = isset($test_a_result);
-        $is_readonly = $is_readonly ?? false;
-        $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
-    @endphp
-    <title>{{ $form_title }} Test A - Controllo pH</title>
+    <title>Nuova Accettazione Campioni</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -24,59 +19,9 @@
             }
         }
     </style>
-    <style>
-        .ph-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .ph-slider-container input[type=range] {
-            flex-grow: 1;
-        }
-        .ph-value-input {
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-align: center;
-            width: 90px;
-            flex-shrink: 0;
-        }
-        .outcome-radio .form-check-input {
-            display: none;
-        }
-        .outcome-radio .form-check-label {
-            border: 2px solid #dee2e6;
-            border-radius: .375rem;
-            padding: 1rem;
-            cursor: pointer;
-            text-align: center;
-            width: 100%;
-            transition: all 0.2s ease-in-out;
-        }
-        .outcome-radio .form-check-input:checked + .form-check-label {
-            background-color: var(--bs-primary-bg-subtle);
-            border-color: var(--bs-primary);
-            color: var(--bs-primary-text-emphasis);
-        }
-        .outcome-radio .form-check-input:checked + .form-check-label.text-success {
-             background-color: var(--bs-success-bg-subtle);
-             border-color: var(--bs-success);
-             color: var(--bs-success-text-emphasis);
-        }
-        .outcome-radio .form-check-input:checked + .form-check-label.text-danger {
-             background-color: var(--bs-danger-bg-subtle);
-             border-color: var(--bs-danger);
-             color: var(--bs-danger-text-emphasis);
-        }
-        .outcome-radio .form-check-label .icon {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-    </style>
 </head>
-<body class="d-flex flex-column min-vh-100 bg-light">
-    <!-- Navbar (copiata da altre viste per coerenza) -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <div>
                 <a href="{{ route('acceptance.create') }}" class="btn btn-success">
@@ -89,8 +34,8 @@
                     @php
                         $user = Session::get('user');
                         $roleId = $user['user17025'] ?? null;
-                        $roleMap = [1 => 'Amministratore', 2 => 'Resp. Accettazione', 3 => 'Tecnico di Laboratorio', 4 => 'Resp. Qualità'];
-                        $badgeColorMap = [1 => 'bg-danger', 2 => 'bg-info text-dark', 3 => 'bg-primary', 4 => 'bg-success'];
+                        $roleMap = [1 => 'Admin', 3 => 'Tecnico di Laboratorio', 4 => 'Responsabile Laboratorio'];
+                        $badgeColorMap = [1 => 'bg-danger', 3 => 'bg-primary', 4 => 'bg-success'];
                         $roleName = $roleMap[$roleId] ?? 'N/D';
                         $badgeColor = $badgeColorMap[$roleId] ?? 'bg-secondary';
                     @endphp
@@ -110,213 +55,288 @@
 
     <main class="container mt-4 flex-grow-1">
         <div class="card">
-            <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
-                <h3>
-                    @if($is_edit)
-                        @if($is_readonly)
-                            <i class="fas fa-eye me-2"></i>Visualizza Risultati Test A
-                        @else
-                            <i class="fas fa-edit me-2"></i>Modifica Risultati Test A
-                        @endif
-                    @else
-                        <i class="fas fa-vial me-2"></i>Esecuzione Test A: Controllo del pH
-                    @endif
-                </h3>
+            <div class="card-header bg-primary text-white">
+                <h3><i class="fas fa-plus-circle me-2"></i>Nuova Accettazione Campioni</h3>
             </div>
-            <div class="card-body p-4">
-                <form method="POST" action="{{ $is_edit ? route('test-a.update', $test_a_result->id) : route('test-a.store', $acceptance->id) }}" class="needs-validation" novalidate>
-                    @csrf
-                    @if($is_edit) @method('PUT') @endif
-
-                    <!-- SEZIONE DATI EREDITATI -->
-                    <fieldset class="mb-4">
-                        <legend class="h5">Dati di Riferimento</legend>
-                        <div class="row p-3 bg-light border rounded">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Lotto</label>
-                                <p class="form-control-plaintext">{{ $acceptance->lotto }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">N. Accettazione</label>
-                                <p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <!-- SEZIONE COMPILAZIONE TEST -->
-                    <fieldset class="mb-4">
-                        <legend class="h5">Dati della Prova</legend>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="test_date" class="form-label">Data Prova</label>
-                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="operator" class="form-label">Operatore</label>
-                                <input type="text" class="form-control" id="operator" name="operator" value="{{ $currentUser['operatore'] ?? '' }}" readonly {{ $is_readonly ? 'disabled' : '' }}>
-                            </div>
-                            <div class="col-12">
-                                <label for="ph_value_slider" class="form-label">Misura pH</label>
-                                <div class="ph-slider-container p-3 border rounded">
-                                    <i class="fas fa-tint text-muted"></i>
-                                    @php $ph_value = old('ph_value', $is_edit ? $test_a_result->ph_value : '7.0'); @endphp
-                                    <input type="range" class="form-range" id="ph_value_slider" min="0" max="14" step="0.1" value="{{ $ph_value }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="number" class="form-control ph-value-input" id="ph_value" name="ph_value" min="0" max="14" step="0.1" value="{{ number_format((float)$ph_value, 1) }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <!-- SEZIONE ESITO -->
-                    <fieldset class="mb-4">
-                        <legend class="h5">Esito</legend>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_a_result->outcome : 'idoneo') == 'idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
-                                    <label class="form-check-label text-success" for="outcome_idoneo">
-                                        <i class="fas fa-check-circle icon"></i>
-                                        Idoneo
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_a_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
-                                    <label class="form-check-label text-danger" for="outcome_non_idoneo">
-                                        <i class="fas fa-times-circle icon"></i>
-                                        Non Idoneo
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-3" id="non-compliance-section" style="display: none;">
-                            <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
-                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC" value="{{ old('non_compliance_ref', $is_edit ? $test_a_result->non_compliance_ref : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <!-- SEZIONE MOTIVAZIONE MODIFICA (solo in edit) -->
-                    @if($is_edit && !$is_readonly)
-                    <fieldset class="mb-4">
-                        <legend class="h5">Motivazione della Modifica</legend>
-                        <div class="form-group">
-                            <label for="modification_reason" class="form-label">La modifica dei risultati di un test già salvato richiede una motivazione (min. 10 caratteri).</label>
-                            <textarea class="form-control @error('modification_reason') is-invalid @enderror" id="modification_reason" name="modification_reason" rows="3" required minlength="10">{{ old('modification_reason') }}</textarea>
-                            @error('modification_reason')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @else
-                                <div class="invalid-feedback">Per favore, inserisci una motivazione per la modifica.</div>
-                            @enderror
-                        </div>
-                    </fieldset>
-                    @endif
-
-                    <!-- SEZIONE VALIDAZIONE (per ora disabilitata) -->
-                    <fieldset class="mb-4">
-                        <legend class="h5">Validazione</legend>
-                        <div class="row g-3 p-3 bg-light border rounded">
-                             <div class="col-md-6">
-                                <label for="validator" class="form-label">Validato da RL</label>
-                                <input type="text" class="form-control" id="validator" name="validator" placeholder="Validazione pendente" disabled>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="validation_date" class="form-label">in data</label>
-                                <input type="date" class="form-control" id="validation_date" name="validation_date" disabled>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
-                            @if($is_readonly)
-                                <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
-                            @else
-                                <i class="fas fa-times me-2"></i>Annulla
-                            @endif
-                        </a>
-                        @if(!$is_readonly)
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save me-2"></i>{{ $is_edit ? 'Salva Modifiche' : 'Salva Risultati' }}
-                            </button>
-                        @endif
+            <div class="card-body">
+                {{-- Mostra errori di validazione --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
+                @endif
+
+                <form method="POST" action="{{ route('acceptance.store') }}" class="needs-validation" novalidate>
+                    @csrf
+
+                    {{-- SEZIONE DATI GENERALI --}}
+                    <h5>Dati Generali</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="acceptance_number" class="form-label">Numero Accettazione</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                <input type="text" class="form-control" id="acceptance_number" name="acceptance_number" value="{{ old('acceptance_number') }}" required>
+                                <div class="invalid-feedback">Per favore, inserisci il numero di accettazione.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="lotto" class="form-label">Lotto</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-box"></i></span>
+                                <input type="text" class="form-control" id="lotto" name="lotto" value="{{ old('lotto') }}" required>
+                                <div class="invalid-feedback">Per favore, inserisci il lotto.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sampling_date" class="form-label">Data Campionamento</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date', date('Y-m-d')) }}" required>
+                                <div class="invalid-feedback">Per favore, inserisci la data di campionamento.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="acceptance_date" class="form-label">Data Accettazione</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
+                                <input type="date" class="form-control" id="acceptance_date" name="acceptance_date" value="{{ old('acceptance_date', date('Y-m-d')) }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- SEZIONE TEST DA ESEGUIRE --}}
+                    <h5>Test da Eseguire</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]" @if(in_array('test1', old('tests', []))) checked @endif>
+                                <label class="form-check-label" for="test1">
+                                    Test A (Controllo del pH)
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test1-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test1" id="double_test1" name="double_tests[]" @if(in_array('test1', old('double_tests', []))) checked @endif>
+                                <label class="form-check-label" for="double_test1">Esegui in doppio</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]" @if(in_array('test2', old('tests', []))) checked @endif>
+                                <label class="form-check-label" for="test2">
+                                    Test B (Produttività, Metodo Qualitativo)
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test2-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test2" id="double_test2" name="double_tests[]" @if(in_array('test2', old('double_tests', []))) checked @endif>
+                                <label class="form-check-label" for="double_test2">Esegui in doppio</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]" @if(in_array('test3', old('tests', []))) checked @endif>
+                                <label class="form-check-label" for="test3">
+                                    Test C (Controllo della contaminazione microbica)
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ms-3" id="double-test3-container" style="display: none;">
+                                <input class="form-check-input double-test-checkbox" type="checkbox" value="test3" id="double_test3" name="double_tests[]" @if(in_array('test3', old('double_tests', []))) checked @endif>
+                                <label class="form-check-label" for="double_test3">Esegui in doppio</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-danger d-none" id="no-test-selected-alert">
+                        Seleziona almeno un test per procedere.
+                    </div>
+
+                    {{-- SEZIONE IDENTIFICAZIONE PIASTRE --}}
+                    <h5>Identificazione Piastre</h5>
+                    <div id="plates-section">
+                        @php
+                            $plates = old('plates', array_fill(0, 40, null));
+                            $test_definitions = [
+                                'test1' => [
+                                    'name' => 'Test A (Controllo del pH)',
+                                    'std_plates' => [0, 1],
+                                    'dbl_plates' => [2, 3],
+                                ],
+                                'test2' => [
+                                    'name' => 'Test B (Produttività, Metodo Qualitativo)',
+                                    'std_plates' => [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                                    'dbl_plates' => [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
+                                ],
+                                'test3' => [
+                                    'name' => 'Test C (Controllo della contaminazione microbica)',
+                                    'std_plates' => [28, 29, 30, 31],
+                                    'dbl_plates' => [32, 33, 34, 35],
+                                ],
+                            ];
+                        @endphp
+                        @foreach ($test_definitions as $test_id => $def)
+                            <fieldset id="plates-group-{{ $test_id }}" class="mb-4 p-3 border rounded d-none" data-test-id="{{ $test_id }}">
+                                <legend class="h6 w-auto px-2 bg-primary-subtle text-primary-emphasis rounded">{{ $def['name'] }}</legend>
+
+                                {{-- Standard Plates --}}
+                                <div class="row standard-plates-row">
+                                    @foreach($def['std_plates'] as $i)
+                                        <div class="col-md-4 mb-2">
+                                            <label for="plate_{{ $i }}" class="form-label">ID Piastra {{ $i }}</label>
+                                            <div class="input-group has-validation">
+                                                <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                {{-- Double Plates --}}
+                                <div id="double-plates-group-{{ $test_id }}" class="d-none double-plates-container" data-test-id="{{ $test_id }}">
+                                    <hr class="my-3">
+                                    <h6 class="text-muted mb-3">Piastre per test in doppio</h6>
+                                    <div class="row">
+                                        @foreach($def['dbl_plates'] as $i)
+                                            <div class="col-md-4 mb-2">
+                                                <label for="plate_{{ $i }}" class="form-label">ID Piastra {{ $i }} (Doppio)</label>
+                                                <div class="input-group has-validation">
+                                                    <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                    <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </fieldset>
+                        @endforeach
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
+                    <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg"><i class="fas fa-times me-2"></i>Annulla</a>
                 </form>
             </div>
         </div>
     </main>
 
-    <footer class="mt-auto text-center py-3 bg-white">
+    <footer class="mt-auto text-center py-3 bg-light">
         <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Gestione sincronizzata slider e input numerico per il pH
-            const phSlider = document.getElementById('ph_value_slider');
-            const phInput = document.getElementById('ph_value');
+        (function () {
+          'use strict'
+          var forms = document.querySelectorAll('.needs-validation')
+          Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+              form.addEventListener('submit', function (event) {
+                let isValid = form.checkValidity();
+                let customValidationPassed = true;
 
-            // Aggiorna l'input numerico quando lo slider viene mosso
-            phSlider.addEventListener('input', function() {
-                phInput.value = parseFloat(this.value).toFixed(1);
-            });
+                const testCheckboxes = form.querySelectorAll('.test-checkbox');
+                const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
+                let anyTestSelected = Array.from(testCheckboxes).some(cb => cb.checked);
 
-            // Aggiorna lo slider quando si scrive nell'input numerico
-            phInput.addEventListener('input', function() {
-                let value = parseFloat(this.value);
-                // Controlla che il valore sia un numero valido nel range
-                if (!isNaN(value) && value >= 0 && value <= 14) {
-                    phSlider.value = value;
-                }
-            });
-
-            // Formatta e valida il valore quando l'utente lascia il campo
-            phInput.addEventListener('blur', function() {
-                let value = isNaN(parseFloat(this.value)) ? 7.0 : parseFloat(this.value);
-                if (value < 0) value = 0;
-                if (value > 14) value = 14;
-                this.value = value.toFixed(1);
-                phSlider.value = value;
-            });
-
-            // Gestione visibilità campo Non Conformità
-            const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
-            const nonComplianceSection = document.getElementById('non-compliance-section');
-            const nonComplianceInput = document.getElementById('non_compliance_ref');
-
-            function toggleNonCompliance(isInitial) {
-                if (document.getElementById('outcome_non_idoneo').checked) {
-                    nonComplianceSection.style.display = 'block';
-                    nonComplianceInput.required = true;
+                if (!anyTestSelected) {
+                    noTestSelectedAlert.classList.remove('d-none');
+                    customValidationPassed = false;
                 } else {
-                    nonComplianceSection.style.display = 'none';
-                    nonComplianceInput.required = false;
-                    nonComplianceInput.value = ''; // Pulisci il campo se si torna a Idoneo
-                    if (!isInitial) {
-                        nonComplianceInput.value = ''; // Pulisci il campo se si torna a Idoneo
-                    }
+                    noTestSelectedAlert.classList.add('d-none');
                 }
-            }
 
-            outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
+                const plateInputs = form.querySelectorAll('input[name^="plates["]');
+                
+                plateInputs.forEach(input => {
+                    input.setCustomValidity('');
+                    input.classList.remove('is-invalid');
+                });
 
-            // Esegui al caricamento per lo stato iniziale
-            toggleNonCompliance(true);
+                testCheckboxes.forEach((checkbox) => {
+                    if (checkbox.checked) {
+                        const testId = checkbox.value;
+                        const doubleCheckbox = document.getElementById('double_' + testId);
 
-            // Gestione validazione Bootstrap
-            var form = document.querySelector('.needs-validation');
-            if (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
+                        const plateGroup = document.getElementById('plates-group-' + testId);
+                        if (plateGroup) {
+                            // Validate standard plates
+                            const standardInputs = plateGroup.querySelectorAll('.standard-plates-row .plate-input');
+                            standardInputs.forEach(plateInput => {
+                                if (plateInput.value.trim() === '') {
+                                    plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                    plateInput.classList.add('is-invalid');
+                                    customValidationPassed = false;
+                                }
+                            });
+
+                            // Validate double plates if checked
+                            if (doubleCheckbox && doubleCheckbox.checked) {
+                                const doubleInputs = plateGroup.querySelectorAll('.double-plates-container .plate-input');
+                                doubleInputs.forEach(plateInput => {
+                                    if (plateInput.value.trim() === '') {
+                                        plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                        plateInput.classList.add('is-invalid');
+                                        customValidationPassed = false;
+                                    }
+                                });
+                            }
+                        }
                     }
-                    form.classList.add('was-validated');
-                }, false);
+                });
+
+                if (!isValid || !customValidationPassed) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }
+        
+                form.classList.add('was-validated')
+              }, false)
+            })
+        })()
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const testCheckboxes = document.querySelectorAll('.test-checkbox');
+            const doubleTestCheckboxes = document.querySelectorAll('.double-test-checkbox');
+
+            function updatePlateVisibility() {
+                testCheckboxes.forEach((checkbox) => {
+                    const testId = checkbox.value;
+                    const doubleContainer = document.getElementById('double-' + testId + '-container');
+                    const doubleCheckbox = document.getElementById('double_' + testId);
+                    const plateGroup = document.getElementById('plates-group-' + testId);
+                    const doublePlateGroup = document.getElementById('double-plates-group-' + testId);
+
+                    if (checkbox.checked) {
+                        if (doubleContainer) doubleContainer.style.display = 'inline-block';
+                        if (plateGroup) plateGroup.classList.remove('d-none');
+
+                        if (doubleCheckbox && doubleCheckbox.checked) {
+                            if (doublePlateGroup) doublePlateGroup.classList.remove('d-none');
+                        } else {
+                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
+                        }
+                    } else {
+                        if (doubleContainer) doubleContainer.style.display = 'none';
+                        if (plateGroup) plateGroup.classList.add('d-none');
+                        // Non nascondere doublePlateGroup qui, è già dentro plateGroup
+                        if (doubleCheckbox) doubleCheckbox.checked = false;
+                    }
+                });
             }
+
+            testCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updatePlateVisibility);
+            });
+            doubleTestCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updatePlateVisibility);
+            });
+
+            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati.
+            updatePlateVisibility();
         });
     </script>
 </body>

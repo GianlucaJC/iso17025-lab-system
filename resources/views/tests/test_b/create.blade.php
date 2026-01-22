@@ -40,8 +40,8 @@
                     @php
                         $user = Session::get('user');
                         $roleId = $user['user17025'] ?? null;
-                        $roleMap = [1 => 'Amministratore', 2 => 'Resp. Accettazione', 3 => 'Tecnico di Laboratorio', 4 => 'Resp. Qualità'];
-                        $badgeColorMap = [1 => 'bg-danger', 2 => 'bg-info text-dark', 3 => 'bg-primary', 4 => 'bg-success'];
+                        $roleMap = [1 => 'Admin', 3 => 'Tecnico di Laboratorio', 4 => 'Responsabile Laboratorio']; // Updated role map
+                        $badgeColorMap = [1 => 'bg-danger', 3 => 'bg-primary', 4 => 'bg-success']; // Updated badge color map
                         $roleName = $roleMap[$roleId] ?? 'N/D';
                         $badgeColor = $badgeColorMap[$roleId] ?? 'bg-secondary';
                     @endphp
@@ -82,7 +82,7 @@
                 </h3>
             </div>
             <div class="card-body p-4">
-                <form method="POST" action="{{ $is_edit ? route('test-b.update', $test_b_result->id) : route('test-b.store', $acceptance->id) }}" class="needs-validation" novalidate data-is-double-test-b="{{ $is_double_test_b ? '1' : '0' }}" data-is-readonly="{{ $is_readonly ? '1' : '0' }}">
+                <form method="POST" action="{{ $is_edit ? route('test-b.update', $test_b_result->id) : route('test-b.store', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit) @method('PUT') @endif
 
@@ -102,127 +102,169 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Inizio Prova</label>
-                                <div class="input-group has-validation">
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Data inizio prova obbligatoria.</div>
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : date('H:i')) }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Ora inizio prova obbligatoria.</div>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : date('H:i')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Fine Prova</label>
-                                <div class="input-group has-validation">
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Data fine prova obbligatoria.</div>
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_b_result->test_end_datetime->format('H:i') : date('H:i')) }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Ora fine prova obbligatoria.</div>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_b_result->test_end_datetime->format('H:i') : date('H:i')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
 
-                    @php $runs = $is_double_test_b ? [1, 2] : [1]; @endphp
+                    @php
+                        $incubation_types = [
+                            '35' => ['label' => '35±2°C', 'color' => 'bg-danger-subtle'],
+                            '22' => ['label' => '22±2°C', 'color' => 'bg-primary-subtle']
+                        ];
+                    @endphp
 
-                    @foreach($runs as $run_index)
-                        @php
-                            $run_suffix = $run_index > 1 ? '_run' . $run_index : '_run1';
-                            $run_label = $run_index > 1 ? ' (Run ' . $run_index . ')' : '';
-                            $available_plates = $run_index === 1 ? $available_plates_run1 : $available_plates_run2;
-                            $selected_plates = $run_index === 1 ? $selected_plates_run1 : $selected_plates_run2;
-                        @endphp
-
-                        <h4 class="mt-4 mb-3">Dati Incubazione{{ $run_label }}</h4>
-
-                        @php
-                            $incubation_types = [
-                                '35' => ['label' => '35±2°C', 'color' => 'bg-danger-subtle'],
-                                '22' => ['label' => '22±2°C', 'color' => 'bg-primary-subtle']
-                            ];
-                        @endphp
-
-                        @foreach($incubation_types as $temp => $details)
-                        {{-- Incubazione a {{ $details['label'] }} --}}
-                        <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
-                            <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }}</legend>
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-3 has-validation">
-                                    <label for="incubator_{{ $temp }}{{ $run_suffix }}" class="form-label">Incubatore</label>
-                                    <input type="text" class="form-control" id="incubator_{{ $temp }}{{ $run_suffix }}" name="incubator_{{ $temp }}{{ $run_suffix }}" value="{{ old('incubator_'.$temp.$run_suffix, $is_edit ? $test_b_result->{'incubator_'.$temp.$run_suffix} : '') }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Incubatore obbligatorio.</div>
+                    @foreach($incubation_types as $temp => $details)
+                    {{-- Incubazione a {{ $details['label'] }} --}}
+                    <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
+                        <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }}</legend>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="incubator_{{ $temp }}_run1" class="form-label">Incubatore</label>
+                                <input type="text" class="form-control" id="incubator_{{ $temp }}_run1" name="incubator_{{ $temp }}_run1" value="{{ old('incubator_'.$temp.'_run1', $is_edit ? $test_b_result->{'incubator_'.$temp.'_run1'} : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Inizio Incubazione</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run1" value="{{ old('incubation_start_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run1" value="{{ old('incubation_start_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
-                                <div class="col-md-3 has-validation">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fine Incubazione</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run1" value="{{ old('incubation_end_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run1" value="{{ old('incubation_end_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="temperature_{{ $temp }}_run1" class="form-label">Temperatura (°C)</label>
+                                <input type="number" step="0.1" class="form-control" id="temperature_{{ $temp }}_run1" name="temperature_{{ $temp }}_run1" value="{{ old('temperature_'.$temp.'_run1', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run1'} : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Campione</th>
+                                    <th>N. Acc. Piastra 1</th>
+                                    <th>N. Acc. Piastra 2</th>
+                                    <th colspan="2">Crescita Rilevata / Non Rilevata (P1)</th>
+                                    <th colspan="2">Crescita Rilevata / Non Rilevata (P2)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(['start' => 'Inizio Lotto', 'mid' => 'Metà Lotto', 'end' => 'Fine Lotto'] as $key => $label)
+                                <tr>
+                                    <td>{{ $label }}</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="plate_id_{{ $key }}_plate1_{{ $temp }}_run1" value="{{ old('plate_id_'.$key.'_plate1_'.$temp.'_run1', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run1'} : $selected_plates_run1[$temp][$key.'_plate1']) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="plate_id_{{ $key }}_plate2_{{ $temp }}_run1" value="{{ old('plate_id_'.$key.'_plate2_'.$temp.'_run1', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate2_'.$temp.'_run1'} : $selected_plates_run1[$temp][$key.'_plate2']) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    </td>
+                                    @php
+                                        $fieldName1 = 'growth_result_'.$temp.'_'.$key.'_plate1_run1';
+                                        $currentValue1 = old($fieldName1, $is_edit ? $test_b_result->{$fieldName1} : '');
+                                        $fieldName2 = 'growth_result_'.$temp.'_'.$key.'_plate2_run1';
+                                        $currentValue2 = old($fieldName2, $is_edit ? $test_b_result->{$fieldName2} : '');
+                                    @endphp
+                                    <td>
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
+                                    </td>
+                                    <td>
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
+                                    </td>
+                                    <td>
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
+                                    </td>
+                                    <td>
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </fieldset>
+                    @endforeach
+
+                    @if($is_double_test_b)
+                        <h5 class="mt-4">Secondo Run (Test in Doppio)</h5>
+                        @foreach($incubation_types as $temp => $details)
+                        <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
+                            <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }} (Run 2)</legend>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label for="incubator_{{ $temp }}_run2" class="form-label">Incubatore</label>
+                                    <input type="text" class="form-control" id="incubator_{{ $temp }}_run2" name="incubator_{{ $temp }}_run2" value="{{ old('incubator_'.$temp.'_run2', $is_edit ? $test_b_result->{'incubator_'.$temp.'_run2'} : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label">Inizio Incubazione</label>
                                     <div class="input-group">
-                                        <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}{{ $run_suffix }}" value="{{ old('incubation_start_date_'.$temp.$run_suffix, $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.$run_suffix} ? $test_b_result->{'incubation_start_datetime_'.$temp.$run_suffix}->format('Y-m-d') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Data inizio incubazione obbligatoria.</div>
-                                        <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}{{ $run_suffix }}" value="{{ old('incubation_start_time_'.$temp.$run_suffix, $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.$run_suffix} ? $test_b_result->{'incubation_start_datetime_'.$temp.$run_suffix}->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Ora inizio incubazione obbligatoria.</div>
+                                        <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run2" value="{{ old('incubation_start_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                        <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run2" value="{{ old('incubation_start_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                     </div>
                                 </div>
-                                <div class="col-md-3 has-validation">
+                                <div class="col-md-4">
                                     <label class="form-label">Fine Incubazione</label>
                                     <div class="input-group">
-                                        <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}{{ $run_suffix }}" value="{{ old('incubation_end_date_'.$temp.$run_suffix, $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.$run_suffix} ? $test_b_result->{'incubation_end_datetime_'.$temp.$run_suffix}->format('Y-m-d') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Data fine incubazione obbligatoria.</div>
-                                        <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}{{ $run_suffix }}" value="{{ old('incubation_end_time_'.$temp.$run_suffix, $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.$run_suffix} ? $test_b_result->{'incubation_end_datetime_'.$temp.$run_suffix}->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Ora fine incubazione obbligatoria.</div>
+                                        <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run2" value="{{ old('incubation_end_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                        <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run2" value="{{ old('incubation_end_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                     </div>
                                 </div>
-                                <div class="col-md-3 has-validation">
-                                    <label for="temperature_{{ $temp }}{{ $run_suffix }}" class="form-label">Temperatura (°C)</label>
-                                    <input type="number" step="0.1" class="form-control" id="temperature_{{ $temp }}{{ $run_suffix }}" name="temperature_{{ $temp }}{{ $run_suffix }}" value="{{ old('temperature_'.$temp.$run_suffix, $is_edit ? $test_b_result->{'temperature_'.$temp.$run_suffix} : '') }}" required {{ $is_readonly ? 'disabled' : '' }}><div class="invalid-feedback">Temperatura obbligatoria.</div>
+                                <div class="col-md-4">
+                                    <label for="temperature_{{ $temp }}_run2" class="form-label">Temperatura (°C)</label>
+                                    <input type="number" step="0.1" class="form-control" id="temperature_{{ $temp }}_run2" name="temperature_{{ $temp }}_run2" value="{{ old('temperature_'.$temp.'_run2', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run2'} : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
 
-                            <table class="table table-bordered text-center align-middle">
+                            <table class="table table-bordered text-center">
                                 <thead class="table-light">
                                     <tr>
-                                        <th rowspan="2" style="vertical-align: middle; display: none;">Campione</th> {{-- Colonna 1 --}}
-                                        <th colspan="2" style="vertical-align: middle;">N. Acc. Piastra</th> {{-- Colonne 2-3 --}}
-                                        <th colspan="2" style="vertical-align: middle;">Crescita Rilevata</th>
-                                        <th colspan="2" style="vertical-align: middle;">Crescita Non Rilevata</th>
-                                    </tr>
-                                    <tr>
-                                        <th>Piastra 1</th>
-                                        <th>Piastra 2</th>
-                                        <th>P1</th>
-                                        <th>P2</th>
-                                        <th>P1</th>
-                                        <th>P2</th>
+                                        <th>Campione</th>
+                                        <th>N. Acc. Piastra 1</th>
+                                        <th>N. Acc. Piastra 2</th>
+                                        <th colspan="2">Crescita Rilevata / Non Rilevata (P1)</th>
+                                        <th colspan="2">Crescita Rilevata / Non Rilevata (P2)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach(['start' => 'Inizio Lotto', 'mid' => 'Metà Lotto', 'end' => 'Fine Lotto'] as $key => $label)
                                     <tr>
-                                        <td style="display: none;">
-                                            {{ $label }}
-                                            @php
-                                                $fieldNameP1 = 'growth_result_'.$temp.'_'.$key.'_plate1'.$run_suffix;
-                                                $currentValueP1 = old($fieldNameP1, $is_edit ? $test_b_result->{$fieldNameP1} : '');
-                                                $fieldNameP2 = 'growth_result_'.$temp.'_'.$key.'_plate2'.$run_suffix;
-                                                $currentValueP2 = old($fieldNameP2, $is_edit ? $test_b_result->{$fieldNameP2} : '');
-                                            @endphp
-                                            <input type="hidden" name="{{ $fieldNameP1 }}" value="{{ $currentValueP1 }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                            <input type="hidden" name="{{ $fieldNameP2 }}" value="{{ $currentValueP2 }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                        </td>
-                                        {{-- Piastra 1 --}}
+                                        <td>{{ $label }}</td>
                                         <td>
-                                            @php $plateId1 = old('plate_id_'.$key.'_plate1_'.$temp.$run_suffix, $selected_plates[$temp][$key.'_plate1'] ?? ''); @endphp
-                                            <span class="badge bg-secondary">{{ $plateId1 }}</span>
-                                            <input type="hidden" name="plate_id_{{ $key }}_plate1_{{ $temp }}{{ $run_suffix }}" value="{{ $plateId1 }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <input type="text" class="form-control" name="plate_id_{{ $key }}_plate1_{{ $temp }}_run2" value="{{ old('plate_id_'.$key.'_plate1_'.$temp.'_run2', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run2'} : $selected_plates_run2[$temp][$key.'_plate1']) }}" {{ $is_readonly ? 'disabled' : '' }}>
                                         </td>
-                                        {{-- Piastra 2 --}}
                                         <td>
-                                            @php $plateId2 = old('plate_id_'.$key.'_plate2_'.$temp.$run_suffix, $selected_plates[$temp][$key.'_plate2'] ?? ''); @endphp
-                                            <span class="badge bg-secondary">{{ $plateId2 }}</span>
-                                            <input type="hidden" name="plate_id_{{ $key }}_plate2_{{ $temp }}{{ $run_suffix }}" value="{{ $plateId2 }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <input type="text" class="form-control" name="plate_id_{{ $key }}_plate2_{{ $temp }}_run2" value="{{ old('plate_id_'.$key.'_plate2_'.$temp.'_run2', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate2_'.$temp.'_run2'} : $selected_plates_run2[$temp][$key.'_plate2']) }}" {{ $is_readonly ? 'disabled' : '' }}>
                                         </td>
-                                        {{-- Crescita Rilevata P1 --}}
+                                        @php
+                                            $fieldName1 = 'growth_result_'.$temp.'_'.$key.'_plate1_run2';
+                                            $currentValue1 = old($fieldName1, $is_edit ? $test_b_result->{$fieldName1} : '');
+                                            $fieldName2 = 'growth_result_'.$temp.'_'.$key.'_plate2_run2';
+                                            $currentValue2 = old($fieldName2, $is_edit ? $test_b_result->{$fieldName2} : '');
+                                        @endphp
                                         <td>
-                                            <input class="form-check-input growth-checkbox" type="checkbox" id="{{ $fieldNameP1 }}_rilevata" data-target-input="[name='{{ $fieldNameP1 }}']" data-value="rilevata" data-group="{{ $fieldNameP1 }}" {{ $currentValueP1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
                                         </td>
-                                        {{-- Crescita Rilevata P2 --}}
                                         <td>
-                                            <input class="form-check-input growth-checkbox" type="checkbox" id="{{ $fieldNameP2 }}_rilevata" data-target-input="[name='{{ $fieldNameP2 }}']" data-value="rilevata" data-group="{{ $fieldNameP2 }}" {{ $currentValueP2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
                                         </td>
-                                        {{-- Crescita Non Rilevata P1 --}}
                                         <td>
-                                            <input class="form-check-input growth-checkbox" type="checkbox" id="{{ $fieldNameP1 }}_non_rilevata" data-target-input="[name='{{ $fieldNameP1 }}']" data-value="non_rilevata" data-group="{{ $fieldNameP1 }}" {{ $currentValueP1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
                                         </td>
-                                        {{-- Crescita Non Rilevata P2 --}}
                                         <td>
-                                            <input class="form-check-input growth-checkbox" type="checkbox" id="{{ $fieldNameP2 }}_non_rilevata" data-target-input="[name='{{ $fieldNameP2 }}']" data-value="non_rilevata" data-group="{{ $fieldNameP2 }}" {{ $currentValueP2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
                                         </td>
                                     </tr>
                                     @endforeach
@@ -230,7 +272,7 @@
                             </table>
                         </fieldset>
                         @endforeach
-                    @endforeach
+                    @endif
 
                     {{-- Esito --}}
                     <fieldset class="mb-4">
@@ -284,14 +326,29 @@
                     <fieldset class="mb-4">
                         <legend class="h5">Validazione</legend>
                         <div class="row g-3 p-3 bg-light border rounded">
-                             <div class="col-md-6">
-                                <label class="form-label">Validato da RL</label>
-                                <input type="text" class="form-control" placeholder="Validazione pendente" disabled>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">in data</label>
-                                <input type="date" class="form-control" disabled>
-                            </div>
+                            @if($is_edit && $test_b_result->rl_signature_id)
+                                @php
+                                    $validatorName = $usersMap[$test_b_result->rl_signature_id]['operatore'] ?? 'N/D';
+                                    $validationDate = $test_b_result->rl_signed_at ? \Carbon\Carbon::parse($test_b_result->rl_signed_at)->format('d/m/Y H:i') : '';
+                                @endphp
+                                <div class="col-md-6">
+                                    <label class="form-label">Validato da RL</label>
+                                    <input type="text" class="form-control" value="{{ $validatorName }}" disabled>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">in data</label>
+                                    <input type="text" class="form-control" value="{{ $validationDate }}" disabled>
+                                </div>
+                            @else
+                                <div class="col-md-6">
+                                    <label class="form-label">Validazione RL</label>
+                                    <input type="text" class="form-control" placeholder="Validazione pendente" disabled>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">in data</label>
+                                    <input type="text" class="form-control" placeholder="N/D" disabled>
+                                </div>
+                            @endif
                         </div>
                     </fieldset>
 
@@ -318,70 +375,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Gestione validazione Bootstrap
             var form = document.querySelector('.needs-validation');
-
             if (form) {
-                const isReadonly = form.dataset.isReadonly === '1';
-
-                // Se il form è in sola lettura, non abilitare la validazione o gli eventi interattivi
-                if (isReadonly) {
-                    return;
-                }
-
                 form.addEventListener('submit', function (event) {
-                    // --- 1. Esegui la validazione nativa di Bootstrap ---
                     if (!form.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();
-                        form.classList.add('was-validated');
-                        return; // Esce se la validazione base fallisce
                     }
-                    
-                    // --- 2. Validazione personalizzata: TUTTI i risultati di crescita devono essere compilati ---
-                    let customValidationFailed = false;
-                    let firstErrorText = '';
-
-                    const isDoubleTestB = form.dataset.isDoubleTestB === '1';
-                    const runs = isDoubleTestB ? [1, 2] : [1];
-                    const temps = ['35', '22'];
-                    const positions = ['start', 'mid', 'end'];
-
-                    for (const run of runs) {
-                        if (customValidationFailed) break;
-                        const runSuffix = run === 1 ? '_run1' : '_run' + run;
-                        for (const temp of temps) {
-                            if (customValidationFailed) break;
-                            for (const position of positions) {
-                                if (customValidationFailed) break;
-                                const fieldNameP1 = `growth_result_${temp}_${position}_plate1${runSuffix}`;
-                                const fieldNameP2 = `growth_result_${temp}_${position}_plate2${runSuffix}`;
-
-                                const inputP1 = document.querySelector(`input[name="${fieldNameP1}"]`);
-                                const inputP2 = document.querySelector(`input[name="${fieldNameP2}"]`);
-
-                                if (inputP1 && !inputP1.value) {
-                                    firstErrorText = `Il risultato di crescita per la Piastra 1 (Incubazione ${temp}°C, ${position.replace('start', 'Inizio Lotto').replace('mid', 'Metà Lotto').replace('end', 'Fine Lotto')}, Run ${run}) è obbligatorio.`;
-                                    customValidationFailed = true;
-                                } else if (inputP2 && !inputP2.value) {
-                                    firstErrorText = `Il risultato di crescita per la Piastra 2 (Incubazione ${temp}°C, ${position.replace('start', 'Inizio Lotto').replace('mid', 'Metà Lotto').replace('end', 'Fine Lotto')}, Run ${run}) è obbligatorio.`;
-                                    customValidationFailed = true;
-                                }
-                            }
-                        }
-                    }
-
-                    // Se la validazione personalizzata è fallita, blocca il submit e mostra l'alert
-                    if (customValidationFailed) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Compilazione Obbligatoria',
-                            text: firstErrorText,
-                        });
-                        return; // Blocca il submit
-                    }
-
-                    // Se tutte le validazioni sono passate, aggiungi la classe per i feedback visivi di Bootstrap
                     form.classList.add('was-validated');
                 }, false);
             }
@@ -403,33 +402,8 @@
                 }
             }
 
-            // Gestione checkbox di crescita per simulare radio button e popolare campi hidden
-            const growthCheckboxes = document.querySelectorAll('.growth-checkbox');
-            growthCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const groupName = this.dataset.group;
-                    const targetInput = document.querySelector(this.dataset.targetInput);
-
-                    // Se questo checkbox viene selezionato
-                    if (this.checked) {
-                        // Deseleziona gli altri checkbox nello stesso gruppo
-                        const otherCheckboxesInGroup = document.querySelectorAll(`.growth-checkbox[data-group="${groupName}"]`);
-                        otherCheckboxesInGroup.forEach(otherCheckbox => {
-                            if (otherCheckbox !== this) {
-                                otherCheckbox.checked = false;
-                            }
-                        });
-                        // Imposta il valore del campo hidden
-                        if (targetInput) targetInput.value = this.dataset.value;
-                    } else {
-                        // Se il checkbox viene deselezionato, svuota il campo hidden
-                        if (targetInput) targetInput.value = '';
-                    }
-                });
-            });
             outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
             toggleNonCompliance(); // Esegui al caricamento
-
         });
     </script>
 </body>

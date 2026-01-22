@@ -17,7 +17,7 @@ class AcceptanceController extends Controller
      */
     public function create()
     {
-        return view('create');
+        return view('acceptance.create');
     }
 
     /**

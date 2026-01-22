@@ -38,18 +38,8 @@
                     @php
                         $user = Session::get('user');
                         $roleId = $user['user17025'] ?? null;
-                        $roleMap = [
-                            1 => 'Amministratore',
-                            2 => 'Resp. Accettazione',
-                            3 => 'Tecnico di Laboratorio',
-                            4 => 'Resp. Qualità',
-                        ];
-                        $badgeColorMap = [
-                            1 => 'bg-danger',
-                            2 => 'bg-info text-dark',
-                            3 => 'bg-primary',
-                            4 => 'bg-success',
-                        ];
+                        $roleMap = [1 => 'Admin', 3 => 'Tecnico di Laboratorio', 4 => 'Responsabile Laboratorio']; // Updated role map
+                        $badgeColorMap = [1 => 'bg-danger', 3 => 'bg-primary', 4 => 'bg-success']; // Updated badge color map
                         $roleName = $roleMap[$roleId] ?? 'N/D';
                         $badgeColor = $badgeColorMap[$roleId] ?? 'bg-secondary';
                     @endphp

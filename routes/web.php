@@ -65,6 +65,14 @@ Route::put('/test-a/{test_a_result}', [TestAController::class, 'update'])
     ->name('test-a.update')
     ->middleware('auth.api');
 
+Route::post('/test-a/{test_a_result}/sign', [TestAController::class, 'sign'])
+    ->name('test-a.sign')
+    ->middleware('auth.api');
+
+Route::post('/test-a/{test_a_result}/validate', [TestAController::class, 'validateTest'])
+    ->name('test-a.validate')
+    ->middleware('auth.api');
+
 Route::get('/acceptance/{acceptance}/test-b/create', [TestBController::class, 'create'])
     ->name('test-b.create')
     ->middleware('auth.api');
@@ -79,6 +87,14 @@ Route::get('/test-b/{test_b_result}/edit', [TestBController::class, 'edit'])
 
 Route::put('/test-b/{test_b_result}', [TestBController::class, 'update'])
     ->name('test-b.update')
+    ->middleware('auth.api');
+
+Route::post('/test-b/{test_b_result}/sign', [TestBController::class, 'sign'])
+    ->name('test-b.sign')
+    ->middleware('auth.api');
+
+Route::post('/test-b/{test_b_result}/validate', [TestBController::class, 'validateTest'])
+    ->name('test-b.validate')
     ->middleware('auth.api');
 
 // Rotta per la cronologia delle modifiche

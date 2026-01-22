@@ -7,6 +7,9 @@ use App\Models\TestBResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Http; // Re-add Http facade
+use Illuminate\Support\Facades\Log;   // Re-add Log facade
+use Illuminate\Http\Client\ConnectionException; // Re-add ConnectionException
 
 class TestBController extends Controller
 {
@@ -104,7 +107,43 @@ class TestBController extends Controller
     {
         $currentUser = Session::get('user');
         $isOwner = $test_b_result->operator_id === $currentUser['id'];
-        $is_readonly = !$isOwner || $test_b_result->validator_id;
+        $is_readonly = !$isOwner || $test_b_result->rl_signature_id || $test_b_result->lab_signed_at;
+
+        // --- Inizio blocco recupero utenti via API (re-added) ---
+        $usersMap = [];
+        try {
+            $httpClient = Http::getFacadeRoot();
+            $certPath = env('API_CERT_PATH');
+
+            if ($certPath && file_exists($certPath)) {
+                $httpClient = $httpClient->withOptions(['verify' => $certPath]);
+            }
+            elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
+                $httpClient = $httpClient->withoutVerifying();
+            }
+
+            // Includi l'username dell'utente corrente nella richiesta API per 'get_users'
+            $requestBody = [
+                'api_token' => env('API_LOGIN_SHARED_SECRET'),
+                'action' => 'get_users'
+            ];
+            if ($currentUser && isset($currentUser['username'])) {
+                $requestBody['username'] = $currentUser['username'];
+            }
+
+            $usersResponse = $httpClient->post(env('API_LOGIN_URL'), $requestBody);
+
+            if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
+                $usersMap = collect($usersResponse->json('users'))->keyBy('id')->all();
+            } else {
+                Log::error("API call to get users failed in TestBController@edit with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
+            }
+        } catch (ConnectionException $e) {
+            Log::error("Impossibile recuperare la lista utenti dall'API in TestBController@edit (Connection Error): " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("Errore inatteso durante il recupero della lista utenti dall'API in TestBController@edit: " . $e->getMessage());
+        }
+        // --- Fine blocco recupero utenti ---
 
         $acceptance = $test_b_result->acceptance;
 
@@ -165,6 +204,7 @@ class TestBController extends Controller
             'available_plates_run2' => $available_plates_run2,
             'selected_plates_run1' => $selected_plates_run1,
             'selected_plates_run2' => $selected_plates_run2,
+            'usersMap' => $usersMap, // Pass usersMap to the view
         ]);
     }
 
@@ -174,8 +214,8 @@ class TestBController extends Controller
     public function update(Request $request, TestBResult $test_b_result)
     {
         $currentUser = Session::get('user');
-        if ($test_b_result->operator_id !== $currentUser['id'] || $test_b_result->validator_id) {
-            abort(403, 'Azione non autorizzata.');
+        if ($test_b_result->operator_id !== $currentUser['id'] || $test_b_result->rl_signature_id || $test_b_result->lab_signed_at) {
+            abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 
         $validatedData = $this->validateRequest($request, true);
@@ -185,6 +225,72 @@ class TestBController extends Controller
         $test_b_result->update($dataToSave);
 
         return redirect()->route('acceptance.index')->with('success', 'Risultati del Test B aggiornati con successo!');
+    }
+
+    /**
+     * Appone la firma del tecnico di laboratorio al test.
+     */
+    public function sign(Request $request, TestBResult $test_b_result)
+    {
+        $currentUser = Session::get('user');
+        
+        // Policy 1: Solo i tecnici di laboratorio (ruolo 3) possono firmare.
+        $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
+        if (!$isLabTechnician) {
+            abort(403, 'Azione non autorizzata: solo i tecnici di laboratorio possono firmare i test.');
+        }
+
+        $isOwner = $test_b_result->operator_id === $currentUser['id'];
+
+        // Policy 2: Solo il proprietario del test può firmare.
+        if (!$isOwner) {
+            abort(403, 'Azione non autorizzata: solo l\'operatore che ha compilato il test può firmare.');
+        }
+        // Policy 3: Il test non deve essere già firmato o validato.
+        if ($test_b_result->lab_signed_at) {
+            return redirect()->route('acceptance.index')->with('error', 'Il test è già stato firmato.');
+        }
+        if ($test_b_result->rl_signature_id) {
+            abort(403, 'Azione non autorizzata: il test è già stato validato e non può essere firmato.');
+        }
+
+        // Aggiorna il record con i dati della firma
+        $test_b_result->lab_signature_id = $currentUser['id'];
+        $test_b_result->lab_signed_at = now();
+        $test_b_result->save();
+
+        return redirect()->route('acceptance.index')->with('success', 'Test B firmato con successo!');
+    }
+
+    /**
+     * Valida il test da parte del Responsabile Laboratorio (RL).
+     */
+    public function validateTest(Request $request, TestBResult $test_b_result)
+    {
+        $currentUser = Session::get('user');
+        
+        // Policy 1: Solo i Responsabili Laboratorio (ruolo 4) possono validare.
+        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
+        if (!$isLabManager) {
+            abort(403, 'Azione non autorizzata: solo i Responsabili Laboratorio possono validare i test.');
+        }
+
+        // Policy 2: Il test deve essere stato firmato dal tecnico.
+        if (!$test_b_result->lab_signed_at) {
+            return redirect()->route('acceptance.index')->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.');
+        }
+
+        // Policy 3: Il test non deve essere già stato validato.
+        if ($test_b_result->rl_signature_id) {
+            return redirect()->route('acceptance.index')->with('error', 'Il test è già stato validato.');
+        }
+
+        // Aggiorna il record con i dati della validazione
+        $test_b_result->rl_signature_id = $currentUser['id'];
+        $test_b_result->rl_signed_at = now();
+        $test_b_result->save();
+
+        return redirect()->route('acceptance.index')->with('success', 'Test B validato con successo dal Responsabile Laboratorio!');
     }
 
     /**
