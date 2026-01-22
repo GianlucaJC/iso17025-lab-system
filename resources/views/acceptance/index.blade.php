@@ -68,6 +68,7 @@
                 <h3><i class="fas fa-list-ul me-2"></i>Elenco Accettazioni Campioni</h3>
             </div>
             <div class="card-body">
+                <!-- DEBUG: Contenuto di usersMap: {{ json_encode($usersMap) }} -->
                 <table id="acceptancesTable" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
@@ -108,7 +109,17 @@
                                     @endif
                                 </td>
                                 {{-- Usiamo la mappa degli utenti passata dal controller per trovare il nome --}}
-                                <td>{{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}</td>
+                                <td>
+                                    <!--
+                                        DEBUG:
+                                        - Acceptance ID: {{ $acceptance->id }}
+                                        - User ID: {{ $acceptance->user_id }}
+                                        - User ID presente in usersMap: {{ isset($usersMap[$acceptance->user_id]) ? 'Sì' : 'No' }}
+                                        @if(isset($usersMap[$acceptance->user_id]))
+                                        - Dati utente: {{ json_encode($usersMap[$acceptance->user_id]) }}
+                                        @endif
+                                    -->
+                                    {{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}</td>
                                 <td>{{ $acceptance->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
                                     @if(in_array('test1', $acceptance->tests))
