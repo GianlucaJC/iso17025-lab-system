@@ -107,7 +107,7 @@ class TestBController extends Controller
     {
         $currentUser = Session::get('user');
         $isOwner = $test_b_result->operator_id === $currentUser['id'];
-        $is_readonly = !$isOwner || $test_b_result->rl_signature_id || $test_b_result->lab_signed_at;
+        $is_readonly = !$isOwner || ($test_b_result->lab_signed_at && !$isOwner) || $test_b_result->rl_signature_id;
 
         // --- Inizio blocco recupero utenti via API (re-added) ---
         $usersMap = [];
@@ -214,7 +214,7 @@ class TestBController extends Controller
     public function update(Request $request, TestBResult $test_b_result)
     {
         $currentUser = Session::get('user');
-        if ($test_b_result->operator_id !== $currentUser['id'] || $test_b_result->rl_signature_id || $test_b_result->lab_signed_at) {
+        if ($test_b_result->operator_id !== $currentUser['id'] || ($test_b_result->lab_signed_at && $test_b_result->operator_id !== $currentUser['id']) || $test_b_result->rl_signature_id) {
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 

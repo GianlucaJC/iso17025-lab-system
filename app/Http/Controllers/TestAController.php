@@ -83,7 +83,7 @@ class TestAController extends Controller
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
         
         // Il form è in sola lettura se l'utente non è il proprietario, o se il test è stato firmato o validato.
-        $is_readonly = !$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id;
+        $is_readonly = !$isOwner || ($test_a_result->lab_signed_at && !$isOwner) || $test_a_result->rl_signature_id;
 
         // --- Inizio blocco recupero utenti via API ---
         $usersMap = [];
@@ -140,7 +140,7 @@ class TestAController extends Controller
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
 
         // 1. Policy di sicurezza: non si può modificare se non si è proprietari o se il test è firmato/validato.
-        if (!$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id) {
+        if (!$isOwner || ($test_a_result->lab_signed_at && !$isOwner) || $test_a_result->rl_signature_id) {
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 

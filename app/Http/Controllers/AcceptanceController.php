@@ -23,7 +23,7 @@ class AcceptanceController extends Controller
     /**
      * Mostra l'elenco di tutte le accettazioni.
      */
-    public function index()
+    public function index(Request $request)
     {
         // --- Inizio blocco recupero utenti via API ---
         $usersMap = [];
@@ -64,11 +64,61 @@ class AcceptanceController extends Controller
         }
         // --- Fine blocco recupero utenti ---
 
-        $acceptances = Acceptance::latest()->get();
+        $acceptancesQuery = Acceptance::query(); // Start with a base query
+
+        // Get filter parameters from the request
+        $filterTestAStatus = $request->input('filter_test_a_status', 'all');
+        $filterTestBStatus = $request->input('filter_test_b_status', 'all');
+
+        // Apply filters for Test A
+        if ($filterTestAStatus !== 'all') {
+            $acceptancesQuery->where(function ($query) use ($filterTestAStatus) {
+                if ($filterTestAStatus === 'not_compiled') {
+                    $query->whereDoesntHave('testAResult');
+                } elseif ($filterTestAStatus === 'in_compilation') {
+                    $query->whereHas('testAResult', function ($q) {
+                        $q->whereNull('lab_signed_at');
+                    });
+                } elseif ($filterTestAStatus === 'signed') {
+                    $query->whereHas('testAResult', function ($q) {
+                        $q->whereNotNull('lab_signed_at')->whereNull('rl_signature_id');
+                    });
+                } elseif ($filterTestAStatus === 'validated') {
+                    $query->whereHas('testAResult', function ($q) {
+                        $q->whereNotNull('rl_signature_id');
+                    });
+                }
+            });
+        }
+
+        // Apply filters for Test B
+        if ($filterTestBStatus !== 'all') {
+            $acceptancesQuery->where(function ($query) use ($filterTestBStatus) {
+                if ($filterTestBStatus === 'not_compiled') {
+                    $query->whereDoesntHave('testBResult');
+                } elseif ($filterTestBStatus === 'in_compilation') {
+                    $query->whereHas('testBResult', function ($q) {
+                        $q->whereNull('lab_signed_at');
+                    });
+                } elseif ($filterTestBStatus === 'signed') {
+                    $query->whereHas('testBResult', function ($q) {
+                        $q->whereNotNull('lab_signed_at')->whereNull('rl_signature_id');
+                    });
+                } elseif ($filterTestBStatus === 'validated') {
+                    $query->whereHas('testBResult', function ($q) {
+                        $q->whereNotNull('rl_signature_id');
+                    });
+                }
+            });
+        }
+
+        $acceptances = $acceptancesQuery->latest()->get(); // Apply latest() and get() at the end
 
         return view('acceptance.index', [
             'acceptances' => $acceptances,
-            'usersMap' => $usersMap
+            'usersMap' => $usersMap,
+            'filterTestAStatus' => $filterTestAStatus,
+            'filterTestBStatus' => $filterTestBStatus,
         ]);
     }
 

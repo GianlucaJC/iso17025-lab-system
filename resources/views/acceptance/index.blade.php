@@ -70,7 +70,40 @@
                 <h3><i class="fas fa-list-ul me-2"></i>Elenco Accettazioni Campioni</h3>
             </div>
             <div class="card-body">
-                <!-- DEBUG: Contenuto di usersMap: {{ json_encode($usersMap) }} -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4><i class="fas fa-filter me-2"></i>Filtri</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="{{ route('acceptance.index') }}" class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="filter_test_a_status" class="form-label">Stato Test A</label>
+                                <select class="form-select" id="filter_test_a_status" name="filter_test_a_status">
+                                    <option value="all" {{ $filterTestAStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
+                                    <option value="not_compiled" {{ $filterTestAStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
+                                    <option value="in_compilation" {{ $filterTestAStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                    <option value="signed" {{ $filterTestAStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
+                                    <option value="validated" {{ $filterTestAStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="filter_test_b_status" class="form-label">Stato Test B</label>
+                                <select class="form-select" id="filter_test_b_status" name="filter_test_b_status">
+                                    <option value="all" {{ $filterTestBStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
+                                    <option value="not_compiled" {{ $filterTestBStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
+                                    <option value="in_compilation" {{ $filterTestBStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                    <option value="signed" {{ $filterTestBStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
+                                    <option value="validated" {{ $filterTestBStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-search me-2"></i>Applica Filtri</button>
+                                <a href="{{ route('acceptance.index') }}" class="btn btn-secondary ms-2"><i class="fas fa-redo me-2"></i>Reset Filtri</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <table id="acceptancesTable" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
@@ -80,6 +113,8 @@
                             <th>Test Eseguiti</th>
                             <th>Operatore</th>
                             <th>Data Creazione</th>
+                            <th>Stato Test A</th>
+                            <th>Stato Test B</th>
                             <th>Esecuzione Test</th>
                             <th>Azioni</th>
                         </tr>
@@ -110,19 +145,47 @@
                                         @endforeach
                                     @endif
                                 </td>
-                                {{-- Usiamo la mappa degli utenti passata dal controller per trovare il nome --}}
-                                <td>
-                                    <!--
-                                        DEBUG:
-                                        - Acceptance ID: {{ $acceptance->id }}
-                                        - User ID: {{ $acceptance->user_id }}
-                                        - User ID presente in usersMap: {{ isset($usersMap[$acceptance->user_id]) ? 'Sì' : 'No' }}
-                                        @if(isset($usersMap[$acceptance->user_id]))
-                                        - Dati utente: {{ json_encode($usersMap[$acceptance->user_id]) }}
-                                        @endif
-                                    -->
-                                    {{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}</td>
+                                <td>{{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}</td>
                                 <td>{{ $acceptance->created_at->format('d/m/Y H:i') }}</td>
+
+                                {{-- Stato Test A --}}
+                                <td>
+                                    @if(in_array('test1', $acceptance->tests))
+                                        @if($acceptance->testAResult)
+                                            @if($acceptance->testAResult->rl_signature_id)
+                                                <span class="badge bg-success"><i class="fas fa-check-double me-1"></i>Validato da RL</span>
+                                            @elseif($acceptance->testAResult->lab_signed_at)
+                                                <span class="badge bg-primary"><i class="fas fa-signature me-1"></i>Firmato dal Tecnico</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
+                                            @endif
+                                        @else
+                                            <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Non compilato</span>
+                                        @endif
+                                    @else
+                                        <span class="badge bg-secondary">N/A</span>
+                                    @endif
+                                </td>
+
+                                {{-- Stato Test B --}}
+                                <td>
+                                    @if(in_array('test2', $acceptance->tests))
+                                        @if($acceptance->testBResult)
+                                            @if($acceptance->testBResult->rl_signature_id)
+                                                <span class="badge bg-success"><i class="fas fa-check-double me-1"></i>Validato da RL</span>
+                                            @elseif($acceptance->testBResult->lab_signed_at)
+                                                <span class="badge bg-primary"><i class="fas fa-signature me-1"></i>Firmato dal Tecnico</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
+                                            @endif
+                                        @else
+                                            <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Non compilato</span>
+                                        @endif
+                                    @else
+                                        <span class="badge bg-secondary">N/A</span>
+                                    @endif
+                                </td>
+
                                 <td>
                                     @if(in_array('test1', $acceptance->tests))
                                         {{-- Controlla se il risultato del test esiste tramite la relazione --}}
@@ -132,11 +195,11 @@
                                                 $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
                                                 $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
                                             @endphp
-                                            @if($acceptance->testAResult->rl_signature_id) {{-- 1. Validato da RL --}}
+                                            @if($acceptance->testAResult->rl_signature_id)
                                                 <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test A (Validato)">
                                                     <i class="fas fa-user-check"></i> Test A
                                                 </a>
-                                            @elseif($acceptance->testAResult->lab_signed_at) {{-- 2. Firmato da Tecnico --}}
+                                            @elseif($acceptance->testAResult->lab_signed_at)
                                                 <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test A (Firmato)">
                                                     <i class="fas fa-signature"></i> Test A
                                                 </a>
@@ -149,7 +212,7 @@
                                                     </form>
                                                 @endif
                                             @else
-                                                {{-- 3. Non firmato, non validato --}}
+                                                {{-- Non firmato, non validato --}}
                                                 @if($isOwnerA)
                                                     <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test A">
                                                         <i class="fas fa-edit"></i> Test A
@@ -168,8 +231,7 @@
                                                     </a>
                                                 @endif
                                             @endif
-                                        @else
-                                            {{-- 4. Non ancora eseguito --}}
+                                        @else {{-- Non ancora eseguito --}}
                                             <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test A: Controllo pH">
                                                 <i class="fas fa-vial"></i> Test A
                                             </a>
@@ -189,11 +251,11 @@
                                                 $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
                                                 $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
                                             @endphp
-                                            @if($acceptance->testBResult->rl_signature_id) {{-- 1. Validato da RL: Sola lettura per tutti --}}
+                                            @if($acceptance->testBResult->rl_signature_id)
                                                 <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test B (Validato)">
                                                     <i class="fas fa-user-check"></i> Test B
                                                 </a>
-                                            @elseif($acceptance->testBResult->lab_signed_at) {{-- 2. Firmato da Tecnico, non ancora validato da RL --}}
+                                            @elseif($acceptance->testBResult->lab_signed_at)
                                                 <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test B (Firmato)">
                                                     <i class="fas fa-signature"></i> Test B
                                                 </a>
@@ -207,7 +269,7 @@
                                                     </form>
                                                 @endif
                                             @else
-                                                {{-- 3. Non firmato, non validato --}}
+                                                {{-- Non firmato, non validato --}}
                                                 @if($isOwner)
                                                     {{-- Il proprietario (tecnico) può modificare. --}}
                                                     <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test B">
@@ -229,8 +291,7 @@
                                                     </a>
                                                 @endif
                                             @endif
-                                        @else
-                                            {{-- 4. Nessun risultato ancora inserito --}}
+                                        @else {{-- Nessun risultato ancora inserito --}}
                                             <a href="{{ route('test-b.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test B: Produttività">
                                                 <i class="fas fa-vial"></i> Test B
                                             </a>
