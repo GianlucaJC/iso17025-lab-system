@@ -219,12 +219,14 @@
                                         29 => 'ID Piastra 2',
                                         30 => 'ID Piastra 3',
                                         31 => 'ID Piastra Controllo Bianco',
+                                        36 => 'ID Piastra Controllo TSA',
                                     ],
                                     'dbl_plates' => [
                                         32 => 'ID Piastra 1 (Doppio)',
                                         33 => 'ID Piastra 2 (Doppio)',
                                         34 => 'ID Piastra 3 (Doppio)',
                                         35 => 'ID Piastra Controllo Bianco (Doppio)',
+                                        37 => 'ID Piastra Controllo TSA (Doppio)',
                                     ],
                                 ],
                             ];
