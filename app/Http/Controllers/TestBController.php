@@ -321,7 +321,7 @@ class TestBController extends Controller
     private function validateRequest(Request $request, bool $isUpdate = false): array
     {
         // Regole di validazione
-        $growthRule = ['nullable', Rule::in(['rilevata', 'non_rilevata'])];
+        $growthRule = ['required', Rule::in(['rilevata', 'non_rilevata'])];
         $plateIdRule = 'required|numeric';
 
         if ($isUpdate) {

@@ -24,8 +24,6 @@
             }
         }
     </style>
-    {{-- Dipendenza per SweetAlert2 --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
     {{-- Navbar --}}
@@ -180,7 +178,7 @@
                         <table class="table table-bordered text-center">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Campione</th>
+                                    <th class="d-none">Campione</th>
                                     <th>N. Acc. Piastra 1</th>
                                     <th>N. Acc. Piastra 2</th>
                                     <th colspan="2">Crescita Rilevata / Non Rilevata (P1)</th>
@@ -190,7 +188,7 @@
                             <tbody>
                                 @foreach(['start' => 'Inizio Lotto', 'mid' => 'Metà Lotto', 'end' => 'Fine Lotto'] as $key => $label)
                                 <tr>
-                                    <td>{{ $label }}</td>
+                                    <td class="d-none">{{ $label }}</td>
                                     <td>
                                         <input type="text" class="form-control" name="plate_id_{{ $key }}_plate1_{{ $temp }}_run1" value="{{ old('plate_id_'.$key.'_plate1_'.$temp.'_run1', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run1'} : $selected_plates_run1[$temp][$key.'_plate1']) }}" {{ $is_readonly ? 'disabled' : '' }}>
                                     </td>
@@ -204,13 +202,13 @@
                                         $currentValue2 = old($fieldName2, $is_edit ? $test_b_result->{$fieldName2} : '');
                                     @endphp
                                     <td>
-                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
                                     </td>
                                     <td>
                                         <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
                                     </td>
                                     <td>
-                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
                                     </td>
                                     <td>
                                         <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
@@ -271,7 +269,7 @@
                             <table class="table table-bordered text-center">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Campione</th>
+                                        <th class="d-none">Campione</th>
                                         <th>N. Acc. Piastra 1</th>
                                         <th>N. Acc. Piastra 2</th>
                                         <th colspan="2">Crescita Rilevata / Non Rilevata (P1)</th>
@@ -281,7 +279,7 @@
                                 <tbody>
                                     @foreach(['start' => 'Inizio Lotto', 'mid' => 'Metà Lotto', 'end' => 'Fine Lotto'] as $key => $label)
                                     <tr>
-                                        <td>{{ $label }}</td>
+                                        <td class="d-none">{{ $label }}</td>
                                         <td>
                                             <input type="text" class="form-control" name="plate_id_{{ $key }}_plate1_{{ $temp }}_run2" value="{{ old('plate_id_'.$key.'_plate1_'.$temp.'_run2', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run2'} : $selected_plates_run2[$temp][$key.'_plate1']) }}" {{ $is_readonly ? 'disabled' : '' }}>
                                         </td>
@@ -295,13 +293,13 @@
                                             $currentValue2 = old($fieldName2, $is_edit ? $test_b_result->{$fieldName2} : '');
                                         @endphp
                                         <td>
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
                                         </td>
                                         <td>
                                             <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
                                         </td>
                                         <td>
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Rilevata
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
                                         </td>
                                         <td>
                                             <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
@@ -320,7 +318,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_b_result->outcome : 'idoneo') == 'idoneo' ? 'checked' : '' }} required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_b_result->outcome : '') == 'idoneo' ? 'checked' : '' }} required {{ $is_readonly ? 'disabled' : '' }}>
                                     <label class="form-check-label" for="outcome_idoneo">Idoneo</label>
                                 </div>
                             </div>
@@ -411,25 +409,55 @@
         <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
     </footer>
 
+    {{-- Dipendenza per SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Gestione validazione Bootstrap
             var form = document.querySelector('.needs-validation');
             if (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
+                form.addEventListener('submit', function(event) {
+                    // Prima, controlla specificamente i radio button richiesti
+                    const radioNames = [...new Set(
+                        Array.from(form.querySelectorAll('input[type="radio"][required]'))
+                        .map(radio => radio.name)
+                    )];
+
+                    let isRadioGroupInvalid = false;
+                    for (const name of radioNames) {
+                        if (!form.querySelector(`input[name="${name}"]:checked`)) {
+                            isRadioGroupInvalid = true;
+                            break;
+                        }
+                    }
+
+                    // Controlla la validità generale del form
+                    const isFormValid = form.checkValidity();
+
+                    // Se il form non è valido, blocca l'invio
+                    if (!isFormValid) {
                         event.preventDefault();
                         event.stopPropagation();
                     }
+
+                    // Se l'invalidità è dovuta a un radio button, mostra l'avviso Swal
+                    if (isRadioGroupInvalid) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Campi Obbligatori Mancanti',
+                            text: 'Per favore, compila tutte le opzioni di crescita (Rilevata / Non Rilevata) prima di salvare.',
+                            confirmButtonText: 'Ho capito'
+                        });
+                    }
+
+                    // Aggiungi la classe per mostrare i feedback di validazione di Bootstrap
                     form.classList.add('was-validated');
                 }, false);
             }
-
             // Gestione visibilità campo Non Conformità
             const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
             const nonComplianceSection = document.getElementById('non-compliance-section');
             const nonComplianceInput = document.getElementById('non_compliance_ref');
-
             function toggleNonCompliance() {
                 const isNonIdoneo = document.getElementById('outcome_non_idoneo').checked;
                 if (isNonIdoneo) {
@@ -441,26 +469,19 @@
                     nonComplianceInput.value = '';
                 }
             }
-
             outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
             toggleNonCompliance(); // Esegui al caricamento
-        });
-    </script>
-
-    {{-- Dipendenza per SweetAlert2 --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        $(document).ready(function() {
             // Gestione modale documentazione
-            $('#show-docs-btn').on('click', function() {
-                Swal.fire({
-                    title: '<strong>Manuale Utente e Conformità ISO/IEC 17025:2017</strong>',
-                    icon: 'info',
-                    html: `
+            const showDocsBtn = document.getElementById('show-docs-btn');
+            if (showDocsBtn) {
+                showDocsBtn.addEventListener('click', function() {
+                    Swal.fire({
+                        title: '<strong>Manuale Utente e Conformità ISO/IEC 17025:2017</strong>',
+                        icon: 'info',
+                        html: `
                         <div class="text-start">
                             <p class="text-center">Questo software è stato progettato per supportare le operazioni del laboratorio in conformità con i requisiti della norma <strong>ISO/IEC 17025:2017</strong>, garantendo la tracciabilità, l'integrità dei dati e il controllo degli accessi.</p>
                             <hr>
-
                             <h5 class="mt-3"><i class="fas fa-users-cog me-2 text-primary"></i>Gestione Ruoli e Permessi</h5>
                             <p>Il sistema si basa su ruoli definiti per garantire che solo il personale autorizzato possa eseguire determinate azioni, come richiesto dalla norma:</p>
                             <ul class="list-group">
@@ -474,7 +495,6 @@
                                     <span class="badge bg-danger">Admin</span>: Ha visibilità completa su tutti i dati a scopo di audit e supervisione. Può visualizzare la cronologia delle modifiche ma non può alterare i dati di accettazione o i risultati dei test per preservare l'integrità del dato.
                                 </li>
                             </ul>
-
                             <h5 class="mt-4"><i class="fas fa-project-diagram me-2 text-primary"></i>Flusso Operativo Controllato</h5>
                             <p>Il ciclo di vita di un test segue un percorso rigoroso per assicurare la corretta revisione e approvazione dei dati:</p>
                             <ol class="list-group list-group-numbered">
@@ -483,24 +503,20 @@
                                 <li class="list-group-item"><strong>Firma del Tecnico</strong>: Una volta completato, il Tecnico firma il test. Questa azione blocca ogni modifica futura da parte sua. Lo stato passa a <span class="badge bg-primary">Firmato dal Tecnico</span>.</li>
                                 <li class="list-group-item"><strong>Validazione RL</strong>: Il Responsabile Laboratorio revisiona il test firmato e, se corretto, lo valida. Questa è la seconda firma elettronica e rende il record <strong>immutabile</strong>. Lo stato passa a <span class="badge bg-success">Validato da RL</span>.</li>
                             </ol>
-
                             <h5 class="mt-4"><i class="fas fa-shield-alt me-2 text-primary"></i>Funzionalità Chiave per la Conformità</h5>
                             <dl>
                                 <dt><i class="fas fa-history me-1"></i>Audit Trail (Cronologia)</dt>
                                 <dd>
                                     Ogni modifica a una scheda di accettazione o a un risultato di test viene registrata. L'Admin può visualizzare la cronologia completa ( <button class="btn btn-secondary btn-sm py-0" disabled><i class="fas fa-history"></i></button> ) per ogni record, verificando <strong>chi</strong> ha modificato <strong>cosa</strong>, <strong>quando</strong> e <strong>perché</strong> (se richiesta una motivazione). Questo soddisfa il requisito di tracciabilità delle modifiche (punto 7.5 della norma).
                                 </dd>
-
                                 <dt class="mt-2"><i class="fas fa-signature me-1"></i>Firme Elettroniche e Integrità dei Dati</dt>
                                 <dd>
                                     Il processo di firma a due livelli (Tecnico + RL) garantisce che i dati siano revisionati e approvati da personale autorizzato. Una volta validato, il record non è più modificabile, assicurando l'integrità e l'immodificabilità del dato finale come richiesto dalla norma (punto 7.11).
                                 </dd>
-
                                 <dt class="mt-2"><i class="fas fa-user-lock me-1"></i>Controllo degli Accessi</dt>
                                 <dd>
                                     Il sistema limita le azioni in base al ruolo dell'utente loggato, impedendo a personale non autorizzato di eseguire operazioni critiche come la validazione dei risultati o la visualizzazione di dati sensibili come la cronologia (punto 6.2).
                                 </dd>
-
                                 <dt class="mt-2"><i class="fas fa-edit me-1"></i>Controllo delle Modifiche</dt>
                                 <dd>
                                     Qualsiasi modifica a un record esistente (sia accettazione che risultati di test) richiede l'inserimento obbligatorio di una <strong>motivazione</strong>. Questa informazione viene salvata nell'Audit Trail, fornendo una giustificazione chiara per ogni cambiamento apportato ai dati.
@@ -508,14 +524,15 @@
                             </dl>
                         </div>
                     `,
-                    showCloseButton: true,
-                    showCancelButton: false,
-                    focusConfirm: false,
-                    confirmButtonText: '<i class="fa fa-thumbs-up"></i> Ho capito!',
-                    confirmButtonAriaLabel: 'Thumbs up, great!',
-                    width: '80%',
+                        showCloseButton: true,
+                        showCancelButton: false,
+                        focusConfirm: false,
+                        confirmButtonText: '<i class="fa fa-thumbs-up"></i> Ho capito!',
+                        confirmButtonAriaLabel: 'Thumbs up, great!',
+                        width: '80%',
+                    });
                 });
-            });
+            }
         });
     </script>
 </body>
