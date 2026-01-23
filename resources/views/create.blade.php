@@ -20,6 +20,7 @@
         }
     </style>
 </head>
+
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
@@ -230,6 +231,7 @@
                                 ],
                             ];
                         @endphp
+                        
                         @foreach ($test_definitions as $test_id => $def)
                             <fieldset id="plates-group-{{ $test_id }}" class="mb-4 p-3 border rounded d-none" data-test-id="{{ $test_id }}">
                                 <legend class="h6 w-auto px-2 bg-primary-subtle text-primary-emphasis rounded">{{ $def['name'] }}</legend>
