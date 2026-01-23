@@ -168,12 +168,10 @@
                                 'test1' => [
                                     'name' => 'Test A (Controllo del pH)',
                                     'std_plates' => [
-                                        0 => 'ID Piastra',
-                                        1 => 'ID Piastra Controllo TSA',
+                                        0 => 'ID Piastra', // Solo la piastra principale
                                     ],
                                     'dbl_plates' => [
-                                        2 => 'ID Piastra (Doppio)',
-                                        3 => 'ID Piastra Controllo TSA (Doppio)',
+                                        2 => 'ID Piastra (Doppio)', // Solo la piastra principale in doppio
                                     ],
                                 ],
                                 'test2' => [

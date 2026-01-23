@@ -252,11 +252,11 @@ class AcceptanceController extends Controller
         $doubleTests = $request->input('double_tests', []);
 
         // Test A (2 plates, indices 0-1)
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 1; $i++) { // Ora solo 1 piastra per il Test A standard
             $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
         }
         // Test A Doppio (2 plates, indices 2-3)
-        for ($i = 2; $i < 4; $i++) {
+        for ($i = 2; $i < 3; $i++) { // Ora solo 1 piastra per il Test A in doppio
             $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
         }
 
