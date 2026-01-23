@@ -97,6 +97,16 @@ Route::post('/test-b/{test_b_result}/validate', [TestBController::class, 'valida
     ->name('test-b.validate')
     ->middleware('auth.api');
 
+// Rotte per la gestione degli strumenti (solo Admin)
+use App\Http\Controllers\InstrumentController;
+Route::middleware(['auth.api'])->group(function () {
+    Route::get('/instruments', [InstrumentController::class, 'index'])->name('instruments.index');
+    // Route::post('/instruments/type', [InstrumentController::class, 'storeInstrument'])->name('instruments.storeType'); // Se si volesse aggiungere tipi dinamicamente
+    Route::post('/instruments/item', [InstrumentController::class, 'storeItem'])->name('instruments.storeItem');
+    Route::put('/instruments/item/{item}', [InstrumentController::class, 'updateItem'])->name('instruments.updateItem');
+    Route::delete('/instruments/item/{item}', [InstrumentController::class, 'destroyItem'])->name('instruments.destroyItem');
+});
+
 // Rotta per la cronologia delle modifiche
 use App\Http\Controllers\AuditController;
 Route::get('/history/{modelNameShort}/{id}', [AuditController::class, 'show'])

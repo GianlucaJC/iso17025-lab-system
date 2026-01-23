@@ -36,6 +36,9 @@
                     <a href="{{ route('acceptance.create') }}" class="btn btn-success"><i class="fas fa-plus-circle me-2"></i>Nuova Accettazione</a>
                 @endif
                 <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('acceptance.index') }}">Elenco Accettazioni</a>
+                @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
+                    <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('instruments.index') }}">Gestione Strumenti</a>
+                @endif
             </div>
             <div class="d-flex align-items-center">
                 @if(Session::has('user'))
