@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Acceptance;
+use App\Models\InstrumentItem;
 use App\Models\TestBResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -74,6 +75,10 @@ class TestBController extends Controller
         ];
         $test_b_plates = []; // Questa variabile non è più usata direttamente per la visualizzazione
 
+        $incubators = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Incubatore');
+        })->get();
+
         return view('tests.test_b.create', [
             'acceptance' => $acceptance,
             'currentUser' => Session::get('user'),
@@ -83,6 +88,7 @@ class TestBController extends Controller
             'available_plates_run2' => $available_plates_run2,
             'selected_plates_run1' => $selected_plates_run1,
             'selected_plates_run2' => $selected_plates_run2,
+            'incubators' => $incubators,
         ]);
     }
 
@@ -201,6 +207,10 @@ class TestBController extends Controller
         ];
         $test_b_plates = []; // This variable is no longer directly used for display in the same way
 
+        $incubators = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Incubatore');
+        })->get();
+
         return view('tests.test_b.create', [
             'acceptance' => $acceptance,
             'test_b_result' => $test_b_result,
@@ -213,6 +223,7 @@ class TestBController extends Controller
             'selected_plates_run1' => $selected_plates_run1,
             'selected_plates_run2' => $selected_plates_run2,
             'usersMap' => $usersMap, // Pass usersMap to the view
+            'incubators' => $incubators,
         ]);
     }
 
@@ -333,13 +344,13 @@ class TestBController extends Controller
             'plate_id_mid_plate1_35_run1' => $plateIdRule,
             'plate_id_mid_plate2_35_run1' => $plateIdRule,
             'plate_id_end_plate1_35_run1' => $plateIdRule,
-            'plate_id_end_plate2_35_run1' => $plateIdRule,
-            'incubator_35_run1' => 'nullable|string|max:255',
-            'incubation_start_date_35_run1' => 'nullable|date',
-            'incubation_start_time_35_run1' => 'nullable|date_format:H:i',
-            'incubation_end_date_35_run1' => 'nullable|date|after_or_equal:incubation_start_date_35_run1',
-            'incubation_end_time_35_run1' => 'nullable|date_format:H:i',
-            'temperature_35_run1' => 'nullable|numeric|min:0|max:50',
+            'plate_id_end_plate2_35_run1' => $plateIdRule, // Plates for 35C
+            'incubator_35_run1' => 'required|string|max:255', // Incubation Data
+            'incubation_start_date_35_run1' => 'required|date', // Incubation Data
+            'incubation_start_time_35_run1' => 'required|date_format:H:i', // Incubation Data
+            'incubation_end_date_35_run1' => 'required|date|after_or_equal:incubation_start_date_35_run1', // Incubation Data
+            'incubation_end_time_35_run1' => 'required|date_format:H:i', // Incubation Data
+            'temperature_35_run1' => 'required|numeric|min:0|max:50', // Incubation Data
             'growth_result_35_start_plate1_run1' => $growthRule, // Growth rules for 35C
             'growth_result_35_start_plate2_run1' => $growthRule,
             'growth_result_35_mid_plate1_run1' => $growthRule,
@@ -351,13 +362,13 @@ class TestBController extends Controller
             'plate_id_mid_plate1_22_run1' => $plateIdRule,
             'plate_id_mid_plate2_22_run1' => $plateIdRule,
             'plate_id_end_plate1_22_run1' => $plateIdRule,
-            'plate_id_end_plate2_22_run1' => $plateIdRule, 
-            'incubator_22_run1' => 'required|string|max:255', // Dati Incubazione
-            'incubation_start_date_22_run1' => 'required|date', // Dati Incubazione
-            'incubation_start_time_22_run1' => 'required|date_format:H:i', // Dati Incubazione
-            'incubation_end_date_22_run1' => 'required|date|after_or_equal:incubation_start_date_22_run1', // Dati Incubazione
-            'incubation_end_time_22_run1' => 'required|date_format:H:i', // Dati Incubazione
-            'temperature_22_run1' => 'required|numeric|min:0|max:50', // Dati Incubazione
+            'plate_id_end_plate2_22_run1' => $plateIdRule, // Plates for 22C
+            'incubator_22_run1' => 'required|string|max:255', // Incubation Data
+            'incubation_start_date_22_run1' => 'required|date', // Incubation Data
+            'incubation_start_time_22_run1' => 'required|date_format:H:i', // Incubation Data
+            'incubation_end_date_22_run1' => 'required|date|after_or_equal:incubation_start_date_22_run1', // Incubation Data
+            'incubation_end_time_22_run1' => 'required|date_format:H:i', // Incubation Data
+            'temperature_22_run1' => 'required|numeric|min:0|max:50', // Incubation Data
             'growth_result_22_start_plate1_run1' => $growthRule, // Growth rules for 22C
             'growth_result_22_start_plate2_run1' => $growthRule,
             'growth_result_22_mid_plate1_run1' => $growthRule,
