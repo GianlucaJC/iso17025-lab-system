@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log; // Import the Log facade
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AcceptanceController extends Controller
 {
@@ -142,7 +143,15 @@ class AcceptanceController extends Controller
             });
         }
 
+        // Eager load relationships for completeness check in the view
+        $acceptancesQuery->with(['testAResult', 'testBResult', 'testCResult']);
+
         $acceptances = $acceptancesQuery->latest()->get(); // Apply latest() and get() at the end
+
+        // Add is_pdf_complete status to each acceptance
+        $acceptances->each(function ($acceptance) {
+            $acceptance->is_pdf_complete = $this->isPdfComplete($acceptance);
+        });
 
         return view('acceptance.index', [
             'acceptances' => $acceptances,
@@ -312,5 +321,108 @@ class AcceptanceController extends Controller
         $acceptance->update($validatedData);
 
         return redirect()->route('acceptance.index')->with('success', 'Accettazione aggiornata con successo!');
+    }
+
+    /**
+     * Genera il Rapporto di Prova in formato PDF.
+     *
+     * @param  \App\Models\Acceptance  $acceptance
+     * @return \Illuminate\Http\Response
+     */
+    public function generatePdf(Acceptance $acceptance)
+    {
+        // Eager load relationships to avoid N+1 queries
+        $acceptance->load('testAResult', 'testBResult', 'testCResult');
+
+        // --- Inizio blocco recupero utenti via API (da refattorizzare in un service) ---
+        $usersMap = [];
+        try {
+            $httpClient = Http::getFacadeRoot();
+            $certPath = env('API_CERT_PATH');
+
+            if ($certPath && file_exists($certPath)) {
+                $httpClient = $httpClient->withOptions(['verify' => $certPath]);
+            }
+            elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
+                $httpClient = $httpClient->withoutVerifying();
+            }
+
+            $usersResponse = $httpClient->post(env('API_LOGIN_URL'), [
+                'api_token' => env('API_LOGIN_SHARED_SECRET'),
+                'action' => 'get_users'
+            ]);
+
+            if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
+                $usersMap = collect($usersResponse->json('users'))->keyBy('id')->all();
+            } else {
+                Log::error("API call to get users failed in generatePdf with status " . $usersResponse->status());
+            }
+        } catch (\Exception $e) {
+            Log::error("Impossibile recuperare la lista utenti dall'API in generatePdf: " . $e->getMessage());
+        }
+        // --- Fine blocco recupero utenti ---
+
+        // Dati mancanti dal modello Acceptance, usiamo placeholder.
+        // Questi dovrebbero essere aggiunti al modello Acceptance e ai relativi form.
+        $productInfo = [
+            'name' => 'XLD Agar', // Placeholder
+            'code' => '10056', // Placeholder
+            'expiry_date' => '2025-12-31', // Placeholder
+        ];
+
+        // Determina la data del report. Usa la data di validazione del Test C se disponibile, altrimenti la data odierna.
+        $report_date = optional($acceptance->testCResult)->rl_signed_at
+            ? $acceptance->testCResult->rl_signed_at->format('d.m.Y')
+            : now()->format('d.m.Y');
+
+        // Prepara i dati per la vista
+        $data = [
+            'acceptance' => $acceptance,
+            'testAResult' => $acceptance->testAResult,
+            'testBResult' => $acceptance->testBResult,
+            'testCResult' => $acceptance->testCResult,
+            'usersMap' => $usersMap,
+            'productInfo' => $productInfo,
+            'report_date' => $report_date,
+        ];
+
+        // Aggiungo la variabile isPdfComplete ai dati passati alla vista
+        $data['isPdfComplete'] = $this->isPdfComplete($acceptance);
+
+        $pdf = Pdf::loadView('acceptance.pdf', $data);
+
+        // Abilita l'esecuzione di script inline per il conteggio delle pagine
+        $pdf->getDomPDF()->set_option("enable_php", true);
+
+        // Imposta il nome del file
+        $fileName = 'RDP_' . $acceptance->acceptance_number . '.pdf';
+
+        // Mostra il PDF nel browser senza forzare il download
+        return $pdf->stream($fileName);
+    }
+
+    /**
+     * Checks if an Acceptance record is complete for PDF generation.
+     * An acceptance is considered complete if all its required tests have been validated by the RL.
+     *
+     * @param Acceptance $acceptance
+     * @return bool
+     */
+    private function isPdfComplete(Acceptance $acceptance): bool
+    {
+        $requiredTests = $acceptance->tests ?? [];
+
+        // If no tests were selected for this acceptance, it cannot be "complete"
+        if (empty($requiredTests)) {
+            return false;
+        }
+
+        foreach ($requiredTests as $testKey) {
+            if ($testKey === 'test1' && (!$acceptance->testAResult || !$acceptance->testAResult->rl_signature_id)) return false;
+            if ($testKey === 'test2' && (!$acceptance->testBResult || !$acceptance->testBResult->rl_signature_id)) return false;
+            if ($testKey === 'test3' && (!$acceptance->testCResult || !$acceptance->testCResult->rl_signed_at)) return false;
+        }
+
+        return true; // All required tests are present and validated
     }
 }

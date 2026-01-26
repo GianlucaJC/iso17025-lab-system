@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\AcceptanceController; // Aggiungi questo in cima al file
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,7 +19,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rotte Protette
-use App\Http\Controllers\AcceptanceController; // Aggiungi questo in cima al file
+
 
 // ... altre tue rotte ...
 
@@ -44,6 +44,8 @@ Route::get('/acceptance/{acceptance}/edit', [AcceptanceController::class, 'edit'
 Route::put('/acceptance/{acceptance}', [AcceptanceController::class, 'update'])
     ->name('acceptance.update')
     ->middleware('auth.api');
+
+Route::get('/acceptance/{acceptance}/pdf', [AcceptanceController::class, 'generatePdf'])->name('acceptance.pdf');    
 
 // Rotte per i test specifici
 use App\Http\Controllers\TestAController;
@@ -138,3 +140,6 @@ use App\Http\Controllers\AuditController;
 Route::get('/history/{modelNameShort}/{id}', [AuditController::class, 'show'])
     ->name('history.show')
     ->middleware('auth.api');
+
+
+

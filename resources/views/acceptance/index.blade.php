@@ -75,51 +75,59 @@
 
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-list-ul me-2"></i>Elenco Accettazioni Campioni</h3>
+                <h3 class="mb-3"><i class="fas fa-list-ul me-2"></i>Elenco Accettazioni Campioni</h3>
+                {{-- Legenda Test Eseguiti --}}
+                <div class="p-3 border rounded bg-light mt-3">
+                    <h6 class="mb-2">Legenda Test Eseguiti:</h6>
+                    <ul class="list-unstyled mb-0 d-flex flex-wrap gap-3">
+                        <li><span class="badge bg-secondary">Test A</span>: Test A (Controllo del pH)</li>
+                        <li><span class="badge bg-secondary">Test B</span>: Test B (Produttività, Metodo Qualitativo)</li>
+                        <li><span class="badge bg-secondary">Test C</span>: Test C (Controllo della contaminazione microbica)</li>
+                        <li><span class="badge bg-info text-dark">2x</span>: Eseguito in doppio</li>
+                    </ul>
+                </div>
             </div>
             <div class="card-body">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4><i class="fas fa-filter me-2"></i>Filtri</h4>
-                    </div>
-                    <div class="card-body">
-                        <form method="GET" action="{{ route('acceptance.index') }}" class="row g-3 align-items-end">
-                            <div class="col-md-3">
-                                <label for="filter_test_a_status" class="form-label">Stato Test A</label>
-                                <select class="form-select" id="filter_test_a_status" name="filter_test_a_status">
-                                    <option value="all" {{ $filterTestAStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
-                                    <option value="not_compiled" {{ $filterTestAStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
-                                    <option value="in_compilation" {{ $filterTestAStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
-                                    <option value="signed" {{ $filterTestAStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
-                                    <option value="validated" {{ $filterTestAStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="filter_test_b_status" class="form-label">Stato Test B</label>
-                                <select class="form-select" id="filter_test_b_status" name="filter_test_b_status">
-                                    <option value="all" {{ $filterTestBStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
-                                    <option value="not_compiled" {{ $filterTestBStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
-                                    <option value="in_compilation" {{ $filterTestBStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
-                                    <option value="signed" {{ $filterTestBStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
-                                    <option value="validated" {{ $filterTestBStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="filter_test_c_status" class="form-label">Stato Test C</label>
-                                <select class="form-select" id="filter_test_c_status" name="filter_test_c_status">
-                                    <option value="all" {{ $filterTestCStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
-                                    <option value="not_compiled" {{ $filterTestCStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
-                                    <option value="in_compilation" {{ $filterTestCStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
-                                    <option value="signed" {{ $filterTestCStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
-                                    <option value="validated" {{ $filterTestCStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary"><i class="fas fa-search me-2"></i>Applica Filtri</button>
-                                <a href="{{ route('acceptance.index') }}" class="btn btn-secondary ms-2"><i class="fas fa-redo me-2"></i>Reset Filtri</a>
-                            </div>
-                        </form>
-                    </div>
+                {{-- Filter section --}}
+                <div class="mb-4 p-3 border rounded"> {{-- Mimic card styling without nested card structure --}}
+                    <h4 class="mb-3"><i class="fas fa-filter me-2"></i>Filtri</h4>
+                    <form method="GET" action="{{ route('acceptance.index') }}" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="filter_test_a_status" class="form-label">Stato Test A</label>
+                            <select class="form-select" id="filter_test_a_status" name="filter_test_a_status">
+                                <option value="all" {{ $filterTestAStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
+                                <option value="not_compiled" {{ $filterTestAStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
+                                <option value="in_compilation" {{ $filterTestAStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                <option value="signed" {{ $filterTestAStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
+                                <option value="validated" {{ $filterTestAStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filter_test_b_status" class="form-label">Stato Test B</label>
+                            <select class="form-select" id="filter_test_b_status" name="filter_test_b_status">
+                                <option value="all" {{ $filterTestBStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
+                                <option value="not_compiled" {{ $filterTestBStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
+                                <option value="in_compilation" {{ $filterTestBStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                <option value="signed" {{ $filterTestBStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
+                                <option value="validated" {{ $filterTestBStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filter_test_c_status" class="form-label">Stato Test C</label>
+                            <select class="form-select" id="filter_test_c_status" name="filter_test_c_status">
+                                <option value="all" {{ $filterTestCStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
+                                <option value="not_compiled" {{ $filterTestCStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
+                                <option value="in_compilation" {{ $filterTestCStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                <option value="signed" {{ $filterTestCStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
+                                <option value="validated" {{ $filterTestCStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label visually-hidden">Azioni</label> {{-- Empty label for alignment --}}
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search me-2"></i>Applica Filtri</button>
+                            <a href="{{ route('acceptance.index') }}" class="btn btn-secondary ms-2"><i class="fas fa-redo me-2"></i>Reset Filtri</a>
+                        </div>
+                    </form>
                 </div>
 
                 <table id="acceptancesTable" class="table table-striped table-bordered" style="width:100%">
@@ -141,6 +149,11 @@
                     <tbody>
                         @php
                             $testNameMap = [
+                                'test1' => 'Test A',
+                                'test2' => 'Test B',
+                                'test3' => 'Test C'
+                            ];
+                            $fullTestNameMap = [ // Mappa completa per la legenda
                                 'test1' => 'Test A (Controllo del pH)',
                                 'test2' => 'Test B (Produttività, Metodo Qualitativo)',
                                 'test3' => 'Test C (Controllo della contaminazione microbica)'
@@ -161,7 +174,7 @@
                                 <td>
                                     @if(!empty($acceptance->tests))
                                         @foreach($acceptance->tests as $testKey)
-                                            <div class="mb-1">
+                                            <div class="mb-1 text-nowrap">
                                                 <span class="badge bg-secondary">{{ $testNameMap[$testKey] ?? $testKey }}</span>
                                                 @if(is_array($acceptance->double_tests) && in_array($testKey, $acceptance->double_tests))
                                                     <span class="badge bg-info text-dark" title="Eseguito in doppio">2x</span>
@@ -411,6 +424,16 @@
                                     @else
                                         <a href="{{ route('acceptance.edit', $acceptance) }}" class="btn btn-info btn-sm" title="Visualizza">
                                             <i class="fas fa-eye"></i>
+                                        </a>
+                                    @endif
+                                    {{-- Pulsante per scaricare il Rapporto di Prova --}}
+                                    @if($acceptance->is_pdf_complete)
+                                        <a href="{{ route('acceptance.pdf', $acceptance->id) }}" class="btn btn-sm btn-success ms-1" title="Scarica Rapporto Finale PDF" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> Finale
+                                        </a>
+                                    @else
+                                        <a href="{{ route('acceptance.pdf', $acceptance->id) }}" class="btn btn-sm btn-info ms-1" title="Scarica Anteprima PDF" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> Anteprima
                                         </a>
                                     @endif
                                     {{-- Pulsante Cronologia per Accettazione (solo admin) --}}
