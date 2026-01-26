@@ -98,7 +98,12 @@
                         <div class="row p-3 bg-light border rounded">
                             <div class="col-md-4"><label class="form-label fw-bold">Lotto</label><p class="form-control-plaintext">{{ $acceptance->lotto }}</p></div>
                             <div class="col-md-4"><label class="form-label fw-bold">N. Accettazione</label><p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">Operatore</label><p class="form-control-plaintext">{{ $currentUser['operatore'] ?? '' }}</p></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Operatore Accettazione</label>
+                                @php
+                                    $acceptanceOperatorName = $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D';
+                                @endphp
+                                <p class="form-control-plaintext">{{ $acceptanceOperatorName }}</p></div>
                         </div>
                     </fieldset>
 
@@ -190,10 +195,16 @@
                                 <tr>
                                     <td class="d-none">{{ $label }}</td>
                                     <td>
-                                        <input type="text" class="form-control" name="plate_id_{{ $key }}_plate1_{{ $temp }}_run1" value="{{ old('plate_id_'.$key.'_plate1_'.$temp.'_run1', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run1'} : $selected_plates_run1[$temp][$key.'_plate1']) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                        @php
+                                            $plate_value1 = $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run1'} : ($selected_plates_run1[$temp][$key.'_plate1'] ?? 'N/D');
+                                        @endphp
+                                        <span class="badge bg-dark fs-6">{{ $plate_value1 }}</span>
                                     </td>
                                     <td>
-                                        <input type="text" class="form-control" name="plate_id_{{ $key }}_plate2_{{ $temp }}_run1" value="{{ old('plate_id_'.$key.'_plate2_'.$temp.'_run1', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate2_'.$temp.'_run1'} : $selected_plates_run1[$temp][$key.'_plate2']) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                        @php
+                                            $plate_value2 = $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate2_'.$temp.'_run1'} : ($selected_plates_run1[$temp][$key.'_plate2'] ?? 'N/D');
+                                        @endphp
+                                        <span class="badge bg-dark fs-6">{{ $plate_value2 }}</span>
                                     </td>
                                     @php
                                         $fieldName1 = 'growth_result_'.$temp.'_'.$key.'_plate1_run1';
@@ -281,10 +292,16 @@
                                     <tr>
                                         <td class="d-none">{{ $label }}</td>
                                         <td>
-                                            <input type="text" class="form-control" name="plate_id_{{ $key }}_plate1_{{ $temp }}_run2" value="{{ old('plate_id_'.$key.'_plate1_'.$temp.'_run2', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run2'} : $selected_plates_run2[$temp][$key.'_plate1']) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                            @php
+                                                $plate_value1_run2 = $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate1_'.$temp.'_run2'} : ($selected_plates_run2[$temp][$key.'_plate1'] ?? 'N/D');
+                                            @endphp
+                                            <span class="badge bg-dark fs-6">{{ $plate_value1_run2 }}</span>
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control" name="plate_id_{{ $key }}_plate2_{{ $temp }}_run2" value="{{ old('plate_id_'.$key.'_plate2_'.$temp.'_run2', $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate2_'.$temp.'_run2'} : $selected_plates_run2[$temp][$key.'_plate2']) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                            @php
+                                                $plate_value2_run2 = $is_edit ? $test_b_result->{'plate_id_'.$key.'_plate2_'.$temp.'_run2'} : ($selected_plates_run2[$temp][$key.'_plate2'] ?? 'N/D');
+                                            @endphp
+                                            <span class="badge bg-dark fs-6">{{ $plate_value2_run2 }}</span>
                                         </td>
                                         @php
                                             $fieldName1 = 'growth_result_'.$temp.'_'.$key.'_plate1_run2';
