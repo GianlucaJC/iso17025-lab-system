@@ -63,4 +63,12 @@ class Acceptance extends Model
     {
         return $this->hasOne(TestBResult::class);
     }
+
+    /**
+     * Get the Test C result associated with the acceptance.
+     */
+    public function testCResult(): HasOne
+    {
+        return $this->hasOne(TestCResult::class);
+    }
 }

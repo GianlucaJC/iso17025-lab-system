@@ -84,7 +84,7 @@
                     </div>
                     <div class="card-body">
                         <form method="GET" action="{{ route('acceptance.index') }}" class="row g-3 align-items-end">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="filter_test_a_status" class="form-label">Stato Test A</label>
                                 <select class="form-select" id="filter_test_a_status" name="filter_test_a_status">
                                     <option value="all" {{ $filterTestAStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
@@ -94,7 +94,7 @@
                                     <option value="validated" {{ $filterTestAStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="filter_test_b_status" class="form-label">Stato Test B</label>
                                 <select class="form-select" id="filter_test_b_status" name="filter_test_b_status">
                                     <option value="all" {{ $filterTestBStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
@@ -104,7 +104,17 @@
                                     <option value="validated" {{ $filterTestBStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <label for="filter_test_c_status" class="form-label">Stato Test C</label>
+                                <select class="form-select" id="filter_test_c_status" name="filter_test_c_status">
+                                    <option value="all" {{ $filterTestCStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
+                                    <option value="not_compiled" {{ $filterTestCStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
+                                    <option value="in_compilation" {{ $filterTestCStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                    <option value="signed" {{ $filterTestCStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
+                                    <option value="validated" {{ $filterTestCStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-search me-2"></i>Applica Filtri</button>
                                 <a href="{{ route('acceptance.index') }}" class="btn btn-secondary ms-2"><i class="fas fa-redo me-2"></i>Reset Filtri</a>
                             </div>
@@ -123,6 +133,7 @@
                             <th>Data Creazione</th>
                             <th>Stato Test A</th>
                             <th>Stato Test B</th>
+                            <th>Stato Test C</th>
                             <th>Esecuzione Test</th>
                             <th>Azioni</th>
                         </tr>
@@ -200,7 +211,81 @@
                                     @endif
                                 </td>
 
+                                {{-- Stato Test C --}}
                                 <td>
+                                    @if(in_array('test3', $acceptance->tests))
+                                        @if($acceptance->testCResult)
+                                            @if($acceptance->testCResult->rl_signed_at)
+                                                <span class="badge bg-success"><i class="fas fa-check-double me-1"></i>Validato da RL</span>
+                                            @elseif($acceptance->testCResult->lab_signed_at)
+                                                <span class="badge bg-primary"><i class="fas fa-signature me-1"></i>Firmato dal Tecnico</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
+                                            @endif
+                                        @else
+                                            <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Non compilato</span>
+                                        @endif
+                                    @else
+                                        <span class="badge bg-secondary">N/A</span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if(in_array('test3', $acceptance->tests))
+                                        @if($acceptance->testCResult)
+                                            @php
+                                                $isOwnerC = $acceptance->testCResult->operator_id == $currentUser['id'];
+                                            @endphp
+                                            @if($acceptance->testCResult->rl_signed_at)
+                                                <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test C (Validato)">
+                                                    <i class="fas fa-user-check"></i> Test C
+                                                </a>
+                                            @elseif($acceptance->testCResult->lab_signed_at)
+                                                <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test C (Firmato)">
+                                                    <i class="fas fa-signature"></i> Test C
+                                                </a>
+                                                @if($isLabManager && !$isAdmin)
+                                                    <form action="{{ route('test-c.validate', $acceptance->testCResult) }}" method="POST" class="d-inline validate-form ms-1">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Valida Test C">
+                                                            <i class="fas fa-user-check"></i> Valida
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @else
+                                                {{-- Non firmato, non validato (in compilazione) --}}
+                                                @if($isOwnerC && !$isAdmin)
+                                                    <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test C">
+                                                        <i class="fas fa-edit"></i> Test C
+                                                    </a>
+                                                    @if($isLabTechnician && !$isAdmin)
+                                                        <form action="{{ route('test-c.sign', $acceptance->testCResult) }}" method="POST" class="d-inline sign-form">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test C">
+                                                                <i class="fas fa-signature"></i> Firma
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                @else
+                                                    <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test C">
+                                                        <i class="fas fa-eye"></i> Test C
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        @else {{-- Non ancora eseguito --}}
+                                            @if($isLabTechnician && !$isAdmin)
+                                                <a href="{{ route('test-c.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test C: Controllo contaminazione microbica">
+                                                    <i class="fas fa-vial"></i> Test C
+                                                </a>
+                                            @endif
+                                        @endif
+                                        {{-- Pulsante Cronologia per Test C --}}
+                                        @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testCResult)
+                                                <a href="{{ route('history.show', ['modelNameShort' => 'test-c-result', 'id' => $acceptance->testCResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test C">
+                                                    <i class="fas fa-history"></i>
+                                                </a>
+                                        @endif
+                                    @endif
                                     @if(in_array('test1', $acceptance->tests))
                                         {{-- Controlla se il risultato del test esiste tramite la relazione --}}
                                         @if($acceptance->testAResult)

@@ -77,6 +77,7 @@ class AcceptanceController extends Controller
         // Get filter parameters from the request
         $filterTestAStatus = $request->input('filter_test_a_status', 'all');
         $filterTestBStatus = $request->input('filter_test_b_status', 'all');
+        $filterTestCStatus = $request->input('filter_test_c_status', 'all');
 
         // Apply filters for Test A
         if ($filterTestAStatus !== 'all') {
@@ -120,6 +121,27 @@ class AcceptanceController extends Controller
             });
         }
 
+        // Apply filters for Test C
+        if ($filterTestCStatus !== 'all') {
+            $acceptancesQuery->where(function ($query) use ($filterTestCStatus) {
+                if ($filterTestCStatus === 'not_compiled') {
+                    $query->whereDoesntHave('testCResult');
+                } elseif ($filterTestCStatus === 'in_compilation') {
+                    $query->whereHas('testCResult', function ($q) {
+                        $q->whereNull('lab_signed_at');
+                    });
+                } elseif ($filterTestCStatus === 'signed') {
+                    $query->whereHas('testCResult', function ($q) {
+                        $q->whereNotNull('lab_signed_at')->whereNull('rl_signed_at');
+                    });
+                } elseif ($filterTestCStatus === 'validated') {
+                    $query->whereHas('testCResult', function ($q) {
+                        $q->whereNotNull('rl_signed_at');
+                    });
+                }
+            });
+        }
+
         $acceptances = $acceptancesQuery->latest()->get(); // Apply latest() and get() at the end
 
         return view('acceptance.index', [
@@ -128,6 +150,7 @@ class AcceptanceController extends Controller
             'usersMap' => $usersMap,
             'filterTestAStatus' => $filterTestAStatus,
             'filterTestBStatus' => $filterTestBStatus,
+            'filterTestCStatus' => $filterTestCStatus,
         ]);
     }
 

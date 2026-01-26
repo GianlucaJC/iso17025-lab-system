@@ -48,6 +48,7 @@ Route::put('/acceptance/{acceptance}', [AcceptanceController::class, 'update'])
 // Rotte per i test specifici
 use App\Http\Controllers\TestAController;
 use App\Http\Controllers\TestBController;
+use App\Http\Controllers\TestCController;
 
 Route::get('/acceptance/{acceptance}/test-a/create', [TestAController::class, 'create'])
     ->name('test-a.create')
@@ -95,6 +96,31 @@ Route::post('/test-b/{test_b_result}/sign', [TestBController::class, 'sign'])
 
 Route::post('/test-b/{test_b_result}/validate', [TestBController::class, 'validateTest'])
     ->name('test-b.validate')
+    ->middleware('auth.api');
+
+// Rotte per il Test C
+Route::get('/acceptance/{acceptance}/test-c/create', [TestCController::class, 'create'])
+    ->name('test-c.create')
+    ->middleware('auth.api');
+
+Route::post('/acceptance/{acceptance}/test-c', [TestCController::class, 'store'])
+    ->name('test-c.store')
+    ->middleware('auth.api');
+
+Route::get('/test-c/{test_c_result}/edit', [TestCController::class, 'edit'])
+    ->name('test-c.edit')
+    ->middleware('auth.api');
+
+Route::put('/test-c/{test_c_result}', [TestCController::class, 'update'])
+    ->name('test-c.update')
+    ->middleware('auth.api');
+
+Route::post('/test-c/{test_c_result}/sign', [TestCController::class, 'sign'])
+    ->name('test-c.sign')
+    ->middleware('auth.api');
+
+Route::post('/test-c/{test_c_result}/validate', [TestCController::class, 'validateTest'])
+    ->name('test-c.validate')
     ->middleware('auth.api');
 
 // Rotte per la gestione degli strumenti (solo Admin)

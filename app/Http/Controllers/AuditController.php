@@ -29,7 +29,8 @@ class AuditController extends Controller
         $modelMap = [
             'acceptance' => \App\Models\Acceptance::class,
             'test-a-result' => \App\Models\TestAResult::class,
-            'test-b-result' => \App\Models\TestBResult::class, // Aggiunto Test B
+            'test-b-result' => \App\Models\TestBResult::class,
+            'test-c-result' => \App\Models\TestCResult::class,
         ];
 
         if (!array_key_exists($modelNameShort, $modelMap)) {
