@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InstrumentItem;
 use App\Models\Acceptance;
 use App\Models\TestCResult;
 use Illuminate\Http\Request;
@@ -65,24 +66,35 @@ class TestCController extends Controller
 
         $is_double_test_c = in_array('test3', $acceptance->double_tests ?? []);
 
-        // Recupera gli ID delle piastre per il Test C
+        // Global test start/end datetimes are not per run, so they are not passed with suffix.
+        // They are handled directly in the view for initial values.
+
+        // Recupera gli ID delle piastre per il Test C (mappatura da vecchia a nuova logica)
         $plate_ids = $acceptance->plates ?? [];
 
         $selected_plates = [
-            'plate_1' => $plate_ids[28] ?? null,
-            'plate_2' => $plate_ids[29] ?? null,
-            'plate_3' => $plate_ids[30] ?? null,
+            'start_lotto' => $plate_ids[28] ?? null,
+            'mid_lotto' => $plate_ids[29] ?? null,
+            'end_lotto' => $plate_ids[30] ?? null,
             'control_blank' => $plate_ids[31] ?? null,
-            'control_tsa' => $plate_ids[36] ?? null,
+            'tsa_sheep_blood' => $plate_ids[36] ?? null, // Piastra di TSA Sheep Blood
         ];
 
         $selected_plates_run2 = [
-            'plate_1' => $is_double_test_c ? ($plate_ids[32] ?? null) : null,
-            'plate_2' => $is_double_test_c ? ($plate_ids[33] ?? null) : null,
-            'plate_3' => $is_double_test_c ? ($plate_ids[34] ?? null) : null,
+            'start_lotto' => $is_double_test_c ? ($plate_ids[32] ?? null) : null,
+            'mid_lotto' => $is_double_test_c ? ($plate_ids[33] ?? null) : null,
+            'end_lotto' => $is_double_test_c ? ($plate_ids[34] ?? null) : null,
             'control_blank' => $is_double_test_c ? ($plate_ids[35] ?? null) : null,
-            'control_tsa' => $is_double_test_c ? ($plate_ids[37] ?? null) : null,
+            'tsa_sheep_blood' => $is_double_test_c ? ($plate_ids[37] ?? null) : null, // Piastra di TSA Sheep Blood per Run 2
         ];
+
+        $incubators = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Incubatore');
+        })->get();
+
+        $pipettes = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Pipetta');
+        })->get();
 
         return view('tests.test_c.create', [
             'acceptance' => $acceptance,
@@ -90,6 +102,8 @@ class TestCController extends Controller
             'is_double_test_c' => $is_double_test_c,
             'selected_plates' => $selected_plates,
             'selected_plates_run2' => $selected_plates_run2,
+            'incubators' => $incubators,
+            'pipettes' => $pipettes,
             'usersMap' => $usersMap,
         ]);
     }
@@ -113,20 +127,20 @@ class TestCController extends Controller
         $is_double_test_c = in_array('test3', $acceptance->double_tests ?? []);
         $plate_ids = $acceptance->plates ?? [];
 
-        // Mappa gli ID delle piastre ai campi corretti del database per il Run 1
-        $dataToSave['plate_id_1'] = $plate_ids[28] ?? null;
-        $dataToSave['plate_id_2'] = $plate_ids[29] ?? null;
-        $dataToSave['plate_id_3'] = $plate_ids[30] ?? null;
+        // Mappa gli ID delle piastre (lette dall'accettazione) ai campi corretti del database per il Run 1
+        $dataToSave['plate_id_start_lotto'] = $plate_ids[28] ?? null;
+        $dataToSave['plate_id_mid_lotto'] = $plate_ids[29] ?? null;
+        $dataToSave['plate_id_end_lotto'] = $plate_ids[30] ?? null;
         $dataToSave['plate_id_control_blank'] = $plate_ids[31] ?? null;
-        $dataToSave['plate_id_control_tsa'] = $plate_ids[36] ?? null;
+        $dataToSave['tsa_sheep_blood_plate_id'] = $plate_ids[36] ?? null;
 
         if ($is_double_test_c) {
-            // Mappa gli ID delle piastre ai campi corretti del database per il Run 2
-            $dataToSave['plate_id_1_run2'] = $plate_ids[32] ?? null;
-            $dataToSave['plate_id_2_run2'] = $plate_ids[33] ?? null;
-            $dataToSave['plate_id_3_run2'] = $plate_ids[34] ?? null;
+            // Mappa gli ID delle piastre (lette dall'accettazione) ai campi corretti del database per il Run 2
+            $dataToSave['plate_id_start_lotto_run2'] = $plate_ids[32] ?? null;
+            $dataToSave['plate_id_mid_lotto_run2'] = $plate_ids[33] ?? null;
+            $dataToSave['plate_id_end_lotto_run2'] = $plate_ids[34] ?? null;
             $dataToSave['plate_id_control_blank_run2'] = $plate_ids[35] ?? null;
-            $dataToSave['plate_id_control_tsa_run2'] = $plate_ids[37] ?? null;
+            $dataToSave['tsa_sheep_blood_plate_id_run2'] = $plate_ids[37] ?? null;
         }
 
         TestCResult::create($dataToSave);
@@ -183,22 +197,35 @@ class TestCController extends Controller
         $acceptance = $test_c_result->acceptance;
 
         $is_double_test_c = in_array('test3', $acceptance->double_tests ?? []);
+        $plate_ids_from_acceptance = $acceptance->plates ?? []; // Original plates from acceptance
 
         $selected_plates = [
-            'plate_1' => $test_c_result->plate_id_1,
-            'plate_2' => $test_c_result->plate_id_2,
-            'plate_3' => $test_c_result->plate_id_3,
+            'start_lotto' => $test_c_result->plate_id_start_lotto,
+            'mid_lotto' => $test_c_result->plate_id_mid_lotto,
+            'end_lotto' => $test_c_result->plate_id_end_lotto,
             'control_blank' => $test_c_result->plate_id_control_blank,
-            'control_tsa' => $test_c_result->plate_id_control_tsa,
+            'tsa_sheep_blood' => $test_c_result->tsa_sheep_blood_plate_id, // Use stored value
         ];
 
         $selected_plates_run2 = [
-            'plate_1' => $test_c_result->plate_id_1_run2,
-            'plate_2' => $test_c_result->plate_id_2_run2,
-            'plate_3' => $test_c_result->plate_id_3_run2,
+            'start_lotto' => $test_c_result->plate_id_start_lotto_run2,
+            'mid_lotto' => $test_c_result->plate_id_mid_lotto_run2,
+            'end_lotto' => $test_c_result->plate_id_end_lotto_run2,
             'control_blank' => $test_c_result->plate_id_control_blank_run2,
-            'control_tsa' => $test_c_result->plate_id_control_tsa_run2,
+            'tsa_sheep_blood' => $test_c_result->tsa_sheep_blood_plate_id_run2, // Use stored value
         ];
+
+        // Ensure that if the stored value is null, we fall back to acceptance plates if available
+        $selected_plates['tsa_sheep_blood'] = $selected_plates['tsa_sheep_blood'] ?? ($plate_ids_from_acceptance[36] ?? null);
+        $selected_plates_run2['tsa_sheep_blood'] = $selected_plates_run2['tsa_sheep_blood'] ?? ($is_double_test_c ? ($plate_ids_from_acceptance[37] ?? null) : null);
+
+        $incubators = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Incubatore');
+        })->get();
+
+        $pipettes = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Pipetta');
+        })->get();
 
         return view('tests.test_c.create', [
             'acceptance' => $acceptance,
@@ -208,6 +235,8 @@ class TestCController extends Controller
             'is_double_test_c' => $is_double_test_c,
             'selected_plates' => $selected_plates,
             'selected_plates_run2' => $selected_plates_run2,
+            'incubators' => $incubators,
+            'pipettes' => $pipettes,
             'usersMap' => $usersMap,
         ]);
     }
@@ -321,22 +350,45 @@ class TestCController extends Controller
             'test_start_time' => 'required|date_format:H:i',
             'test_end_date' => 'required|date|after_or_equal:test_start_date',
             'test_end_time' => 'required|date_format:H:i',
-            'growth_result_plate_1' => $growthRule,
-            'growth_result_plate_2' => $growthRule,
-            'growth_result_plate_3' => $growthRule,
+
+            // Nuovi campi
+            // 'tsa_sheep_blood_plate_id' => 'required|string|max:255', // Rimosso perché non è un input del form
+            'pipette_dilution_1' => 'required|string|max:255',
+            'pipette_dilution_2' => 'required|string|max:255',
+            'pipette_inoculation' => 'required|string|max:255',
+            'incubator' => 'required|string|max:255',
+            'incubation_start_date' => 'required|date',
+            'incubation_start_time' => 'required|date_format:H:i',
+            'incubation_end_date' => 'required|date|after_or_equal:incubation_start_date',
+            'incubation_end_time' => 'required|date_format:H:i',
+            'temperature' => 'required|numeric',
+            'tsa_growth_result' => $growthRule,
+            'growth_result_start_lotto' => $growthRule,
+            'growth_result_mid_lotto' => $growthRule,
+            'growth_result_end_lotto' => $growthRule,
             'growth_result_control_blank' => $growthRule,
-            'growth_result_control_tsa' => $growthRule,
+            'productivity_result' => 'nullable|string',
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
             'notes' => 'nullable|string|max:2000',
         ];
 
         if ($is_double_test_c) {
-            $rules['growth_result_plate_1_run2'] = $growthRule;
-            $rules['growth_result_plate_2_run2'] = $growthRule;
-            $rules['growth_result_plate_3_run2'] = $growthRule;
+            // $rules['tsa_sheep_blood_plate_id_run2'] = 'required|string|max:255'; // Rimosso perché non è un input del form
+            $rules['pipette_dilution_1_run2'] = 'required|string|max:255';
+            $rules['pipette_dilution_2_run2'] = 'required|string|max:255';
+            $rules['pipette_inoculation_run2'] = 'required|string|max:255';
+            $rules['incubator_run2'] = 'required|string|max:255';
+            $rules['incubation_start_date_run2'] = 'required|date';
+            $rules['incubation_start_time_run2'] = 'required|date_format:H:i';
+            $rules['incubation_end_date_run2'] = 'required|date|after_or_equal:incubation_start_date_run2';
+            $rules['incubation_end_time_run2'] = 'required|date_format:H:i';
+            $rules['temperature_run2'] = 'required|numeric';
+            $rules['tsa_growth_result_run2'] = $growthRule;
+            $rules['growth_result_start_lotto_run2'] = $growthRule;
+            $rules['growth_result_mid_lotto_run2'] = $growthRule;
+            $rules['growth_result_end_lotto_run2'] = $growthRule;
             $rules['growth_result_control_blank_run2'] = $growthRule;
-            $rules['growth_result_control_tsa_run2'] = $growthRule;
         }
 
         if ($isUpdate) {
@@ -363,20 +415,10 @@ class TestCController extends Controller
             'test_end_date.after_or_equal' => 'La data di fine prova deve essere successiva o uguale alla data di inizio prova.',
             'test_end_time.required' => 'L\'ora di fine prova è obbligatoria.',
 
-            'growth_result_plate_1.required' => 'Il risultato di crescita per la Piastra 1 è obbligatorio.',
-            'growth_result_plate_2.required' => 'Il risultato di crescita per la Piastra 2 è obbligatorio.',
-            'growth_result_plate_3.required' => 'Il risultato di crescita per la Piastra 3 è obbligatorio.',
-            'growth_result_control_blank.required' => 'Il risultato di crescita per il Controllo Bianco è obbligatorio.',
-            'growth_result_control_tsa.required' => 'Il risultato di crescita per il Controllo TSA è obbligatorio.',
-
             'outcome.required' => 'L\'esito del test è obbligatorio.',
             'non_compliance_ref.required_if' => 'Il riferimento di non conformità è obbligatorio quando l\'esito è "Non Idoneo".',
 
-            'growth_result_plate_1_run2.required' => 'Il risultato di crescita per la Piastra 1 (Run 2) è obbligatorio.',
-            'growth_result_plate_2_run2.required' => 'Il risultato di crescita per la Piastra 2 (Run 2) è obbligatorio.',
-            'growth_result_plate_3_run2.required' => 'Il risultato di crescita per la Piastra 3 (Run 2) è obbligatorio.',
-            'growth_result_control_blank_run2.required' => 'Il risultato di crescita per il Controllo Bianco (Run 2) è obbligatorio.',
-            'growth_result_control_tsa_run2.required' => 'Il risultato di crescita per il Controllo TSA (Run 2) è obbligatorio.',
+            // Aggiungere qui altri messaggi personalizzati per i nuovi campi se necessario
         ];
 
         return $request->validate($rules, $messages);
@@ -400,11 +442,25 @@ class TestCController extends Controller
         $is_double_test_c = $acceptance ? in_array('test3', $acceptance->double_tests ?? []) : false;
 
         // Rimuove i campi separati di data/ora
+        // Global test start/end datetimes are handled once
         unset($data['test_start_date'], $data['test_start_time'], $data['test_end_date'], $data['test_end_time']);
 
+        // Incubation datetimes are per run
+        unset($data['incubation_start_date'], $data['incubation_start_time'], $data['incubation_end_date'], $data['incubation_end_time']);
         // Combina in campi datetime
         $data['test_start_datetime'] = $request->test_start_date . ' ' . $request->test_start_time;
         $data['test_end_datetime'] = $request->test_end_date . ' ' . $request->test_end_time;
+        $data['incubation_start_datetime'] = $request->incubation_start_date . ' ' . $request->incubation_start_time;
+        $data['incubation_end_datetime'] = $request->incubation_end_date . ' ' . $request->incubation_end_time;
+
+        if ($is_double_test_c) {
+            unset(
+                $data['incubation_start_date_run2'], $data['incubation_start_time_run2'],
+                $data['incubation_end_date_run2'], $data['incubation_end_time_run2']
+            );
+            $data['incubation_start_datetime_run2'] = $request->incubation_start_date_run2 . ' ' . $request->incubation_start_time_run2;
+            $data['incubation_end_datetime_run2'] = $request->incubation_end_date_run2 . ' ' . $request->incubation_end_time_run2;
+        }
 
         return $data;
     }
