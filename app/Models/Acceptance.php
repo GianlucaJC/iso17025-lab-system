@@ -3,14 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
 
+
 class Acceptance extends Model
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, SoftDeletes;
+
+    /**
+     * The name of the "deleted at" column.
+     *
+     * @var string
+     */
+    const DELETED_AT = 'dele'; // Specifica che la colonna per il soft delete è 'dele'
 
     /**
      * The attributes that are mass assignable.
@@ -19,6 +28,7 @@ class Acceptance extends Model
      */
     protected $fillable = [
         'acceptance_number',
+        'dele', // Aggiunto 'dele' ai fillable per permettere l'assegnazione massiva se necessario
         'lotto',
         'sampling_date',
         'acceptance_date',
@@ -38,6 +48,7 @@ class Acceptance extends Model
         'plates' => 'array',
         'tests' => 'array',
         'double_tests' => 'array',
+        'dele' => 'datetime', // Indica a Laravel di trattare 'dele' come un oggetto Carbon
     ];
 
     /**
