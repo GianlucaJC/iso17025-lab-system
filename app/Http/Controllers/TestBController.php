@@ -342,7 +342,7 @@ class TestBController extends Controller
         $test_b_result->lab_signed_at = now();
         $test_b_result->save();
 
-        return redirect()->route('acceptance.index')->with('success', 'Test B firmato con successo!');
+        return redirect()->route('acceptance.index')->with('success', 'Test B firmato con successo!'); // Reindirizza all'elenco
     }
 
     /**
@@ -350,6 +350,11 @@ class TestBController extends Controller
      */
     public function validateTest(Request $request, TestBResult $test_b_result)
     {
+        // Aggiungiamo un controllo per assicurarci che la validazione provenga dalla pagina di dettaglio del test
+        if ($request->input('source') !== 'run_test') {
+            abort(403, 'Azione di validazione non permessa da questa pagina.');
+        }
+
         $currentUser = Session::get('user');
         
         // Policy 1: Solo i Responsabili Laboratorio (ruolo 4) possono validare.
@@ -360,20 +365,19 @@ class TestBController extends Controller
 
         // Policy 2: Il test deve essere stato firmato dal tecnico.
         if (!$test_b_result->lab_signed_at) {
-            return redirect()->route('acceptance.index')->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.');
+            return redirect()->route('test-b.edit', $test_b_result->id)->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.'); // Reindirizza alla pagina di modifica
         }
 
         // Policy 3: Il test non deve essere già stato validato.
         if ($test_b_result->rl_signature_id) {
-            return redirect()->route('acceptance.index')->with('error', 'Il test è già stato validato.');
+            return redirect()->route('test-b.edit', $test_b_result->id)->with('error', 'Il test è già stato validato.'); // Reindirizza alla pagina di modifica
         }
 
         // Aggiorna il record con i dati della validazione
         $test_b_result->rl_signature_id = $currentUser['id'];
         $test_b_result->rl_signed_at = now();
         $test_b_result->save();
-
-        return redirect()->route('acceptance.index')->with('success', 'Test B validato con successo dal Responsabile Laboratorio!');
+        return redirect()->route('test-b.edit', $test_b_result->id)->with('success', 'Test B validato con successo dal Responsabile Laboratorio!'); // Reindirizza alla pagina di modifica
     }
 
     /**

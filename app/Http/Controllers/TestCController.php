@@ -156,7 +156,7 @@ class TestCController extends Controller
         $currentUser = Session::get('user');
         $isOwner = $test_c_result->operator_id === $currentUser['id'];
         $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
-        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
+        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;        
         $is_readonly = $isAdmin || $isLabManager || !$isOwner || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at;
 
         // --- Inizio blocco recupero utenti via API ---
@@ -279,11 +279,11 @@ class TestCController extends Controller
         $isOwner = $test_c_result->operator_id === $currentUser['id'];
 
         // Policy 2: Solo il proprietario del test può firmare.
-        if (!$isOwner) {
+        if (!$isOwner) {            
             abort(403, 'Azione non autorizzata: solo l\'operatore che ha compilato il test può firmare.');
         }
         // Policy 3: Il test non deve essere già firmato o validato.
-        if ($test_c_result->lab_signed_at) {
+        if ($test_c_result->lab_signed_at && !$test_c_result->rl_signed_at) { // Aggiunto controllo per non bloccare se già validato
             return redirect()->route('acceptance.index')->with('error', 'Il test è già stato firmato.');
         }
         if ($test_c_result->rl_signed_at) {
@@ -303,6 +303,11 @@ class TestCController extends Controller
      */
     public function validateTest(Request $request, TestCResult $test_c_result)
     {
+        // Aggiungiamo un controllo per assicurarci che la validazione provenga dalla pagina di dettaglio del test
+        if ($request->input('source') !== 'run_test') {
+            abort(403, 'Azione di validazione non permessa da questa pagina.');
+        }
+
         $currentUser = Session::get('user');
         
         // Policy 1: Solo i Responsabili Laboratorio (ruolo 4) possono validare.
@@ -326,7 +331,7 @@ class TestCController extends Controller
         $test_c_result->rl_signed_at = now();
         $test_c_result->save();
 
-        return redirect()->route('acceptance.index')->with('success', 'Test C validato con successo dal Responsabile Laboratorio!');
+        return redirect()->route('test-c.edit', $test_c_result->id)->with('success', 'Test C validato con successo dal Responsabile Laboratorio!');
     }
 
     /**

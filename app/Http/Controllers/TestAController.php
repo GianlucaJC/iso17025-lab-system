@@ -85,6 +85,8 @@ class TestAController extends Controller
      */
     public function edit(TestAResult $test_a_result)
     {
+        //dd($test_a_result); // <--- AGGIUNGI QUESTA RIGA TEMPORANEAMENTE
+        
         $currentUser = Session::get('user');
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
         
@@ -144,11 +146,11 @@ class TestAController extends Controller
      */
     public function update(Request $request, TestAResult $test_a_result)
     {
+
         $currentUser = Session::get('user');
         $isOwner = $test_a_result->operator_id === $currentUser['id'];
         $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
         $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
-        
         // 1. Policy di sicurezza: non si può modificare se non si è proprietari o se il test è firmato/validato.
         if (!$isOwner || $test_a_result->lab_signed_at || $test_a_result->rl_signature_id || $isAdmin || $isLabManager) {
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
@@ -175,6 +177,7 @@ class TestAController extends Controller
      */
     public function sign(Request $request, TestAResult $test_a_result)
     {
+        Log::info('TestAController@sign method invoked for TestAResult ID: ' . $test_a_result->id);
         $currentUser = Session::get('user');
 
         // Policy 1: Solo i tecnici di laboratorio (ruolo 3) possono firmare.
@@ -190,7 +193,7 @@ class TestAController extends Controller
 
         // Policy 3: Il test non deve essere già firmato o validato.
         if ($test_a_result->lab_signed_at || $test_a_result->rl_signature_id) {
-            return redirect()->route('acceptance.index')->with('error', 'Il test è già stato firmato o validato.');
+            return redirect()->route('test-a.edit', $test_a_result->id)->with('error', 'Il test è già stato firmato o validato.');
         }
 
         $test_a_result->lab_signature_id = $currentUser['id'];
@@ -205,6 +208,12 @@ class TestAController extends Controller
      */
     public function validateTest(Request $request, TestAResult $test_a_result)
     {
+
+        // Aggiungiamo un controllo per assicurarci che la validazione provenga dalla pagina di dettaglio del test
+        if ($request->input('source') !== 'run_test') {
+            abort(403, 'Azione di validazione non permessa da questa pagina.');
+        }
+
         $currentUser = Session::get('user');
 
         // Policy 1: Solo i Responsabili Laboratorio (ruolo 4) possono validare.
@@ -212,16 +221,16 @@ class TestAController extends Controller
         if (!$isLabManager) {
             abort(403, 'Azione non autorizzata: solo i Responsabili Laboratorio possono validare i test.');
         }
-
         // Policy 2: Il test deve essere stato firmato dal tecnico e non ancora validato.
-        if (!$test_a_result->lab_signed_at || $test_a_result->rl_signature_id) {
-            return redirect()->route('acceptance.index')->with('error', 'Il test non è pronto per la validazione o è già stato validato.');
+        if (!$test_a_result->lab_signed_at) {
+            return redirect()->route('test-a.edit', $test_a_result->id)->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.');
+        }
+        // Policy 3: Il test non deve essere già stato validato.
+        if ($test_a_result->rl_signed_at) {
+            return redirect()->route('test-a.edit', $test_a_result->id)->with('error', 'Il test è già stato validato.');
         }
 
-        $test_a_result->rl_signature_id = $currentUser['id'];
-        $test_a_result->rl_signed_at = now();
-        $test_a_result->save();
-
-        return redirect()->route('acceptance.index')->with('success', 'Test A validato con successo dal Responsabile Laboratorio!');
+        $test_a_result->update(['rl_signature_id' => $currentUser['id'], 'rl_signed_at' => now()]);
+        return redirect()->route('test-a.edit', $test_a_result->id)->with('success', 'Test A validato con successo dal Responsabile Laboratorio!');
     }
 }

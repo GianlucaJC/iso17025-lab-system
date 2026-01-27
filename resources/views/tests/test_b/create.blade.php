@@ -11,6 +11,7 @@
     @endphp
     <title>{{ $form_title }} Test B - Produttività</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Custom width for the main content area */
@@ -88,6 +89,18 @@
                 </h3>
             </div>
             <div class="card-body p-4">
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 <form method="POST" action="{{ $is_edit ? route('test-b.update', $test_b_result->id) : route('test-b.store', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit) @method('PUT') @endif
@@ -377,36 +390,6 @@
                     </fieldset>
                     @endif
 
-                    {{-- Validazione --}}
-                    <fieldset class="mb-4">
-                        <legend class="h5">Validazione</legend>
-                        <div class="row g-3 p-3 bg-light border rounded">
-                            @if($is_edit && $test_b_result->rl_signature_id)
-                                @php
-                                    $validatorName = $usersMap[$test_b_result->rl_signature_id]['operatore'] ?? 'N/D';
-                                    $validationDate = $test_b_result->rl_signed_at ? \Carbon\Carbon::parse($test_b_result->rl_signed_at)->format('d/m/Y H:i') : '';
-                                @endphp
-                                <div class="col-md-6">
-                                    <label class="form-label">Validato da RL</label>
-                                    <input type="text" class="form-control" value="{{ $validatorName }}" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">in data</label>
-                                    <input type="text" class="form-control" value="{{ $validationDate }}" disabled>
-                                </div>
-                            @else
-                                <div class="col-md-6">
-                                    <label class="form-label">Validazione RL</label>
-                                    <input type="text" class="form-control" placeholder="Validazione pendente" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">in data</label>
-                                    <input type="text" class="form-control" placeholder="N/D" disabled>
-                                </div>
-                            @endif
-                        </div>
-                    </fieldset>
-
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
                             @if($is_readonly) <i class="fas fa-arrow-left me-2"></i>Torna all'elenco @else <i class="fas fa-times me-2"></i>Annulla @endif
@@ -418,6 +401,77 @@
                         @endif
                     </div>
                 </form>
+
+                {{-- Sezione Firme e Validazione (solo in visualizzazione/edit) --}}
+                @if($is_edit)
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Operatore</h6>
+                            <p>
+                                @if(isset($usersMap[$test_b_result->operator_id]))
+                                    {{ $usersMap[$test_b_result->operator_id]['operatore'] }}
+                                @else
+                                    ID: {{ $test_b_result->operator_id }} (Utente non trovato)
+                                @endif
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Firma Tecnico di Laboratorio</h6>
+                            @if($test_b_result->lab_signed_at)
+                                <p class="text-success">
+                                    Firmato da
+                                    @if(isset($usersMap[$test_b_result->lab_signature_id]))
+                                        <strong>{{ $usersMap[$test_b_result->lab_signature_id]['operatore'] }}</strong>
+                                    @else
+                                        <strong>ID: {{ $test_b_result->lab_signature_id }}</strong>
+                                    @endif
+                                    <br>
+                                    il {{ $test_b_result->lab_signed_at->format('d/m/Y H:i') }}
+                                </p>
+                            @else
+                                <p class="text-muted">Non ancora firmato</p>
+                            @endif
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Validazione Responsabile Laboratorio</h6>
+                            @if($test_b_result->rl_signed_at)
+                                <p class="text-primary">
+                                    Validato da
+                                    @if(isset($usersMap[$test_b_result->rl_signature_id]))
+                                        <strong>{{ $usersMap[$test_b_result->rl_signature_id]['operatore'] }}</strong>
+                                    @else
+                                        <strong>ID: {{ $test_b_result->rl_signature_id }}</strong>
+                                    @endif
+                                    <br>
+                                    il {{ $test_b_result->rl_signed_at->format('d/m/Y H:i') }}
+                                </p>
+                            @else
+                                <p class="text-muted">Non ancora validato</p>
+                                @if(
+                                    $test_b_result->lab_signed_at &&
+                                    !$test_b_result->rl_signed_at &&
+                                    isset($currentUser['user17025']) && $currentUser['user17025'] == 4
+                                )
+                                    <form action="{{ route('test-b.validate', $test_b_result->id) }}" method="POST" class="validate-form">
+                                        @csrf
+                                        <input type="hidden" name="source" value="run_test">
+                                        <button type="submit" class="btn btn-primary">Valida Test</button>
+                                    </form>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Link alla cronologia --}}
+                    @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
+                        <div class="mt-4">
+                            <a href="{{ route('history.show', ['modelNameShort' => 'test-b-result', 'id' => $test_b_result->id]) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-history"></i> Vedi Cronologia Modifiche
+                            </a>
+                        </div>
+                    @endif
+                @endif
             </div>
         </div>
     </main>
@@ -426,8 +480,10 @@
         <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
     </footer>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {{-- Dipendenza per SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Gestione validazione Bootstrap
@@ -488,6 +544,26 @@
             }
             outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
             toggleNonCompliance(); // Esegui al caricamento
+            // Gestione conferma validazione con SweetAlert2
+            $('form.validate-form').on('submit', function(event) {
+                event.preventDefault();
+                var form = this;
+                Swal.fire({
+                    title: 'Sei sicuro di voler validare questo test?',
+                    text: "L'azione è definitiva e renderà il test immutabile.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0d6efd',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sì, valida!',
+                    cancelButtonText: 'Annulla'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
             // Gestione modale documentazione
             const showDocsBtn = document.getElementById('show-docs-btn');
             if (showDocsBtn) {

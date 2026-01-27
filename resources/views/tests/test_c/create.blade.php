@@ -344,19 +344,6 @@
                                     <br>
                                     il {{ $test_c_result->lab_signed_at->format('d/m/Y H:i') }}
                                 </p>
-                            @else
-                                <p class="text-muted">Non ancora firmato</p>
-                                @if(
-                                    !$is_readonly &&
-                                    !$test_c_result->lab_signed_at &&
-                                    $currentUser['id'] === $test_c_result->operator_id &&
-                                    isset($currentUser['user17025']) && $currentUser['user17025'] == 3
-                                )
-                                    <form action="{{ route('test-c.sign', $test_c_result->id) }}" method="POST" class="sign-form">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success">Apponi Firma</button>
-                                    </form>
-                                @endif
                             @endif
                         </div>
                         <div class="col-md-4">
@@ -381,6 +368,7 @@
                                 )
                                     <form action="{{ route('test-c.validate', $test_c_result->id) }}" method="POST" class="validate-form">
                                         @csrf
+                                        <input type="hidden" name="source" value="run_test">
                                         <button type="submit" class="btn btn-primary">Valida Test</button>
                                     </form>
                                 @endif
@@ -448,26 +436,6 @@
 
             // Aggiungi l'event listener per il cambio di selezione
             outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonComplianceField));
-
-            // Gestione conferma firma con SweetAlert2
-            $('form.sign-form').on('submit', function(event) {
-                event.preventDefault();
-                var form = this;
-                Swal.fire({
-                    title: 'Sei sicuro di voler firmare questo test?',
-                    text: "L'azione non è reversibile e bloccherà le modifiche.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#198754',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sì, firma!',
-                    cancelButtonText: 'Annulla'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
 
             // Gestione conferma validazione con SweetAlert2
             $('form.validate-form').on('submit', function(event) {
