@@ -92,4 +92,27 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/login');
     }
+
+    /**
+     * Redirects an admin user to the external user management panel with an SSO token.
+     */
+    public function redirectToUserManagement()
+    {
+        $user = Session::get('user');
+
+        // Ensure user is an admin
+        if (!isset($user['user17025']) || $user['user17025'] != 1) {
+            abort(403, 'Accesso non autorizzato.');
+        }
+
+        $secret = env('API_LOGIN_SHARED_SECRET');
+        $timestamp = time();
+        $token = hash_hmac('sha256', (string) $timestamp, $secret);
+
+        // The target URL for the SSO login handler
+        $ssoLoginUrl = env('APP_URL_USER') . "/api_user_liof/sso_login.php?timestamp={$timestamp}&token={$token}";
+
+        // Since the user management is on the same domain, we can just redirect.
+        return redirect()->to($ssoLoginUrl);
+    }
 }

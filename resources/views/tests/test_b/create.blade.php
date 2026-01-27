@@ -168,7 +168,7 @@
                                 </select>
                                 <div class="invalid-feedback">
                                     @error('incubator_'.$temp.'_run1') {{ $message }} @else Selezionare un incubatore. @enderror
-                                </div>
+                                </div> 
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Inizio Incubazione</label>

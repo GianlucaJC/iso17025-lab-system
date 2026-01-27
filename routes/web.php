@@ -18,6 +18,9 @@ Route::get('login', [AuthController::class, 'showLoginForm'])->name('login')->mi
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
+// Rotta per il reindirizzamento SSO alla gestione utenti
+Route::get('/user-management/redirect', [AuthController::class, 'redirectToUserManagement'])->name('user-management.redirect')->middleware('auth.api');
+
 // Rotte Protette
 
 
@@ -140,6 +143,3 @@ use App\Http\Controllers\AuditController;
 Route::get('/history/{modelNameShort}/{id}', [AuditController::class, 'show'])
     ->name('history.show')
     ->middleware('auth.api');
-
-
-
