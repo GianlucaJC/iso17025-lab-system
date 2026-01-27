@@ -271,8 +271,11 @@
                                                     <label for="plate_{{ $i }}_id" class="form-label">{{ $label }}</label>
                                                     <div class="input-group has-validation">
                                                         <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}_id" name="plates[{{ $i }}][id]" placeholder="ID (numeri)" value="{{ old('plates.'.$i.'.id', is_array($plates[$i]) ? ($plates[$i]['id'] ?? '') : '') }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
-                                                        <input type="text" class="form-control plate-input" id="plate_{{ $i }}_lot" name="plates[{{ $i }}][lot]" placeholder="Lotto" value="{{ old('plates.'.$i.'.lot', is_array($plates[$i]) ? ($plates[$i]['lot'] ?? '') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                                        @php
+                                                            $plateValue = isset($plates[$i]) && is_array($plates[$i]) ? $plates[$i] : [];
+                                                        @endphp
+                                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}_id" name="plates[{{ $i }}][id]" placeholder="ID (numeri)" value="{{ old('plates.'.$i.'.id', $plateValue['id'] ?? '') }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" {{ $is_readonly ? 'disabled' : '' }}>
+                                                        <input type="text" class="form-control plate-input" id="plate_{{ $i }}_lot" name="plates[{{ $i }}][lot]" placeholder="Lotto" value="{{ old('plates.'.$i.'.lot',  $plateValue['lot'] ?? '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                                         <div class="invalid-feedback">ID Piastra e Lotto sono obbligatori.</div>
                                                     </div>
                                                 </div>
