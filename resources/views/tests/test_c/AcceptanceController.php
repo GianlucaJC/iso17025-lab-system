@@ -185,41 +185,48 @@ class AcceptanceController extends Controller
 
         // Test A (1 plate, index 0)
         for ($i = 0; $i < 1; $i++) {
-            $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test1', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         // Test A Doppio (1 plate, index 2)
         for ($i = 2; $i < 3; $i++) {
-            $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test1', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
 
         // Test B (12 plates, indices 4-15)
         for ($i = 4; $i < 16; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test2', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         // Test B Doppio (12 plates, indices 16-27)
         for ($i = 16; $i < 28; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test2', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
 
         // Test C (5 plates, indices 28-31 and 36)
         for ($i = 28; $i < 32; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         $rules["plates.36.id"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.36.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string';
+        $rules["plates.36.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
 
         // Test C Doppio (5 plates, indices 32-35 and 37)
         for ($i = 32; $i < 36; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         $rules["plates.37.id"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.37.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string';
+        $rules["plates.37.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
 
         $validatedData = $request->validate($rules);
 
         // Aggiungiamo l'ID dell'utente loggato ai dati da salvare
         $validatedData['user_id'] = Session::get('user')['id'];
 
+        // Creiamo il record nel database
         Acceptance::create($validatedData);
 
         // Reindirizziamo alla dashboard con un messaggio di successo
@@ -289,35 +296,41 @@ class AcceptanceController extends Controller
 
         // Test A (2 plates, indices 0-1)
         for ($i = 0; $i < 1; $i++) { // Ora solo 1 piastra per il Test A standard
-            $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test1', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         // Test A Doppio (2 plates, indices 2-3)
         for ($i = 2; $i < 3; $i++) { // Ora solo 1 piastra per il Test A in doppio
-            $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test1', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
 
         // Test B (12 plates, indices 4-15)
         for ($i = 4; $i < 16; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test2', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         // Test B Doppio (12 plates, indices 16-27)
         for ($i = 16; $i < 28; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test2', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
 
         // Test C (5 plates, indices 28-31 and 36)
         for ($i = 28; $i < 32; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         $rules["plates.36.id"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.36.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string';
+        $rules["plates.36.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string|max:255';
 
         // Test C Doppio (5 plates, indices 32-35 and 37)
         for ($i = 32; $i < 36; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.id"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
         }
         $rules["plates.37.id"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.37.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string';
+        $rules["plates.37.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string|max:255';
 
         $validatedData = $request->validate($rules);
 

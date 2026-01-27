@@ -256,14 +256,26 @@
                                     @else
                                         {{-- Generic layout for Test A and C --}}
                                         @foreach($def['std_plates'] as $i => $label)
-                                            <div class="col-md-4 mb-2">
-                                                <label for="plate_{{ $i }}" class="form-label">{{ $label }}</label>
-                                                <div class="input-group has-validation">
-                                                    <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                                    <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                            @if($test_id === 'test3' && $i == 36)
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="plate_{{ $i }}_id" class="form-label">{{ $label }}</label>
+                                                    <div class="input-group has-validation">
+                                                        <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}_id" name="plates[{{ $i }}][id]" placeholder="ID (numeri)" value="{{ old('plates.'.$i.'.id') }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                        <input type="text" class="form-control plate-input" id="plate_{{ $i }}_lot" name="plates[{{ $i }}][lot]" placeholder="Lotto" value="{{ old('plates.'.$i.'.lot') }}">
+                                                        <div class="invalid-feedback">ID Piastra e Lotto sono obbligatori.</div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @else
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="plate_{{ $i }}" class="form-label">{{ $label }}</label>
+                                                    <div class="input-group has-validation">
+                                                        <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                        <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endforeach
                                     @endif
                                 </div>
@@ -298,15 +310,27 @@
                                         @else
                                             {{-- Generic layout for Test A and C Double --}}
                                             @foreach($def['dbl_plates'] as $i => $label)
-                                            <div class="col-md-4 mb-2">
-                                                <label for="plate_{{ $i }}" class="form-label">{{ $label }}</label>
-                                                <div class="input-group has-validation">
-                                                    <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
-                                                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                                    <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
-                                                </div>
-                                            </div>
-                                        @endforeach
+                                                @if($test_id === 'test3' && $i == 37)
+                                                    <div class="col-md-4 mb-2">
+                                                        <label for="plate_{{ $i }}_id" class="form-label">{{ $label }}</label>
+                                                        <div class="input-group has-validation">
+                                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}_id" name="plates[{{ $i }}][id]" placeholder="ID (numeri)" value="{{ old('plates.'.$i.'.id') }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                            <input type="text" class="form-control plate-input" id="plate_{{ $i }}_lot" name="plates[{{ $i }}][lot]" placeholder="Lotto" value="{{ old('plates.'.$i.'.lot') }}">
+                                                            <div class="invalid-feedback">ID Piastra e Lotto sono obbligatori.</div>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <div class="col-md-4 mb-2">
+                                                        <label for="plate_{{ $i }}" class="form-label">{{ $label }}</label>
+                                                        <div class="input-group has-validation">
+                                                            <span class="input-group-text p-1"><img src="{{ asset('images/piastra-icona.png') }}" alt="Icona Piastra" style="height: 20px; width: auto;"></span>
+                                                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control plate-input" id="plate_{{ $i }}" name="plates[{{ $i }}]" placeholder="Solo numeri" value="{{ $plates[$i] ?? '' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                            <div class="invalid-feedback">L'ID Piastra è obbligatorio.</div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         @endif
                                     </div>
                                 </div>

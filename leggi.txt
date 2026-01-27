@@ -1,0 +1,5 @@
+Le accettazioni sono views/acceptance/
+
+I Controllers dei test sono TestAController, TestBController, TestAController.
+I Models TestAresult, TestBresult, TestCresult
+le Views resource/views/tests/test_a({b}{c})

@@ -175,9 +175,9 @@
                                 <label for="ph_value_slider" class="form-label">Misura pH</label>
                                 <div class="ph-slider-container p-3 border rounded">
                                     <i class="fas fa-tint text-muted"></i>
-                                    @php $ph_value = old('ph_value', $is_edit ? $test_a_result->ph_value : '7.0'); @endphp
-                                    <input type="range" class="form-range" id="ph_value_slider" min="0" max="14" step="0.1" value="{{ $ph_value }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="number" class="form-control ph-value-input" id="ph_value" name="ph_value" min="0" max="14" step="0.1" value="{{ number_format((float)$ph_value, 1) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    @php $ph_value = old('ph_value', $is_edit ? $test_a_result->ph_value : '7.4'); @endphp
+                                    <input type="range" class="form-range" id="ph_value_slider" min="6" max="8" step="0.1" value="{{ $ph_value }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="number" class="form-control ph-value-input" id="ph_value" name="ph_value" min="6" max="8" step="0.1" value="{{ number_format((float)$ph_value, 1) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -189,7 +189,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_a_result->outcome : 'idoneo') == 'idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_a_result->outcome : null) == 'idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
                                     <label class="form-check-label text-success" for="outcome_idoneo">
                                         <i class="fas fa-check-circle icon"></i>
                                         Idoneo
@@ -342,16 +342,16 @@
             phInput.addEventListener('input', function() {
                 let value = parseFloat(this.value);
                 // Controlla che il valore sia un numero valido nel range
-                if (!isNaN(value) && value >= 0 && value <= 14) {
+                if (!isNaN(value) && value >= 6 && value <= 8) {
                     phSlider.value = value;
                 }
             });
 
             // Formatta e valida il valore quando l'utente lascia il campo
             phInput.addEventListener('blur', function() {
-                let value = isNaN(parseFloat(this.value)) ? 7.0 : parseFloat(this.value);
-                if (value < 0) value = 0;
-                if (value > 14) value = 14;
+                let value = isNaN(parseFloat(this.value)) ? 7.4 : parseFloat(this.value);
+                if (value < 6) value = 6;
+                if (value > 8) value = 8;
                 this.value = value.toFixed(1);
                 phSlider.value = value;
             });

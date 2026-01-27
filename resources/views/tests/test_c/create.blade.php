@@ -114,8 +114,11 @@
                             <h6 class="mt-4">Preparazione e Diluizione</h6>
                             <div class="row mb-3">
                                 <div class="col-md-3">
-                                    <label class="form-label">Piastra di TSA Sheep Blood</label>
-                                    <p><span class="badge bg-secondary">{{ ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']) ?? 'N/A' }}</span></p>
+                                    <label class="form-label">Piastra di TSA Sheep Blood (ID / Lotto)</label>
+                                    @php
+                                        $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
+                                    @endphp
+                                    <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
                                 </div>
                                 <div class="col-md-3">
                                     <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
@@ -178,6 +181,10 @@
                                     <label for="temperature{{ $run_suffix }}" class="form-label">Temp.(°C)</label>
                                     <input type="number" step="0.1" class="form-control" id="temperature{{ $run_suffix }}" name="temperature{{ $run_suffix }}" value="{{ old('temperature'.$run_suffix, $is_edit ? $test_c_result->{'temperature'.$run_suffix} : '') }}" required>
                                 </div>
+                                <div class="col-md-2">
+                                    <label for="tsa_growth_ufc{{ $run_suffix }}" class="form-label">Crescita UFC</label> {{-- Changed to text input with numeric filter --}}
+                                    <input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control" id="tsa_growth_ufc{{ $run_suffix }}" name="tsa_growth_ufc{{ $run_suffix }}" value="{{ old('tsa_growth_ufc'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_ufc'.$run_suffix} : '') }}">
+                                </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Crescita</label>
                                     <div>
@@ -199,10 +206,12 @@
                                 <table class="table table-bordered text-center">
                                     <thead>
                                         <tr>
-                                            <th class="d-none">Campione</th>
-                                            <th>N. Acc. Piastra</th>
+                                            <th class="d-none">Campione</th> {{-- Hidden as requested --}}
+                                            <th>ID Piastra / Lotto</th>
+                                            <th>UFC</th>
+                                            <th>UFC &ge;50% UFC su TSA</th>
                                             <th>Crescita Rilevata</th>
-                                            <th>Crescita Non Rilevata</th>
+                                            <th>Crescita Non Rilevata</th>                                            
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -216,14 +225,20 @@
                                         @endphp
                                         @foreach($samples as $key => $label)
                                             <tr class="align-middle">
-                                                <td class="d-none">{{ $label }}</td>
-                                                <td><span class="badge bg-secondary">{{ $current_plates[$key] ?? 'N/A' }}</span></td>
+                                                <td class="d-none">{{ $label }}</td> {{-- Hidden as requested --}}
+                                                <td><span class="badge bg-secondary">{{ $current_plates[$key]['id'] ?? 'N/A' }}</span></td> {{-- Only ID, no lot for these plates --}}
                                                 @php
                                                     $fieldName = 'growth_result_'.$key.$run_suffix;
                                                     $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
+                                                    $ufcFieldName = 'ufc_'.$key.$run_suffix;
+                                                    $ufc50PercentTsaFieldName = 'ufc_50_percent_tsa_'.$key.$run_suffix;
                                                 @endphp
-                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} required></td>
-                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} required></td>
+                                                <td><input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control form-control-sm" name="{{ $ufcFieldName }}" value="{{ old($ufcFieldName, $is_edit ? $test_c_result->{$ufcFieldName} : '') }}" required></td> {{-- Changed to text input with numeric filter --}}
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox" name="{{ $ufc50PercentTsaFieldName }}" value="1" {{ old($ufc50PercentTsaFieldName, $is_edit ? $test_c_result->{$ufc50PercentTsaFieldName} : '') ? 'checked' : '' }}>
+                                                </td>
+                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} required></td>                                                
+                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} required></td>                                                
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -234,8 +249,11 @@
                             <h6 class="mt-4">Bianco di Controllo</h6>
                             <div class="row align-items-center">
                                 <div class="col-md-3">
-                                    <label class="form-label">N. Acc. Piastra</label>
-                                    <p><span class="badge bg-secondary">{{ $current_plates['control_blank'] ?? 'N/A' }}</span></p>
+                                    <label class="form-label">ID Piastra / Lotto</label>
+                                    @php
+                                        $control_blank_plate = $current_plates['control_blank'];
+                                    @endphp
+                                    <p><span class="badge bg-secondary">{{ $control_blank_plate['id'] ?? 'N/A' }}</span></p> {{-- Only ID, no lot for control blank --}}
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Crescita</label>
