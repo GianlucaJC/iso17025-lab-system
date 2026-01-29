@@ -117,6 +117,38 @@
                         </div>
                     </div>
 
+                    {{-- SEZIONE CONFORMITÀ CAMPIONE --}}
+                    <fieldset class="mb-4">
+                        <legend class="h5">Conformità Campione</legend>
+                        <div class="row g-3 p-3 bg-light border rounded">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sample_conformity" id="sample_conformity_conforme" value="conforme" {{ old('sample_conformity') == 'conforme' ? 'checked' : '' }} required>
+                                    <label class="form-check-label" for="sample_conformity_conforme">
+                                        <i class="fas fa-check-circle text-success me-1"></i> Conforme
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sample_conformity" id="sample_conformity_non_conforme" value="non_conforme" {{ old('sample_conformity') == 'non_conforme' ? 'checked' : '' }} required>
+                                    <label class="form-check-label" for="sample_conformity_non_conforme">
+                                        <i class="fas fa-times-circle text-danger me-1"></i> Non Conforme
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3" id="non-conformity-reason-section" style="display: none;">
+                                <label for="non_conformity_reason" class="form-label">Motivazione Non Conformità</label>
+                                <textarea class="form-control @error('non_conformity_reason') is-invalid @enderror" id="non_conformity_reason" name="non_conformity_reason" rows="3" placeholder="Specificare la motivazione della non conformità" {{ old('sample_conformity') == 'non_conforme' ? 'required' : '' }}>{{ old('non_conformity_reason') }}</textarea>
+                                @error('non_conformity_reason')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @else
+                                    <div class="invalid-feedback">La motivazione della non conformità è obbligatoria.</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </fieldset>
+
                     {{-- SEZIONE TEST DA ESEGUIRE --}}
                     <h5>Test da Eseguire</h5>
                     <div class="row mb-4">
@@ -366,7 +398,8 @@
                 const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
                 let anyTestSelected = Array.from(testCheckboxes).some(cb => cb.checked);
 
-                if (!anyTestSelected) {
+                // Mostra l'errore "nessun test selezionato" solo se il campione è conforme
+                if (!anyTestSelected && document.getElementById('sample_conformity_conforme').checked) {
                     noTestSelectedAlert.classList.remove('d-none');
                     customValidationPassed = false;
                 } else {
@@ -427,7 +460,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const testCheckboxes = document.querySelectorAll('.test-checkbox');
             const doubleTestCheckboxes = document.querySelectorAll('.double-test-checkbox');
+            const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
 
+            // Function to update visibility of plate groups and double test options
             function updatePlateVisibility() {
                 testCheckboxes.forEach((checkbox) => {
                     const testId = checkbox.value;
@@ -461,16 +496,70 @@
                 checkbox.addEventListener('change', updatePlateVisibility);
             });
 
-            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati.
+            // Initial call to set correct visibility on page load
             updatePlateVisibility();
+
+            // --- Gestione Conformità Campione ---
+            const conformityRadios = document.querySelectorAll('input[name="sample_conformity"]');
+            const nonConformityReasonSection = document.getElementById('non-conformity-reason-section');
+            const nonConformityReasonTextarea = document.getElementById('non_conformity_reason');
+
+            function toggleConformityFields() {
+                const isConforme = document.getElementById('sample_conformity_conforme').checked;
+                const isNonConforme = document.getElementById('sample_conformity_non_conforme').checked;
+
+                if (isNonConforme) {
+                    // "Non Conforme" è selezionato
+                    nonConformityReasonSection.style.display = 'block';
+                    nonConformityReasonTextarea.setAttribute('required', 'required');
+                    // Disabilita e deseleziona tutti i test
+                    testCheckboxes.forEach(cb => {
+                        cb.checked = false; // Uncheck them
+                        cb.disabled = true;
+                    });
+                    doubleTestCheckboxes.forEach(cb => {
+                        cb.checked = false; // Uncheck them
+                        cb.disabled = true;
+                    });
+                    updatePlateVisibility(); // Update plate visibility based on disabled checkboxes
+                    noTestSelectedAlert.classList.add('d-none'); // Nascondi l'alert se presente
+                } else if (isConforme) {
+                    // "Conforme" è selezionato
+                    nonConformityReasonSection.style.display = 'none';
+                    nonConformityReasonTextarea.removeAttribute('required');
+                    nonConformityReasonTextarea.value = ''; // Clear reason if it becomes conforme
+                    // Abilita tutti i test
+                    testCheckboxes.forEach(cb => cb.disabled = false);
+                    doubleTestCheckboxes.forEach(cb => cb.disabled = false);
+                } else {
+                    // Nessuna selezione (stato iniziale)
+                    nonConformityReasonSection.style.display = 'none';
+                    nonConformityReasonTextarea.removeAttribute('required');
+                    nonConformityReasonTextarea.value = '';
+                    // Disabilita tutti i test
+                    testCheckboxes.forEach(cb => cb.disabled = true);
+                    doubleTestCheckboxes.forEach(cb => cb.disabled = true);
+                    updatePlateVisibility();
+                    noTestSelectedAlert.classList.add('d-none'); // Nascondi l'alert se presente
+                }
+            }
+
+            conformityRadios.forEach(radio => {
+                radio.addEventListener('change', toggleConformityFields);
+            });
+
+            // Initial call for conformity fields on page load
+            toggleConformityFields();
         });
     </script>
 
     {{-- Dipendenza per SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-            // Gestione modale documentazione
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestione modale documentazione (using vanilla JS for consistency)
+            const showDocsBtn = document.getElementById('show-docs-btn');
+            if (showDocsBtn) {
             $('#show-docs-btn').on('click', function() {
                 Swal.fire({
                     title: '<strong>Manuale Utente e Conformità ISO/IEC 17025:2017</strong>',
@@ -535,6 +624,7 @@
                     width: '80%',
                 });
             });
+            }
         });
     </script>
 </body>

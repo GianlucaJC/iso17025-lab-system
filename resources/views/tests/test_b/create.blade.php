@@ -127,15 +127,15 @@
                             <div class="col-md-6">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : date('H:i')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_b_result->test_end_datetime->format('H:i') : date('H:i')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_b_result->test_end_datetime->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -392,7 +392,7 @@
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
-                            @if($is_readonly) <i class="fas fa-arrow-left me-2"></i>Torna all'elenco @else <i class="fas fa-times me-2"></i>Annulla @endif
+                            @if($is_readonly) <i class="fas fa-arrow-left me-2"></i>Torna indietro @else <i class="fas fa-arrow-left me-2"></i>Torna indietro @endif
                         </a>
                         @if(!$is_readonly)
                             <button type="submit" class="btn btn-primary btn-lg">

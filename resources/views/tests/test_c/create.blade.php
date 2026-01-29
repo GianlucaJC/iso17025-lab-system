@@ -7,8 +7,9 @@
     @php
         $is_edit = isset($test_c_result);
         $is_readonly = $is_readonly ?? false;
+        $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
     @endphp
-    <title>{{ $is_edit ? 'Modifica / Visualizza' : 'Inserisci' }} Risultati Test C</title>
+    <title>{{ $form_title }} Test C - Controllo contaminazione microbica</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -53,9 +54,15 @@
 
     <main class="container mt-4 flex-grow-1">
         <div class="card">
-            <div class="card-header">
-                <h4>{{ $is_edit ? 'Modifica / Visualizza Risultati Test C' : 'Inserisci Risultati Test C' }}</h4>
-                <p>Accettazione N°: <strong>{{ $acceptance->acceptance_number }}</strong> | Lotto: <strong>{{ $acceptance->lotto }}</strong></p>
+            <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
+                <h3>
+                    @if($is_edit)
+                        @if($is_readonly) <i class="fas fa-eye me-2"></i>Visualizza @else <i class="fas fa-edit me-2"></i>Modifica @endif
+                    @else
+                        <i class="fas fa-vial me-2"></i>Esecuzione
+                    @endif
+                    Test C: Controllo della contaminazione microbica
+                </h3>
             </div>
 
             <div class="card-body">
@@ -74,6 +81,26 @@
                     @if($is_edit)
                         @method('PUT')
                     @endif
+
+                    {{-- Dati di Riferimento --}}
+                    <fieldset class="mb-4">
+                        <legend class="h5">Dati di Riferimento</legend>
+                        <div class="row p-3 bg-light border rounded">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Lotto</label>
+                                <p class="form-control-plaintext">{{ $acceptance->lotto }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">N. Accettazione</label>
+                                <p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Operatore Accettazione</label>
+                                @php $acceptanceOperatorName = $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D'; @endphp
+                                <p class="form-control-plaintext">{{ $acceptanceOperatorName }}</p>
+                            </div>
+                        </div>
+                    </fieldset>
                     
                     <fieldset class="mb-4 p-3 border rounded" {{ $is_readonly ? 'disabled' : '' }}>
                         <legend class="h5 w-auto px-2">Dati Generali Prova</legend>
@@ -82,14 +109,14 @@
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
                                     <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" required>
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : '') }}" required>
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
                                     <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_c_result->test_end_datetime->format('H:i') : '') }}" required>
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_c_result->test_end_datetime->format('Y-m-d') : '') }}" required>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_c_result->test_end_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -331,7 +358,7 @@
                         @if(!$is_readonly)
                             <button type="submit" class="btn btn-primary">{{ $is_edit ? 'Aggiorna Risultati' : 'Salva Risultati' }}</button>
                         @endif
-                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary">Indietro</a>
+                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary">Torna indietro</a>
                     </div>
                 </form>
 

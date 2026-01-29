@@ -128,6 +128,38 @@
                         </div>
                     </div>
 
+                    {{-- SEZIONE CONFORMITÀ CAMPIONE --}}
+                    <fieldset class="mb-4">
+                        <legend class="h5">Conformità Campione</legend>
+                        <div class="row g-3 p-3 bg-light border rounded">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sample_conformity" id="sample_conformity_conforme" value="conforme" {{ old('sample_conformity', $acceptance->sample_conformity) == 'conforme' ? 'checked' : '' }} required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <label class="form-check-label" for="sample_conformity_conforme">
+                                        <i class="fas fa-check-circle text-success me-1"></i> Conforme
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sample_conformity" id="sample_conformity_non_conforme" value="non_conforme" {{ old('sample_conformity', $acceptance->sample_conformity) == 'non_conforme' ? 'checked' : '' }} required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <label class="form-check-label" for="sample_conformity_non_conforme">
+                                        <i class="fas fa-times-circle text-danger me-1"></i> Non Conforme
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3" id="non-conformity-reason-section" style="display: none;">
+                                <label for="non_conformity_reason" class="form-label">Motivazione Non Conformità</label>
+                                <textarea class="form-control @error('non_conformity_reason') is-invalid @enderror" id="non_conformity_reason" name="non_conformity_reason" rows="3" placeholder="Specificare la motivazione della non conformità" {{ old('sample_conformity', $acceptance->sample_conformity) == 'non_conforme' ? 'required' : '' }} {{ $is_readonly ? 'disabled' : '' }}>{{ old('non_conformity_reason', $acceptance->non_conformity_reason) }}</textarea>
+                                @error('non_conformity_reason')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @else
+                                    <div class="invalid-feedback">La motivazione della non conformità è obbligatoria.</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </fieldset>
+
                     {{-- SEZIONE TEST DA ESEGUIRE --}}
                     <h5>Test da Eseguire</h5>
                     <div class="row mb-4">
@@ -394,7 +426,7 @@
           Array.prototype.slice.call(forms)
             .forEach(function (form) {
               form.addEventListener('submit', function (event) {
-                let isValid = form.checkValidity();
+                let isValid = form.checkValidity(); // Check Bootstrap's built-in validation
                 let customValidationPassed = true;
 
                 const testCheckboxes = form.querySelectorAll('.test-checkbox');
@@ -402,7 +434,12 @@
                 let anyTestSelected = Array.from(testCheckboxes).some(cb => cb.checked);
 
                 if (!anyTestSelected) {
-                    noTestSelectedAlert.classList.remove('d-none');
+                    // Only show alert if sample is 'conforme' and no tests are selected
+                    const isSampleConforme = document.getElementById('sample_conformity_conforme').checked;
+                    if (isSampleConforme) {
+                        noTestSelectedAlert.classList.remove('d-none');
+                    }
+                    // If sample is 'non_conforme', it's fine not to have tests selected
                     customValidationPassed = false;
                 } else {
                     noTestSelectedAlert.classList.add('d-none');
@@ -410,7 +447,7 @@
 
                 const plateInputs = form.querySelectorAll('input[name^="plates["]');
                 
-                plateInputs.forEach(input => {
+                plateInputs.forEach(input => { // Reset custom validity messages
                     input.setCustomValidity('');
                     input.classList.remove('is-invalid');
                 });
@@ -421,27 +458,31 @@
                         const doubleCheckbox = document.getElementById('double_' + testId);
 
                         const plateGroup = document.getElementById('plates-group-' + testId);
-                        if (plateGroup) {
-                            // Validate standard plates
-                            const standardInputs = plateGroup.querySelectorAll('.standard-plates-row .plate-input');
-                            standardInputs.forEach(plateInput => {
-                                if (plateInput.value.trim() === '') {
-                                    plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
-                                    plateInput.classList.add('is-invalid');
-                                    customValidationPassed = false;
-                                }
-                            });
-
-                            // Validate double plates if checked
-                            if (doubleCheckbox && doubleCheckbox.checked) {
-                                const doubleInputs = plateGroup.querySelectorAll('.double-plates-container .plate-input');
-                                doubleInputs.forEach(plateInput => {
+                        // Only validate plate inputs if the test checkbox is enabled (i.e., sample is conforme)
+                        if (plateGroup && !checkbox.disabled) {
+                            // Validate standard plates (only if the test is selected and not disabled)
+                            if (checkbox.checked) {
+                                const standardInputs = plateGroup.querySelectorAll('.standard-plates-row .plate-input');
+                                standardInputs.forEach(plateInput => {
                                     if (plateInput.value.trim() === '') {
                                         plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
                                         plateInput.classList.add('is-invalid');
                                         customValidationPassed = false;
                                     }
                                 });
+
+                                // Validate double plates if checked (only if the double checkbox is enabled)
+                                if (doubleCheckbox && doubleCheckbox.checked && !doubleCheckbox.disabled) {
+                                    const doubleInputs = plateGroup.querySelectorAll('.double-plates-container .plate-input');
+                                    doubleInputs.forEach(plateInput => {
+                                        if (plateInput.value.trim() === '') {
+                                            plateInput.setCustomValidity('Questo campo è obbligatorio per il test selezionato.');
+                                            plateInput.classList.add('is-invalid');
+                                            customValidationPassed = false;
+                                        }
+                                    });
+                                }
+
                             }
                         }
                     }
@@ -462,8 +503,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const testCheckboxes = document.querySelectorAll('.test-checkbox');
             const doubleTestCheckboxes = document.querySelectorAll('.double-test-checkbox');
+            const noTestSelectedAlert = document.getElementById('no-test-selected-alert');
 
-            function updatePlateVisibility() {
+            function updatePlateVisibility() { // This function now also considers the disabled state
                 testCheckboxes.forEach((checkbox) => {
                     const testId = checkbox.value;
                     const doubleContainer = document.getElementById('double-' + testId + '-container');
@@ -474,11 +516,11 @@
                     if (checkbox.checked) {
                         if (doubleContainer) doubleContainer.style.display = 'inline-block';
                         if (plateGroup) plateGroup.classList.remove('d-none');
-
-                        if (doubleCheckbox && doubleCheckbox.checked) {
+                        // Only show double plate group if double checkbox is checked AND not disabled
+                        if (doubleCheckbox && doubleCheckbox.checked && !doubleCheckbox.disabled) {
                             if (doublePlateGroup) doublePlateGroup.classList.remove('d-none');
                         } else {
-                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
+                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none'); // Hide if not checked or disabled
                         }
                     } else {
                         if (doubleContainer) doubleContainer.style.display = 'none';
@@ -496,8 +538,48 @@
                 checkbox.addEventListener('change', updatePlateVisibility);
             });
 
-            // Esegui al caricamento per mostrare i gruppi di piastre per i test già selezionati.
+            // Initial call to set correct visibility on page load
             updatePlateVisibility();
+
+            // --- Gestione Conformità Campione ---
+            const conformityRadios = document.querySelectorAll('input[name="sample_conformity"]');
+            const nonConformityReasonSection = document.getElementById('non-conformity-reason-section');
+            const nonConformityReasonTextarea = document.getElementById('non_conformity_reason');
+
+            function toggleConformityFields() {
+                const isNonConforme = document.getElementById('sample_conformity_non_conforme').checked;
+                const isFormReadonly = {{ $is_readonly ? 'true' : 'false' }};
+
+                if (isNonConforme) {
+                    nonConformityReasonSection.style.display = 'block';
+                    if (!isFormReadonly) {
+                        nonConformityReasonTextarea.setAttribute('required', 'required');
+                    }
+                    // Disable all test checkboxes if not readonly
+                    testCheckboxes.forEach(cb => {
+                        cb.checked = false; // Uncheck them
+                        cb.disabled = true;
+                    });
+                    doubleTestCheckboxes.forEach(cb => {
+                        cb.checked = false; // Uncheck them
+                        cb.disabled = true;
+                    });
+                    updatePlateVisibility(); // Update plate visibility based on disabled checkboxes
+                    noTestSelectedAlert.classList.add('d-none'); // Nascondi l'alert se presente
+                } else {
+                    nonConformityReasonSection.style.display = 'none';
+                    nonConformityReasonTextarea.removeAttribute('required');
+                    nonConformityReasonTextarea.value = ''; // Clear reason if it becomes conforme
+                    // Enable all test checkboxes if not readonly
+                    if (!isFormReadonly) {
+                        testCheckboxes.forEach(cb => cb.disabled = false);
+                        doubleTestCheckboxes.forEach(cb => cb.disabled = false);
+                    }
+                }
+            }
+
+            conformityRadios.forEach(radio => radio.addEventListener('change', toggleConformityFields));
+            toggleConformityFields(); // Initial call for conformity fields on page load
         });
     </script>
 

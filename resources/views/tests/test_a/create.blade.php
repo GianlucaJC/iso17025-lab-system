@@ -117,9 +117,9 @@
                 <h3>
                     @if($is_edit)
                         @if($is_readonly)
-                            <i class="fas fa-eye me-2"></i>Visualizza Risultati Test A
+                            <i class="fas fa-eye me-2"></i>Visualizza Risultati Test A: Controllo del pH 
                         @else
-                            <i class="fas fa-edit me-2"></i>Modifica Risultati Test A
+                            <i class="fas fa-edit me-2"></i>Modifica Risultati Test A: Controllo del pH
                         @endif
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione Test A: Controllo del pH
@@ -148,13 +148,22 @@
                     <fieldset class="mb-4">
                         <legend class="h5">Dati di Riferimento</legend>
                         <div class="row p-3 bg-light border rounded">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">Lotto</label>
                                 <p class="form-control-plaintext">{{ $acceptance->lotto }}</p>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">N. Accettazione</label>
                                 <p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">ID Piastra</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-secondary fs-6">
+                                        <i class="fas fa-vial me-1"></i>
+                                        {{ $acceptance->plates[0] ?? 'N/D' }}
+                                    </span>
+                                </p>
                             </div>
                         </div>
                     </fieldset>
@@ -165,7 +174,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="test_date" class="form-label">Data Prova</label>
-                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
                             <div class="col-md-6">
                                 <label for="operator" class="form-label">Operatore</label>
@@ -234,9 +243,9 @@
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
                             @if($is_readonly)
-                                <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
+                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
                             @else
-                                <i class="fas fa-times me-2"></i>Annulla
+                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
                             @endif
                         </a>
                         @if(!$is_readonly)

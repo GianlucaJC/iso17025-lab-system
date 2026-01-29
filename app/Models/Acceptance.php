@@ -37,6 +37,8 @@ class Acceptance extends Model
         'double_tests',
         'user_id',
         'modification_reason',
+        'sample_conformity',
+        'non_conformity_reason'
     ];
 
     /**

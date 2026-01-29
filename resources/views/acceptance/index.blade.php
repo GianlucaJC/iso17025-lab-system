@@ -151,7 +151,6 @@
                             <th>Lotto</th>
                             <th>Data Accettazione</th>
                             <th>Test Eseguiti</th>
-                            <th>Operatore</th>
                             <th>Data Creazione</th>
                             <th>Stato Test A</th>
                             <th>Stato Test B</th>
@@ -197,7 +196,7 @@
                                         @endforeach
                                     @endif
                                 </td>
-                                <td>{{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}</td>
+                                
                                 <td>{{ $acceptance->created_at->format('d/m/Y H:i') }}</td>
 
                                 {{-- Stato Test A --}}
@@ -258,170 +257,152 @@
                                 </td>
 
                                 <td>
-                                    @if(in_array('test3', $acceptance->tests))
-                                        @if($acceptance->testCResult)
-                                            @php
-                                                $isOwnerC = $acceptance->testCResult->operator_id == $currentUser['id'];
-                                            @endphp
-                                            @if($acceptance->testCResult->rl_signed_at)
-                                                <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test C (Validato)">
-                                                    <i class="fas fa-user-check"></i> Test C
-                                                </a>
-                                            @elseif($acceptance->testCResult->lab_signed_at)
-                                                <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test C (Firmato)">
-                                                    <i class="fas fa-signature"></i> Test C
-                                                </a>
-                                                @if($isLabManager && !$isAdmin)
-                                                    <form action="{{ route('test-c.validate', $acceptance->testCResult) }}" method="POST" class="d-inline validate-form ms-1">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Valida Test C">
-                                                            <i class="fas fa-user-check"></i> Valida
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            @else
-                                                {{-- Non firmato, non validato (in compilazione) --}}
-                                                @if($isOwnerC && !$isAdmin)
-                                                    <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test C">
-                                                        <i class="fas fa-edit"></i> Test C
+                                    @if ($acceptance->sample_conformity === 'conforme')
+                                        @if(in_array('test1', $acceptance->tests))
+                                            {{-- Controlla se il risultato del test esiste tramite la relazione --}}
+                                            @if($acceptance->testAResult)
+                                                @php
+                                                    $isOwnerA = $acceptance->testAResult->operator_id == $currentUser['id']; // isLabTechnician, isLabManager, isAdmin are already defined
+                                                @endphp
+                                                @if($acceptance->testAResult->rl_signature_id)
+                                                    <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test A (Validato)">
+                                                        <i class="fas fa-user-check"></i> Test A
                                                     </a>
-                                                    @if($isLabTechnician && !$isAdmin)
-                                                        <form action="{{ route('test-c.sign', $acceptance->testCResult) }}" method="POST" class="d-inline sign-form">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test C">
-                                                                <i class="fas fa-signature"></i> Firma
-                                                            </button>
-                                                        </form>
-                                                    @endif
+                                                @elseif($acceptance->testAResult->lab_signed_at)
+                                                    <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test A (Firmato)">
+                                                        <i class="fas fa-signature"></i> Test A
+                                                    </a>
+
                                                 @else
-                                                    <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test C">
-                                                        <i class="fas fa-eye"></i> Test C
-                                                    </a>
-                                                @endif
-                                            @endif
-                                        @else {{-- Non ancora eseguito --}}
-                                            @if($isLabTechnician && !$isAdmin)
-                                                <a href="{{ route('test-c.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test C: Controllo contaminazione microbica">
-                                                    <i class="fas fa-vial"></i> Test C
-                                                </a>
-                                            @endif
-                                        @endif
-                                        {{-- Pulsante Cronologia per Test C --}}
-                                        @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testCResult)
-                                                <a href="{{ route('history.show', ['modelNameShort' => 'test-c-result', 'id' => $acceptance->testCResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test C">
-                                                    <i class="fas fa-history"></i>
-                                                </a>
-                                        @endif
-                                    @endif
-                                    @if(in_array('test1', $acceptance->tests))
-                                        {{-- Controlla se il risultato del test esiste tramite la relazione --}}
-                                        @if($acceptance->testAResult)
-                                            @php
-                                                $isOwnerA = $acceptance->testAResult->operator_id == $currentUser['id']; // isLabTechnician, isLabManager, isAdmin are already defined
-                                            @endphp
-                                            @if($acceptance->testAResult->rl_signature_id)
-                                                <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test A (Validato)">
-                                                    <i class="fas fa-user-check"></i> Test A
-                                                </a>
-                                            @elseif($acceptance->testAResult->lab_signed_at)
-                                                <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test A (Firmato)">
-                                                    <i class="fas fa-signature"></i> Test A
-                                                </a>
-                                                @if($isLabManager && !$isAdmin)
-                                                    <form action="{{ route('test-a.validate', $acceptance->testAResult) }}" method="POST" class="d-inline validate-form ms-1">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Valida Test A">
-                                                            <i class="fas fa-user-check"></i> Valida
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            @else
-                                                {{-- Non firmato, non validato (in compilazione) --}}
-                                                @if($isOwnerA && !$isAdmin)
-                                                    <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test A">
-                                                        <i class="fas fa-edit"></i> Test A
-                                                    </a>
-                                                    @if($isLabTechnician && !$isAdmin)
-                                                        <form action="{{ route('test-a.sign', $acceptance->testAResult) }}" method="POST" class="d-inline sign-form">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test A">
-                                                                <i class="fas fa-signature"></i> Firma
-                                                            </button>
-                                                        </form>
+                                                    {{-- Non firmato, non validato (in compilazione) --}}
+                                                    @if($isOwnerA && !$isAdmin)
+                                                        <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test A">
+                                                            <i class="fas fa-edit"></i> Test A
+                                                        </a>
+                                                        @if($isLabTechnician && !$isAdmin)
+                                                            <form action="{{ route('test-a.sign', $acceptance->testAResult) }}" method="POST" class="d-inline sign-form">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test A">
+                                                                    <i class="fas fa-signature"></i> Firma
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    @else
+                                                        <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test A">
+                                                            <i class="fas fa-eye"></i> Test A
+                                                        </a>
                                                     @endif
+                                                @endif
+                                            @else {{-- Non ancora eseguito --}}
+                                                @if($isLabTechnician && !$isAdmin)
+                                                    <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test A: Controllo pH">
+                                                        <i class="fas fa-vial"></i> Test A
+                                                    </a>
+                                                @endif
+                                            @endif
+                                            {{-- Pulsante Cronologia per Test A --}}
+                                            @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testAResult)
+                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $acceptance->testAResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test A">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                            @endif
+                                        @endif
+                                        @if(in_array('test2', $acceptance->tests))
+                                            {{-- Controlla se il risultato del test esiste tramite la relazione --}}
+                                            @if($acceptance->testBResult)
+                                                @php
+                                                    $isOwner = $acceptance->testBResult->operator_id == $currentUser['id']; // isLabTechnician, isLabManager, isAdmin are already defined
+                                                @endphp
+                                                @if($acceptance->testBResult->rl_signature_id)
+                                                    <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test B (Validato)">
+                                                        <i class="fas fa-user-check"></i> Test B
+                                                    </a>
+                                                @elseif($acceptance->testBResult->lab_signed_at)
+                                                    <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test B (Firmato)">
+                                                        <i class="fas fa-signature"></i> Test B
+                                                    </a>
                                                 @else
-                                                    <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test A">
-                                                        <i class="fas fa-eye"></i> Test A
-                                                    </a>
-                                                @endif
-                                            @endif
-                                        @else {{-- Non ancora eseguito --}}
-                                            @if($isLabTechnician && !$isAdmin)
-                                                <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test A: Controllo pH">
-                                                    <i class="fas fa-vial"></i> Test A
-                                                </a>
-                                            @endif
-                                        @endif
-                                        {{-- Pulsante Cronologia per Test A --}}
-                                        @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testAResult)
-                                                <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $acceptance->testAResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test A">
-                                                    <i class="fas fa-history"></i>
-                                                </a>
-                                        @endif
-                                    @endif
-                                    @if(in_array('test2', $acceptance->tests))
-                                        {{-- Controlla se il risultato del test esiste tramite la relazione --}}
-                                        @if($acceptance->testBResult)
-                                            @php
-                                                $isOwner = $acceptance->testBResult->operator_id == $currentUser['id']; // isLabTechnician, isLabManager, isAdmin are already defined
-                                            @endphp
-                                            @if($acceptance->testBResult->rl_signature_id)
-                                                <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test B (Validato)">
-                                                    <i class="fas fa-user-check"></i> Test B
-                                                </a>
-                                            @elseif($acceptance->testBResult->lab_signed_at)
-                                                <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test B (Firmato)">
-                                                    <i class="fas fa-signature"></i> Test B
-                                                </a>
-                                                @if($isLabManager && !$isAdmin)
-                                                    <form action="{{ route('test-b.validate', $acceptance->testBResult) }}" method="POST" class="d-inline validate-form">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Valida Test B">
-                                                            <i class="fas fa-user-check"></i> Valida
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            @else
-                                                {{-- Non firmato, non validato (in compilazione) --}}
-                                                @if($isOwner && !$isAdmin)
-                                                    <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test B">
-                                                        <i class="fas fa-edit"></i> Test B
-                                                    </a>
-                                                    @if($isLabTechnician && !$isAdmin)
-                                                        <form action="{{ route('test-b.sign', $acceptance->testBResult) }}" method="POST" class="d-inline sign-form">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test B">
-                                                                <i class="fas fa-signature"></i> Firma
-                                                            </button>
-                                                        </form>
+                                                    {{-- Non firmato, non validato (in compilazione) --}}
+                                                    @if($isOwner && !$isAdmin)
+                                                        <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test B">
+                                                            <i class="fas fa-edit"></i> Test B
+                                                        </a>
+                                                        @if($isLabTechnician && !$isAdmin)
+                                                            <form action="{{ route('test-b.sign', $acceptance->testBResult) }}" method="POST" class="d-inline sign-form">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test B">
+                                                                    <i class="fas fa-signature"></i> Firma
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    @else
+                                                        <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test B">
+                                                            <i class="fas fa-eye"></i> Test B
+                                                        </a>
                                                     @endif
-                                                @else
-                                                    <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test B">
-                                                        <i class="fas fa-eye"></i> Test B
+                                                @endif
+                                            @else {{-- Nessun risultato ancora inserito --}}
+                                                @if($isLabTechnician && !$isAdmin)
+                                                    <a href="{{ route('test-b.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test B: Produttività">
+                                                        <i class="fas fa-vial"></i> Test B
                                                     </a>
                                                 @endif
                                             @endif
-                                        @else {{-- Nessun risultato ancora inserito --}}
-                                            @if($isLabTechnician && !$isAdmin)
-                                                <a href="{{ route('test-b.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test B: Produttività">
-                                                    <i class="fas fa-vial"></i> Test B
-                                                </a>
+                                            {{-- Pulsante Cronologia per Test B --}}
+                                            @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testBResult)
+                                                <a href="{{ route('history.show', ['modelNameShort' => 'test-b-result', 'id' => $acceptance->testBResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test B"><i class="fas fa-history"></i></a>
                                             @endif
                                         @endif
-                                        {{-- Pulsante Cronologia per Test B --}}
-                                        @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testBResult)
-                                            <a href="{{ route('history.show', ['modelNameShort' => 'test-b-result', 'id' => $acceptance->testBResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test B"><i class="fas fa-history"></i></a>
+                                        @if(in_array('test3', $acceptance->tests))
+                                            @if($acceptance->testCResult)
+                                                @php
+                                                    $isOwnerC = $acceptance->testCResult->operator_id == $currentUser['id'];
+                                                @endphp
+                                                @if($acceptance->testCResult->rl_signed_at)
+                                                    <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-success mb-1" title="Visualizza Test C (Validato)">
+                                                        <i class="fas fa-user-check"></i> Test C
+                                                    </a>
+                                                @elseif($acceptance->testCResult->lab_signed_at)
+                                                    <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-primary mb-1" title="Visualizza Test C (Firmato)">
+                                                        <i class="fas fa-signature"></i> Test C
+                                                    </a>
+
+                                                @else
+                                                    {{-- Non firmato, non validato (in compilazione) --}}
+                                                    @if($isOwnerC && !$isAdmin)
+                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning mb-1" title="Modifica Risultati Test C">
+                                                            <i class="fas fa-edit"></i> Test C
+                                                        </a>
+                                                        @if($isLabTechnician && !$isAdmin)
+                                                            <form action="{{ route('test-c.sign', $acceptance->testCResult) }}" method="POST" class="d-inline sign-form">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test C">
+                                                                    <i class="fas fa-signature"></i> Firma
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    @else
+                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test C">
+                                                            <i class="fas fa-eye"></i> Test C
+                                                        </a>
+                                                    @endif
+                                                @endif
+                                            @else {{-- Non ancora eseguito --}}
+                                                @if($isLabTechnician && !$isAdmin)
+                                                    <a href="{{ route('test-c.create', $acceptance) }}" class="btn btn-sm btn-outline-primary mb-1" title="Esegui Test C: Controllo contaminazione microbica">
+                                                        <i class="fas fa-vial"></i> Test C
+                                                    </a>
+                                                @endif
+                                            @endif
+                                            {{-- Pulsante Cronologia per Test C --}}
+                                            @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1 && $acceptance->testCResult)
+                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-c-result', 'id' => $acceptance->testCResult->id]) }}" class="btn btn-sm btn-outline-secondary mb-1" title="Cronologia Modifiche Test C">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                            @endif
                                         @endif
+                                    @else
+                                        <span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Non Conforme</span>
                                     @endif
                                 </td>
                                 <td class="text-nowrap"> {{-- $isAdmin is already defined --}}
@@ -440,15 +421,17 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                     @endif
-                                    {{-- Pulsante per scaricare il Rapporto di Prova --}}
-                                    @if($acceptance->is_pdf_complete)
-                                        <a href="{{ route('acceptance.pdf', $acceptance->id) }}" class="btn btn-sm btn-success ms-1" title="Scarica Rapporto Finale PDF" target="_blank">
-                                            <i class="fas fa-file-pdf"></i> Finale
-                                        </a>
-                                    @else
-                                        <a href="{{ route('acceptance.pdf', $acceptance->id) }}" class="btn btn-sm btn-info ms-1" title="Scarica Anteprima PDF" target="_blank">
-                                            <i class="fas fa-file-pdf"></i> Anteprima
-                                        </a>
+                                    {{-- Pulsante per scaricare il Rapporto di Prova (solo se il campione è conforme) --}}
+                                    @if($acceptance->sample_conformity === 'conforme')
+                                        @if($acceptance->is_pdf_complete)
+                                            <a href="{{ route('acceptance.pdf', $acceptance->id) }}" class="btn btn-sm btn-success ms-1" title="Scarica Rapporto Finale PDF" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> Finale
+                                            </a>
+                                        @else
+                                            <a href="{{ route('acceptance.pdf', $acceptance->id) }}" class="btn btn-sm btn-info ms-1" title="Scarica Anteprima PDF" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> Anteprima
+                                            </a>
+                                        @endif
                                     @endif
                                     {{-- Pulsante Cronologia per Accettazione (solo admin) --}}
                                     @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)

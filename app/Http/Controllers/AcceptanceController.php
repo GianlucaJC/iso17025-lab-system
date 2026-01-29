@@ -174,6 +174,8 @@ class AcceptanceController extends Controller
             'sampling_date' => 'required|date',
             'acceptance_date' => 'required|date',
             'tests' => 'required|array|min:1', // Almeno un test deve essere selezionato
+            'sample_conformity' => ['required', Rule::in(['conforme', 'non_conforme'])],
+            'non_conformity_reason' => 'required_if:sample_conformity,non_conforme|nullable|string|max:2000',
             'tests.*' => 'string|in:test1,test2,test3', // Valori validi per i test
             'double_tests' => 'nullable|array',
             'double_tests.*' => 'string|in:test1,test2,test3',
@@ -183,44 +185,64 @@ class AcceptanceController extends Controller
         $selectedTests = $request->input('tests', []);
         $doubleTests = $request->input('double_tests', []);
 
+        // If sample is non-conforming, tests are not required
+        $testsRequired = $request->input('sample_conformity') === 'conforme';
+        if (!$testsRequired) {
+            $rules['tests'] = 'nullable|array';
+        }
+
         // Test A (1 plate, index 0)
         for ($i = 0; $i < 1; $i++) {
-            $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test1', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
         // Test A Doppio (1 plate, index 2)
         for ($i = 2; $i < 3; $i++) {
-            $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test1', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-
         // Test B (12 plates, indices 4-15)
         for ($i = 4; $i < 16; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test2', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
         // Test B Doppio (12 plates, indices 16-27)
         for ($i = 16; $i < 28; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test2', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-
         // Test C (5 plates, indices 28-31 and 36)
         for ($i = 28; $i < 32; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test3', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-        $rules["plates.36.id"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.36.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string';
-
+        $rules["plates.36.id"] = (in_array('test3', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
+        $rules["plates.36.lot"] = (in_array('test3', $selectedTests) && $testsRequired) ? 'required|string|max:255' : 'nullable|string';
         // Test C Doppio (5 plates, indices 32-35 and 37)
         for ($i = 32; $i < 36; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test3', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-        $rules["plates.37.id"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.37.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string';
+        $rules["plates.37.id"] = (in_array('test3', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
+        $rules["plates.37.lot"] = (in_array('test3', $doubleTests) && $testsRequired) ? 'required|string|max:255' : 'nullable|string';
 
         $validatedData = $request->validate($rules);
 
         // Aggiungiamo l'ID dell'utente loggato ai dati da salvare
         $validatedData['user_id'] = Session::get('user')['id'];
 
-        Acceptance::create($validatedData);
+        // Se il campione è non conforme, i test non vengono inviati.
+        // Assicuriamoci che 'tests' e 'double_tests' siano array vuoti per evitare errori SQL.
+        if ($validatedData['sample_conformity'] === 'non_conforme') {
+            $validatedData['tests'] = [];
+            $validatedData['double_tests'] = [];
+        } else {
+            // Se è conforme, assicuriamoci che la motivazione di non conformità sia nulla.
+            $validatedData['non_conformity_reason'] = null;
+        }
+
+        // Creiamo una nuova istanza e la salviamo in due passaggi
+        // per avere un controllo più esplicito, dato il bug riscontrato.
+        $acceptance = new Acceptance();
+        $acceptance->fill($validatedData);
+
+        // Assicuriamoci esplicitamente che il valore sia corretto prima di salvare
+        $acceptance->sample_conformity = $validatedData['sample_conformity'];
+        $acceptance->save();
 
         // Reindirizziamo alla dashboard con un messaggio di successo
         return redirect()->route('acceptance.index')->with('success', 'Accettazione campioni salvata con successo!');
@@ -278,6 +300,8 @@ class AcceptanceController extends Controller
             'sampling_date' => 'required|date',
             'acceptance_date' => 'required|date',
             'tests' => 'required|array|min:1',
+            'sample_conformity' => ['required', Rule::in(['conforme', 'non_conforme'])],
+            'non_conformity_reason' => 'required_if:sample_conformity,non_conforme|nullable|string|max:2000',
             'tests.*' => 'string|in:test1,test2,test3',
             'double_tests' => 'nullable|array',
             'double_tests.*' => 'string|in:test1,test2,test3',
@@ -287,41 +311,59 @@ class AcceptanceController extends Controller
         $selectedTests = $request->input('tests', []);
         $doubleTests = $request->input('double_tests', []);
 
+        // If sample is non-conforming, tests are not required
+        $testsRequired = $request->input('sample_conformity') === 'conforme';
+        if (!$testsRequired) {
+            $rules['tests'] = 'nullable|array';
+        }
+
         // Test A (2 plates, indices 0-1)
         for ($i = 0; $i < 1; $i++) { // Ora solo 1 piastra per il Test A standard
-            $rules["plates.{$i}"] = in_array('test1', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test1', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
         // Test A Doppio (2 plates, indices 2-3)
         for ($i = 2; $i < 3; $i++) { // Ora solo 1 piastra per il Test A in doppio
-            $rules["plates.{$i}"] = in_array('test1', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test1', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-
         // Test B (12 plates, indices 4-15)
         for ($i = 4; $i < 16; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test2', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
         // Test B Doppio (12 plates, indices 16-27)
         for ($i = 16; $i < 28; $i++) {
-            $rules["plates.{$i}"] = in_array('test2', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test2', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-
         // Test C (5 plates, indices 28-31 and 36)
         for ($i = 28; $i < 32; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test3', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-        $rules["plates.36.id"] = in_array('test3', $selectedTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.36.lot"] = in_array('test3', $selectedTests) ? 'required|string|max:255' : 'nullable|string';
-
+        $rules["plates.36.id"] = (in_array('test3', $selectedTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
+        $rules["plates.36.lot"] = (in_array('test3', $selectedTests) && $testsRequired) ? 'required|string|max:255' : 'nullable|string';
         // Test C Doppio (5 plates, indices 32-35 and 37)
         for ($i = 32; $i < 36; $i++) {
-            $rules["plates.{$i}"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
+            $rules["plates.{$i}"] = (in_array('test3', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
         }
-        $rules["plates.37.id"] = in_array('test3', $doubleTests) ? 'required|numeric' : 'nullable|numeric';
-        $rules["plates.37.lot"] = in_array('test3', $doubleTests) ? 'required|string|max:255' : 'nullable|string';
+        $rules["plates.37.id"] = (in_array('test3', $doubleTests) && $testsRequired) ? 'required|numeric' : 'nullable|numeric';
+        $rules["plates.37.lot"] = (in_array('test3', $doubleTests) && $testsRequired) ? 'required|string|max:255' : 'nullable|string';
 
         $validatedData = $request->validate($rules);
 
-        $acceptance->update($validatedData);
+        // Se il campione è non conforme, i test non vengono inviati.
+        // Assicuriamoci che 'tests' e 'double_tests' siano array vuoti per aggiornare correttamente il record.
+        if ($validatedData['sample_conformity'] === 'non_conforme') {
+            $validatedData['tests'] = [];
+            $validatedData['double_tests'] = [];
+        } else {
+            // Se è conforme, assicuriamoci che la motivazione di non conformità sia nulla.
+            $validatedData['non_conformity_reason'] = null;
+        }
+
+        // Usiamo fill() e save() invece di update() per coerenza con la logica
+        // di creazione e per un controllo più esplicito sul processo di salvataggio.
+        $acceptance->fill($validatedData);
+        // Assicuriamoci esplicitamente che il valore sia corretto prima di salvare
+        $acceptance->sample_conformity = $validatedData['sample_conformity'];
+        $acceptance->save();
 
         return redirect()->route('acceptance.index')->with('success', 'Accettazione aggiornata con successo!');
     }
