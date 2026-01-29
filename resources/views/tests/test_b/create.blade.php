@@ -134,7 +134,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                     <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_b_result->test_end_datetime->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
