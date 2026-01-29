@@ -8,7 +8,6 @@
         @page { margin: 80px 40px 70px 40px; }
         header { position: fixed; top: -70px; left: 0px; right: 0px; height: 60px; }
         footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 50px; text-align: center; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
-        .page-number:after { content: "Pagina " counter(page) " di " counter(pages); }
         h1, h2, h3 { font-weight: normal; }
         h1 { font-size: 16px; text-align: center; margin-bottom: 20px; text-decoration: underline; }
         h2 { font-size: 12px; border-bottom: 1px solid #555; padding-bottom: 3px; margin-top: 15px; margin-bottom: 8px; }
@@ -62,12 +61,9 @@
     <header>
         <table style="width: 100%; border: none;">
             <tr>
-                <td style="width: 70%; border: none;">
+                <td style="width: 100%; border: none;">
                     <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_0<br>
                     <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
-                </td>
-                <td style="width: 30%; text-align: right; border: none;" class="page-number">
-                    {{-- Il numero di pagina viene inserito da dompdf --}}
                 </td>
             </tr>
         </table>
@@ -260,5 +256,17 @@
         </table>
 
     </main>
+    <script type="text/php">
+        if (isset($pdf)) {
+            $font = $fontMetrics->getFont("DejaVu Sans", "normal");
+            $size = 10;
+            $pageText = "Pagina " . $PAGE_NUM . " di " . $PAGE_COUNT;
+            $text_width = $fontMetrics->get_text_width($pageText, $font, $size);
+            // Posiziona il testo nell'angolo in alto a destra, tenendo conto dei margini
+            $x = $pdf->get_width() - $text_width - 40; // 40px è il margine destro
+            $y = 15; // Posizione verticale dall'alto, all'interno del margine superiore
+            $pdf->page_text($x, $y, $pageText, $font, $size);
+        }
+    </script>
 </body>
 </html>
