@@ -5,22 +5,22 @@
     <title>Rapporto di Prova {{ $acceptance->acceptance_number }}</title>
     <style>
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #333; }
-        @page { margin: 100px 40px 80px 40px; }
-        header { position: fixed; top: -80px; left: 0px; right: 0px; height: 70px; }
+        @page { margin: 80px 40px 70px 40px; }
+        header { position: fixed; top: -70px; left: 0px; right: 0px; height: 60px; }
         footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 50px; text-align: center; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
         .page-number:after { content: "Pagina " counter(page) " di " counter(pages); }
         h1, h2, h3 { font-weight: normal; }
         h1 { font-size: 16px; text-align: center; margin-bottom: 20px; text-decoration: underline; }
-        h2 { font-size: 12px; border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px; }
-        h3 { font-size: 11px; font-weight: bold; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; vertical-align: top; }
+        h2 { font-size: 12px; border-bottom: 1px solid #555; padding-bottom: 3px; margin-top: 15px; margin-bottom: 8px; }
+        h3 { font-size: 11px; font-weight: bold; margin-top: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        th, td { border: 1px solid #ccc; padding: 4px; text-align: left; vertical-align: top; }
         th { background-color: #f2f2f2; font-weight: bold; }
         .info-table { border: none; }
         .info-table strong { font-weight: bold; }
         .info-table td { border: none; padding: 2px 0; }
-        .signatures { margin-top: 40px; border: none; }
-        .signatures td { border: none; padding: 10px 0; }
+        .signatures { margin-top: 25px; border: none; }
+        .signatures td { border: none; padding: 5px 0; }
         .watermark {
             position: fixed;
             top: 50%;
