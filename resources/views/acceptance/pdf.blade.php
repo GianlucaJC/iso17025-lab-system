@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Rapporto di Prova {{ $acceptance->acceptance_number }}</title>
     <style>
-        body { font-family: 'Helvetica', sans-serif; font-size: 10px; color: #333; }
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #333; }
         @page { margin: 100px 40px 80px 40px; }
         header { position: fixed; top: -80px; left: 0px; right: 0px; height: 70px; }
         footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 50px; text-align: center; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
@@ -157,7 +157,7 @@
             <table class="info-table">
                 <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">MA60 Rev.4 del 07.03.2024</td></tr>
                 <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
-                <tr><td><strong>Inoculo:</strong></td><td>&le; 100 CFU</td></tr>
+                <tr><td><strong>Inoculo:</strong></td><td>&#8804; 100 CFU</td></tr>
             </table>
             <table>
                 <thead><tr><th>Ceppo di controllo</th><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
