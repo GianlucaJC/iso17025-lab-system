@@ -104,7 +104,8 @@
                             <label for="sampling_date" class="form-label">Data Campionamento</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date', date('Y-m-d')) }}" required>
+                                <input type="date" class="form-control" id="sampling_date" name="sampling_date" value="{{ old('sampling_date') }}" required>
+                                <button class="btn btn-outline-secondary" type="button" id="calculate-sampling-date-btn" title="Calcola data da lotto"><i class="fas fa-calculator"></i></button>
                                 <div class="invalid-feedback">Per favore, inserisci la data di campionamento.</div>
                             </div>
                         </div>
@@ -554,10 +555,11 @@
             // --- Automazione Data Campionamento da Lotto ---
             const lottoInput = document.getElementById('lotto');
             const samplingDateInput = document.getElementById('sampling_date');
+            const calculateBtn = document.getElementById('calculate-sampling-date-btn');
 
-            if (lottoInput && samplingDateInput) {
-                lottoInput.addEventListener('blur', function() {
-                    const lottoValue = this.value.trim();
+            if (lottoInput && samplingDateInput && calculateBtn) {
+                calculateBtn.addEventListener('click', function() {
+                    const lottoValue = lottoInput.value.trim();
                     
                     // Controlla se il lotto ha almeno 6 cifre numeriche
                     if (lottoValue.length >= 6 && /^\d{6}/.test(lottoValue)) {
