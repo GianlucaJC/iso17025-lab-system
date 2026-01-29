@@ -580,6 +580,32 @@
 
             conformityRadios.forEach(radio => radio.addEventListener('change', toggleConformityFields));
             toggleConformityFields(); // Initial call for conformity fields on page load
+
+            // --- Automazione Data Campionamento da Lotto ---
+            const lottoInput = document.getElementById('lotto');
+            const samplingDateInput = document.getElementById('sampling_date');
+
+            if (lottoInput && samplingDateInput) {
+                lottoInput.addEventListener('blur', function() {
+                    const lottoValue = this.value.trim();
+                    
+                    // Controlla se il lotto ha almeno 6 cifre numeriche
+                    if (lottoValue.length >= 6 && /^\d{6}/.test(lottoValue)) {
+                        const datePart = lottoValue.substring(0, 6);
+                        const month = datePart.substring(0, 2);
+                        const day = datePart.substring(2, 4);
+                        const year = '20' + datePart.substring(4, 6); // Assumiamo anni del 21° secolo
+
+                        // Costruiamo una data per validarla. Mese è 0-indexed.
+                        const tempDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+                        
+                        if (tempDate.getFullYear() == year && (tempDate.getMonth() + 1) == parseInt(month, 10) && tempDate.getDate() == parseInt(day, 10)) {
+                            const formattedDate = `${year}-${month}-${day}`;
+                            samplingDateInput.value = formattedDate;
+                        }
+                    }
+                });
+            }
         });
     </script>
 
