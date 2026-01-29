@@ -34,12 +34,37 @@
     </style>
 </head>
 <body>
+    @php
+        $approvalDate = null;
+        $reportDate = $report_date; // Mantiene la data originale come fallback
+
+        if ($isPdfComplete) {
+            $validationDates = [];
+            // Raccoglie tutte le date di validazione disponibili per i test richiesti
+            if (in_array('test1', $acceptance->tests) && $testAResult && $testAResult->rl_signed_at) {
+                $validationDates[] = $testAResult->rl_signed_at;
+            }
+            if (in_array('test2', $acceptance->tests) && $testBResult && $testBResult->rl_signed_at) {
+                $validationDates[] = $testBResult->rl_signed_at;
+            }
+            if (in_array('test3', $acceptance->tests) && $testCResult && $testCResult->rl_signed_at) {
+                $validationDates[] = $testCResult->rl_signed_at;
+            }
+
+            if (!empty($validationDates)) {
+                // Trova la data più recente e la usa sia per l'approvazione che per il report
+                $latestDate = max($validationDates);
+                $approvalDate = $latestDate->format('d.m.Y');
+                $reportDate = $approvalDate;
+            }
+        }
+    @endphp
     <header>
         <table style="width: 100%; border: none;">
             <tr>
                 <td style="width: 70%; border: none;">
                     <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_0<br>
-                    <strong>Data Rapporto di Prova:</strong> {{ $report_date }}
+                    <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
                 </td>
                 <td style="width: 30%; text-align: right; border: none;" class="page-number">
                     {{-- Il numero di pagina viene inserito da dompdf --}}
@@ -213,7 +238,7 @@
         <table class="signatures">
             <tr>
                 <td style="width: 50%;">
-                    <strong>Approvato il:</strong> {{ $isPdfComplete ? optional(optional($acceptance->testCResult)->rl_signed_at)->format('d.m.Y') : '________________' }}
+                    <strong>Approvato il:</strong> {{ $approvalDate ?? '________________' }}
                 </td>
                 <td style="width: 50%;">
                     @if($isPdfComplete)
@@ -226,7 +251,7 @@
              <tr>
                 <td>
                     <strong>Responsabile di Laboratorio:</strong>
-                    {{ $isPdfComplete ? 'Dott. F. D’Emidio' : '_________________________' }}
+                    {{ $approvalDate ? 'Dott. F. D’Emidio' : '_________________________' }}
                 </td>
                 <td>
                     {{-- Spazio per la firma autografa --}}
