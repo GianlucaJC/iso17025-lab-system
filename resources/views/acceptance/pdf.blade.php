@@ -157,7 +157,7 @@
             <table class="info-table">
                 <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">MA60 Rev.4 del 07.03.2024</td></tr>
                 <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
-                <tr><td><strong>Inoculo:</strong></td><td>≤ 100 CFU</td></tr>
+                <tr><td><strong>Inoculo:</strong></td><td>&le; 100 CFU</td></tr>
             </table>
             <table>
                 <thead><tr><th>Ceppo di controllo</th><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
