@@ -119,6 +119,7 @@ class TestCController extends Controller
             'incubators' => $incubators,
             'pipettes' => $pipettes,
             'usersMap' => $usersMap,
+            'is_initial_creation' => true, // Flag per la vista per inibire i campi del 2o step
         ]);
     }
 
@@ -131,7 +132,7 @@ class TestCController extends Controller
             abort(403, 'Azione non permessa.');
         }
 
-        $validatedData = $this->validateRequest($request);
+        $validatedData = $this->validateRequest($request, false);
 
         $dataToSave = $this->prepareData($validatedData, $request);
         $dataToSave['acceptance_id'] = $acceptance->id;
@@ -165,9 +166,36 @@ class TestCController extends Controller
             $dataToSave['tsa_sheep_blood_plate_lot_run2'] = $get_plate_info(37)['lot'];
         }
 
+        // Assicura che tutti i campi fillable non forniti nella creazione iniziale siano impostati a null.
+        $model = new TestCResult();
+        $allFillable = $model->getFillable();
+        foreach ($allFillable as $fillableKey) {
+            if (!array_key_exists($fillableKey, $dataToSave)) {
+                $dataToSave[$fillableKey] = null;
+            }
+        }
+
         TestCResult::create($dataToSave);
 
-        return redirect()->route('acceptance.index')->with('success', 'Risultati del Test C salvati con successo!');
+        // --- Generazione URL Google Calendar ---
+        $reminderDays = env('TEST_C_INCUBATION_REMINDER_DAYS', 7);
+        $startDate = \Carbon\Carbon::parse($dataToSave['test_start_datetime']);
+        $reminderDate = $startDate->copy()->addDays($reminderDays);
+
+        $eventStartDate = $reminderDate->format('Ymd');
+        $eventEndDate = $reminderDate->copy()->addDay()->format('Ymd'); // All-day event
+
+        $title = urlencode("Completamento Test C - Lotto: {$acceptance->lotto}");
+        $details = urlencode(
+            "Promemoria per completare il Test C (Contaminazione) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
+            "Link all'applicazione: " . route('acceptance.index')
+        );
+
+        $calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$eventStartDate}/{$eventEndDate}&details={$details}";
+
+        return redirect()->route('acceptance.index')
+            ->with('success', 'Risultati iniziali del Test C salvati con successo!')
+            ->with('calendarUrl', $calendarUrl);
     }
 
     /**
@@ -179,6 +207,7 @@ class TestCController extends Controller
         $isOwner = $test_c_result->operator_id === $currentUser['id'];
         $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
         $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;        
+        $is_completion_phase = is_null($test_c_result->test_end_datetime);
         $is_readonly = $isAdmin || $isLabManager || !$isOwner || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at;
 
         // --- Inizio blocco recupero utenti via API ---
@@ -257,6 +286,7 @@ class TestCController extends Controller
             'incubators' => $incubators,
             'pipettes' => $pipettes,
             'usersMap' => $usersMap,
+            'is_completion_phase' => $is_completion_phase,
         ]);
     }
 
@@ -275,7 +305,9 @@ class TestCController extends Controller
 
         $validatedData = $this->validateRequest($request, true);
         $dataToSave = $this->prepareData($validatedData, $request);
-        $dataToSave['modification_reason'] = $validatedData['modification_reason'];
+        if (isset($validatedData['modification_reason'])) {
+            $dataToSave['modification_reason'] = $validatedData['modification_reason'];
+        }
 
         $test_c_result->update($dataToSave);
 
@@ -376,9 +408,7 @@ class TestCController extends Controller
      */
     private function validateRequest(Request $request, bool $isUpdate = false): array
     {
-        // Regole di validazione
-        $growthRule = ['required', Rule::in(['rilevata', 'non_rilevata'])];
-
+        // Determine context
         if ($isUpdate) {
             $test_c_result = $request->route('test_c_result');
             $acceptance = $test_c_result->acceptance;
@@ -387,34 +417,39 @@ class TestCController extends Controller
         }
         $is_double_test_c = $acceptance ? in_array('test3', $acceptance->double_tests ?? []) : false;
 
-        $rules = [
+        // --- Define Rule Groups ---
+        $growthRule = ['required', Rule::in(['rilevata', 'non_rilevata'])];
+
+        // Phase 1 Rules
+        $initial_rules = [
             'test_start_date' => 'required|date',
             'test_start_time' => 'required|date_format:H:i',
-            'test_end_date' => 'required|date|after_or_equal:test_start_date',
-            'test_end_time' => 'required|date_format:H:i',
-
-            // Nuovi campi
-            // 'tsa_sheep_blood_plate_id' => 'required|string|max:255', // Rimosso perché non è un input del form
             'pipette_dilution_1' => 'required|string|max:255',
             'pipette_dilution_2' => 'required|string|max:255',
             'pipette_inoculation' => 'required|string|max:255',
             'incubator' => 'required|string|max:255',
             'incubation_start_date' => 'required|date',
             'incubation_start_time' => 'required|date_format:H:i',
+            'temperature' => 'required|numeric',
+        ];
+
+        // Phase 2 Rules
+        $completion_rules = [
+            'test_end_date' => 'required|date|after_or_equal:test_start_date',
+            'test_end_time' => 'required|date_format:H:i',
             'incubation_end_date' => 'required|date|after_or_equal:incubation_start_date',
             'incubation_end_time' => 'required|date_format:H:i',
-            'temperature' => 'required|numeric',
             'tsa_growth_ufc' => 'nullable|integer|min:0', // New
             'tsa_growth_result' => $growthRule, // UFC on TSA plate
             'growth_result_start_lotto' => $growthRule,
             'ufc_start_lotto' => 'required|integer|min:0',
-            'ufc_50_percent_tsa_start_lotto' => 'accepted',
+            'ufc_50_percent_tsa_start_lotto' => 'nullable|boolean',
             'growth_result_mid_lotto' => $growthRule,
             'ufc_mid_lotto' => 'required|integer|min:0',
-            'ufc_50_percent_tsa_mid_lotto' => 'accepted',
+            'ufc_50_percent_tsa_mid_lotto' => 'nullable|boolean',
             'growth_result_end_lotto' => $growthRule,
             'ufc_end_lotto' => 'required|integer|min:0',
-            'ufc_50_percent_tsa_end_lotto' => 'accepted',
+            'ufc_50_percent_tsa_end_lotto' => 'nullable|boolean',
             'growth_result_control_blank' => $growthRule,
             'productivity_result' => 'nullable|string', // This is a textarea, can be nullable
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
@@ -423,32 +458,79 @@ class TestCController extends Controller
         ];
 
         if ($is_double_test_c) {
-            // $rules['tsa_sheep_blood_plate_id_run2'] = 'required|string|max:255'; // Rimosso perché non è un input del form
-            $rules['pipette_dilution_1_run2'] = 'required|string|max:255';
-            $rules['pipette_dilution_2_run2'] = 'required|string|max:255';
-            $rules['pipette_inoculation_run2'] = 'required|string|max:255';
-            $rules['incubator_run2'] = 'required|string|max:255';
-            $rules['incubation_start_date_run2'] = 'required|date';
-            $rules['incubation_start_time_run2'] = 'required|date_format:H:i';
-            $rules['incubation_end_date_run2'] = 'required|date|after_or_equal:incubation_start_date_run2';
-            $rules['incubation_end_time_run2'] = 'required|date_format:H:i';
-            $rules['temperature_run2'] = 'required|numeric';
-            $rules['tsa_growth_result_run2'] = $growthRule;
-            $rules['tsa_growth_ufc_run2'] = 'nullable|integer|min:0';
-            $rules['growth_result_start_lotto_run2'] = $growthRule;
-            $rules['ufc_start_lotto_run2'] = 'required|integer|min:0';
-            $rules['ufc_50_percent_tsa_start_lotto_run2'] = 'accepted';
-            $rules['growth_result_mid_lotto_run2'] = $growthRule;
-            $rules['ufc_mid_lotto_run2'] = 'required|integer|min:0';
-            $rules['ufc_50_percent_tsa_mid_lotto_run2'] = 'accepted';
-            $rules['growth_result_end_lotto_run2'] = $growthRule;
-            $rules['ufc_end_lotto_run2'] = 'required|integer|min:0';
-            $rules['ufc_50_percent_tsa_end_lotto_run2'] = 'accepted';
-            $rules['growth_result_control_blank_run2'] = $growthRule;
+            $initial_rules_run2 = [
+                'pipette_dilution_1_run2' => 'required|string|max:255',
+                'pipette_dilution_2_run2' => 'required|string|max:255',
+                'pipette_inoculation_run2' => 'required|string|max:255',
+                'incubator_run2' => 'required|string|max:255',
+                'incubation_start_date_run2' => 'required|date',
+                'incubation_start_time_run2' => 'required|date_format:H:i',
+                'temperature_run2' => 'required|numeric',
+            ];
+            $initial_rules = array_merge($initial_rules, $initial_rules_run2);
+
+            $completion_rules_run2 = [
+                'incubation_end_date_run2' => 'required|date|after_or_equal:incubation_start_date_run2',
+                'incubation_end_time_run2' => 'required|date_format:H:i',
+                'tsa_growth_result_run2' => $growthRule,
+                'tsa_growth_ufc_run2' => 'nullable|integer|min:0',
+                'growth_result_start_lotto_run2' => $growthRule,
+                'ufc_start_lotto_run2' => 'required|integer|min:0',
+                'ufc_50_percent_tsa_start_lotto_run2' => 'nullable|boolean',
+                'growth_result_mid_lotto_run2' => $growthRule,
+                'ufc_mid_lotto_run2' => 'required|integer|min:0',
+                'ufc_50_percent_tsa_mid_lotto_run2' => 'nullable|boolean',
+                'growth_result_end_lotto_run2' => $growthRule,
+                'ufc_end_lotto_run2' => 'required|integer|min:0',
+                'ufc_50_percent_tsa_end_lotto_run2' => 'nullable|boolean',
+                'growth_result_control_blank_run2' => $growthRule,
+            ];
+            $completion_rules = array_merge($completion_rules, $completion_rules_run2);
         }
 
-        if ($isUpdate) {
-            $rules['modification_reason'] = 'required|string|min:10|max:500';
+        $modification_reason_rule = ['modification_reason' => 'required|string|min:10|max:500'];
+
+        // --- Dynamic Validation Logic ---
+        $rules = [];
+        if (!$isUpdate) {
+            // Case 1: Initial creation
+            $rules = $initial_rules;
+        } else {
+            $test_c_result = $request->route('test_c_result');
+            $is_already_complete = !is_null($test_c_result->test_end_datetime);
+            $is_completing_now = $request->filled('test_end_date');
+
+            if ($is_already_complete) {
+                // Case 2: Updating a fully completed test
+                $rules = array_merge($initial_rules, $completion_rules, $modification_reason_rule);
+            } else {
+                // The user is filling out an incomplete test.
+                // A reason is required only if they change the initial data.
+                // We check if any of the initial fields in the request differs from the one in the DB.
+                $initial_data_changed = false;
+                if (
+                    $request->input('test_start_date') != $test_c_result->test_start_datetime->format('Y-m-d') ||
+                    $request->input('test_start_time') != $test_c_result->test_start_datetime->format('H:i') ||
+                    $request->input('pipette_dilution_1') != $test_c_result->pipette_dilution_1 ||
+                    $request->input('pipette_dilution_2') != $test_c_result->pipette_dilution_2 ||
+                    $request->input('pipette_inoculation') != $test_c_result->pipette_inoculation ||
+                    $request->input('incubator') != $test_c_result->incubator ||
+                    ($test_c_result->incubation_start_datetime && $request->input('incubation_start_date') != $test_c_result->incubation_start_datetime->format('Y-m-d')) ||
+                    ($test_c_result->incubation_start_datetime && $request->input('incubation_start_time') != $test_c_result->incubation_start_datetime->format('H:i')) ||
+                    $request->input('temperature') != $test_c_result->temperature
+                ) {
+                    $initial_data_changed = true;
+                }
+
+                if ($is_completing_now) {
+                    // Case 3: Completing the test for the first time
+                    $rules = array_merge($initial_rules, $completion_rules, ($initial_data_changed ? $modification_reason_rule : []));
+                } else {
+                    // Case 4: Saving partial data (either initial or completion) without finalizing.
+                    // Reason is only required if initial data was touched.
+                    $rules = array_merge($initial_rules, ($initial_data_changed ? $modification_reason_rule : []));
+                }
+            }
         }
 
         // Messaggi di errore personalizzati in italiano
@@ -480,16 +562,6 @@ class TestCController extends Controller
             'ufc_start_lotto.required' => 'Il campo UFC (Inizio Lotto) è obbligatorio.',
             'ufc_mid_lotto.required' => 'Il campo UFC (Metà Lotto) è obbligatorio.',
             'ufc_end_lotto.required' => 'Il campo UFC (Fine Lotto) è obbligatorio.',
-            'ufc_50_percent_tsa_start_lotto.accepted' => 'Il campo UFC >=50% (Inizio Lotto) deve essere selezionato.',
-            'ufc_50_percent_tsa_mid_lotto.accepted' => 'Il campo UFC >=50% (Metà Lotto) deve essere selezionato.',
-            'ufc_50_percent_tsa_end_lotto.accepted' => 'Il campo UFC >=50% (Fine Lotto) deve essere selezionato.',
-
-            'ufc_start_lotto_run2.required' => 'Il campo UFC (Inizio Lotto, Run 2) è obbligatorio.',
-            'ufc_mid_lotto_run2.required' => 'Il campo UFC (Metà Lotto, Run 2) è obbligatorio.',
-            'ufc_end_lotto_run2.required' => 'Il campo UFC (Fine Lotto, Run 2) è obbligatorio.',
-            'ufc_50_percent_tsa_start_lotto_run2.accepted' => 'Il campo UFC >=50% (Inizio Lotto, Run 2) deve essere selezionato.',
-            'ufc_50_percent_tsa_mid_lotto_run2.accepted' => 'Il campo UFC >=50% (Metà Lotto, Run 2) deve essere selezionato.',
-            'ufc_50_percent_tsa_end_lotto_run2.accepted' => 'Il campo UFC >=50% (Fine Lotto, Run 2) deve essere selezionato.',
             
             // Aggiungere qui altri messaggi personalizzati per i nuovi campi se necessario
         ];
@@ -505,44 +577,53 @@ class TestCController extends Controller
         $data = $validatedData;
 
         $acceptance = $request->route('acceptance');
-        if (!$acceptance) {
+        if (!$acceptance) { // Se siamo in update
             $test_c_result = $request->route('test_c_result');
             if ($test_c_result) {
                 $acceptance = $test_c_result->acceptance;
             }
         }
-
         $is_double_test_c = $acceptance ? in_array('test3', $acceptance->double_tests ?? []) : false;
 
-        // Rimuove i campi separati di data/ora
-        // Global test start/end datetimes are handled once
+        // Rimuove i campi separati di data/ora per evitare che vengano salvati
         unset($data['test_start_date'], $data['test_start_time'], $data['test_end_date'], $data['test_end_time']);
-
-        // Incubation datetimes are per run
         unset($data['incubation_start_date'], $data['incubation_start_time'], $data['incubation_end_date'], $data['incubation_end_time']);
-        // Combina in campi datetime
+        
+        // Combina in campi datetime, gestendo i valori null
         $data['test_start_datetime'] = $request->test_start_date . ' ' . $request->test_start_time;
-        $data['test_end_datetime'] = $request->test_end_date . ' ' . $request->test_end_time;
-        $data['incubation_start_datetime'] = $request->incubation_start_date . ' ' . $request->incubation_start_time;
-        $data['incubation_end_datetime'] = $request->incubation_end_date . ' ' . $request->incubation_end_time;
+        
+        $data['test_end_datetime'] = ($request->filled('test_end_date') && $request->filled('test_end_time'))
+            ? $request->test_end_date . ' ' . $request->test_end_time
+            : null;
+
+        $data['incubation_start_datetime'] = ($request->filled('incubation_start_date') && $request->filled('incubation_start_time'))
+            ? $request->incubation_start_date . ' ' . $request->incubation_start_time
+            : null;
+
+        $data['incubation_end_datetime'] = ($request->filled('incubation_end_date') && $request->filled('incubation_end_time'))
+            ? $request->incubation_end_date . ' ' . $request->incubation_end_time
+            : null;
 
         if ($is_double_test_c) {
-            unset(
-                $data['incubation_start_date_run2'], $data['incubation_start_time_run2'],
-                $data['incubation_end_date_run2'], $data['incubation_end_time_run2']
-            );
-            $data['incubation_start_datetime_run2'] = $request->incubation_start_date_run2 . ' ' . $request->incubation_start_time_run2;
-            $data['incubation_end_datetime_run2'] = $request->incubation_end_date_run2 . ' ' . $request->incubation_end_time_run2;
+            unset($data['incubation_start_date_run2'], $data['incubation_start_time_run2'], $data['incubation_end_date_run2'], $data['incubation_end_time_run2']);
+            
+            $data['incubation_start_datetime_run2'] = ($request->filled('incubation_start_date_run2') && $request->filled('incubation_start_time_run2'))
+                ? $request->incubation_start_date_run2 . ' ' . $request->incubation_start_time_run2
+                : null;
+
+            $data['incubation_end_datetime_run2'] = ($request->filled('incubation_end_date_run2') && $request->filled('incubation_end_time_run2'))
+                ? $request->incubation_end_date_run2 . ' ' . $request->incubation_end_time_run2
+                : null;
         }
 
         // Handle checkboxes for boolean fields
-        $data['ufc_50_percent_tsa_start_lotto'] = $request->has('ufc_50_percent_tsa_start_lotto');
-        $data['ufc_50_percent_tsa_mid_lotto'] = $request->has('ufc_50_percent_tsa_mid_lotto');
-        $data['ufc_50_percent_tsa_end_lotto'] = $request->has('ufc_50_percent_tsa_end_lotto');
+        $data['ufc_50_percent_tsa_start_lotto'] = $request->has('ufc_50_percent_tsa_start_lotto') ? 1 : 0;
+        $data['ufc_50_percent_tsa_mid_lotto'] = $request->has('ufc_50_percent_tsa_mid_lotto') ? 1 : 0;
+        $data['ufc_50_percent_tsa_end_lotto'] = $request->has('ufc_50_percent_tsa_end_lotto') ? 1 : 0;
         if ($is_double_test_c) {
-            $data['ufc_50_percent_tsa_start_lotto_run2'] = $request->has('ufc_50_percent_tsa_start_lotto_run2');
-            $data['ufc_50_percent_tsa_mid_lotto_run2'] = $request->has('ufc_50_percent_tsa_mid_lotto_run2');
-            $data['ufc_50_percent_tsa_end_lotto_run2'] = $request->has('ufc_50_percent_tsa_end_lotto_run2');
+            $data['ufc_50_percent_tsa_start_lotto_run2'] = $request->has('ufc_50_percent_tsa_start_lotto_run2') ? 1 : 0;
+            $data['ufc_50_percent_tsa_mid_lotto_run2'] = $request->has('ufc_50_percent_tsa_mid_lotto_run2') ? 1 : 0;
+            $data['ufc_50_percent_tsa_end_lotto_run2'] = $request->has('ufc_50_percent_tsa_end_lotto_run2') ? 1 : 0;
         }
         return $data;
     }

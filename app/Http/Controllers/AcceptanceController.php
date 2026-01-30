@@ -138,7 +138,7 @@ class AcceptanceController extends Controller
         // Apply filters for Test C
         if ($filterTestCStatus !== 'all') {
             $acceptancesQuery->where(function ($query) use ($applyTestStatusFilter, $filterTestCStatus) {
-                $applyTestStatusFilter($query, $filterTestCStatus, 'testCResult');
+                $applyTestStatusFilter($query, $filterTestCStatus, 'testCResult', true);
             });
         }
 
@@ -178,7 +178,7 @@ class AcceptanceController extends Controller
             // Determine status for each test
             $acceptance->test_a_status = $getTestStatus($acceptance->testAResult);
             $acceptance->test_b_status = $getTestStatus($acceptance->testBResult, true); // Test B is two-phase
-            $acceptance->test_c_status = $getTestStatus($acceptance->testCResult);
+            $acceptance->test_c_status = $getTestStatus($acceptance->testCResult, true); // Test C is now two-phase
         });
 
         return view('acceptance.index', [

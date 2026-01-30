@@ -78,8 +78,10 @@
                         <a href="{{ session('calendarUrl') }}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-calendar-plus me-2"></i>Aggiungi promemoria a Google Calendar
                         </a>
-                        @php $reminderDays = env('TEST_B_INCUBATION_REMINDER_DAYS', 7); @endphp
-                        <small class="ms-2 text-muted">(Promemoria per la fine dell'incubazione tra {{ $reminderDays }} {{ $reminderDays == 1 ? 'giorno' : 'giorni' }})</small>
+                        @if(session('reminderDays'))
+                            @php $reminderDays = session('reminderDays'); @endphp
+                            <small class="ms-2 text-muted">(Promemoria per la fine dell'incubazione tra {{ $reminderDays }} {{ $reminderDays == 1 ? 'giorno' : 'giorni' }})</small>
+                        @endif
                     </p>
                 @endif
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -161,7 +163,8 @@
                                 <select class="form-select" id="filter_test_c_status" name="filter_test_c_status">
                                     <option value="all" {{ $filterTestCStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
                                     <option value="not_compiled" {{ $filterTestCStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
-                                    <option value="in_compilation" {{ $filterTestCStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione</option>
+                                    <option value="in_compilation" {{ $filterTestCStatus == 'in_compilation' ? 'selected' : '' }}>In compilazione (parziale)</option>
+                                    <option value="ready_to_sign" {{ $filterTestCStatus == 'ready_to_sign' ? 'selected' : '' }}>Pronto per Firma</option>
                                     <option value="signed" {{ $filterTestCStatus == 'signed' ? 'selected' : '' }}>Firmato dal Tecnico</option>
                                     <option value="validated" {{ $filterTestCStatus == 'validated' ? 'selected' : '' }}>Validato da RL</option>
                                 </select>
@@ -239,6 +242,12 @@
                                                 @break
                                             @case('signed')
                                                 <span class="badge bg-primary"><i class="fas fa-signature me-1"></i>Firmato dal Tecnico</span>
+                                                @break
+                                            @case('ready_to_sign')
+                                                <span class="badge bg-info text-dark"><i class="fas fa-pencil-alt me-1"></i>Pronto per Firma</span>
+                                                @break
+                                            @case('in_compilation')
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
                                                 @break
                                             @case('ready_to_sign')
                                                 <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
@@ -404,6 +413,13 @@
                                                                 <button type="submit" class="btn btn-sm btn-outline-success mb-1" title="Firma Test C"><i class="fas fa-signature"></i> Firma</button>
                                                             </form>
                                                         @endif
+                                                    @else
+                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test C"><i class="fas fa-eye"></i> Test C</a>
+                                                    @endif
+                                                    @break
+                                                @case('in_compilation')
+                                                    @if($isOwnerC && !$isAdmin)
+                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning mb-1" title="Completa/Modifica Risultati Test C"><i class="fas fa-edit"></i> Test C</a>
                                                     @else
                                                         <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info mb-1" title="Visualizza Risultati Test C"><i class="fas fa-eye"></i> Test C</a>
                                                     @endif

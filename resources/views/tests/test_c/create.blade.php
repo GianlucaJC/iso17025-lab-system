@@ -7,6 +7,8 @@
     @php
         $is_edit = isset($test_c_result);
         $is_readonly = $is_readonly ?? false;
+        $is_initial_creation = $is_initial_creation ?? false;
+        $is_completion_phase = ($is_edit && is_null($test_c_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
     @endphp
     <title>{{ $form_title }} Test C - Controllo contaminazione microbica</title>
@@ -102,21 +104,21 @@
                         </div>
                     </fieldset>
                     
-                    <fieldset class="mb-4 p-3 border rounded" {{ $is_readonly ? 'disabled' : '' }}>
+                    <fieldset class="mb-4 p-3 border rounded">
                         <legend class="h5 w-auto px-2">Dati Generali Prova</legend>
                         <div class="row mb-3 align-items-end">
                             <div class="col-md-4">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" required>
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required>
+                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_c_result->test_end_datetime->format('H:i') : '') }}" required>
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_c_result->test_end_datetime->format('Y-m-d') : '') }}" required>
+                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -134,7 +136,7 @@
                     @endphp
 
                     @foreach($runs as $run_suffix => $run_label)
-                        <fieldset class="mb-4 p-3 border rounded" {{ $is_readonly ? 'disabled' : '' }}>
+                        <fieldset class="mb-4 p-3 border rounded">
                             <legend class="h5 w-auto px-2">{{ $run_label }}</legend>
 
                             {{-- Preparazione --}}
@@ -149,7 +151,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
-                                    <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" required>
+                                    <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
                                         @foreach($pipettes as $pipette)
                                             <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
@@ -158,7 +160,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label for="pipette_dilution_2{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:100</label>
-                                    <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" required>
+                                    <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
                                         @foreach($pipettes as $pipette)
                                             <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
@@ -167,7 +169,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label for="pipette_inoculation{{ $run_suffix }}" class="form-label">Pipetta Inoculo 100 µl</label>
-                                    <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" required>
+                                    <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
                                         @foreach($pipettes as $pipette)
                                             <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
@@ -181,7 +183,7 @@
                             <div class="row mb-3 align-items-end">
                                 <div class="col-md-4">
                                     <label for="incubator{{ $run_suffix }}" class="form-label">Incubatore</label>
-                                    <select class="form-select" id="incubator{{ $run_suffix }}" name="incubator{{ $run_suffix }}" required>
+                                    <select class="form-select" id="incubator{{ $run_suffix }}" name="incubator{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
                                         @foreach($incubators as $incubator)
                                             <option value="{{ $incubator->identifier }}" {{ old('incubator'.$run_suffix, $is_edit ? $test_c_result->{'incubator'.$run_suffix} : '') == $incubator->identifier ? 'selected' : '' }}>{{ $incubator->identifier }}</option>
@@ -191,36 +193,36 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Inizio Incubazione</label>
                                     <div class="input-group">
-                                        <input type="time" class="form-control" name="incubation_start_time{{ $run_suffix }}" value="{{ old('incubation_start_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_start_datetime'.$run_suffix} ? $test_c_result->{'incubation_start_datetime'.$run_suffix}->format('H:i') : '') }}" required>
-                                        <input type="date" class="form-control" name="incubation_start_date{{ $run_suffix }}" value="{{ old('incubation_start_date'.$run_suffix, $is_edit && $test_c_result->{'incubation_start_datetime'.$run_suffix} ? $test_c_result->{'incubation_start_datetime'.$run_suffix}->format('Y-m-d') : '') }}" required>
+                                        <input type="time" class="form-control" name="incubation_start_time{{ $run_suffix }}" value="{{ old('incubation_start_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_start_datetime'.$run_suffix} ? $test_c_result->{'incubation_start_datetime'.$run_suffix}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                        <input type="date" class="form-control" name="incubation_start_date{{ $run_suffix }}" value="{{ old('incubation_start_date'.$run_suffix, $is_edit && $test_c_result->{'incubation_start_datetime'.$run_suffix} ? $test_c_result->{'incubation_start_datetime'.$run_suffix}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Fine Incubazione</label>
                                     <div class="input-group">
-                                        <input type="time" class="form-control" name="incubation_end_time{{ $run_suffix }}" value="{{ old('incubation_end_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('H:i') : '') }}" required>
-                                        <input type="date" class="form-control" name="incubation_end_date{{ $run_suffix }}" value="{{ old('incubation_end_date'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('Y-m-d') : '') }}" required>
+                                        <input type="time" class="form-control" name="incubation_end_time{{ $run_suffix }}" value="{{ old('incubation_end_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                        <input type="date" class="form-control" name="incubation_end_date{{ $run_suffix }}" value="{{ old('incubation_end_date'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     </div>
                                 </div>
                             </div>
                             <div class="row mb-3 align-items-end">
                                 <div class="col-md-2">
                                     <label for="temperature{{ $run_suffix }}" class="form-label">Temp.(°C)</label>
-                                    <input type="number" step="0.1" class="form-control" id="temperature{{ $run_suffix }}" name="temperature{{ $run_suffix }}" value="{{ old('temperature'.$run_suffix, $is_edit ? $test_c_result->{'temperature'.$run_suffix} : '') }}" required>
+                                    <input type="number" step="0.1" class="form-control" id="temperature{{ $run_suffix }}" name="temperature{{ $run_suffix }}" value="{{ old('temperature'.$run_suffix, $is_edit ? $test_c_result->{'temperature'.$run_suffix} : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="tsa_growth_ufc{{ $run_suffix }}" class="form-label">Crescita UFC</label> {{-- Changed to text input with numeric filter --}}
-                                    <input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control" id="tsa_growth_ufc{{ $run_suffix }}" name="tsa_growth_ufc{{ $run_suffix }}" value="{{ old('tsa_growth_ufc'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_ufc'.$run_suffix} : '') }}">
+                                    <input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control" id="tsa_growth_ufc{{ $run_suffix }}" name="tsa_growth_ufc{{ $run_suffix }}" value="{{ old('tsa_growth_ufc'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_ufc'.$run_suffix} : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Crescita</label>
                                     <div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="tsa_growth_result{{ $run_suffix }}" id="tsa_growth_rilevata{{ $run_suffix }}" value="rilevata" {{ old('tsa_growth_result'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_result'.$run_suffix} : '') == 'rilevata' ? 'checked' : '' }} required>
+                                            <input class="form-check-input" type="radio" name="tsa_growth_result{{ $run_suffix }}" id="tsa_growth_rilevata{{ $run_suffix }}" value="rilevata" {{ old('tsa_growth_result'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_result'.$run_suffix} : '') == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                             <label class="form-check-label" for="tsa_growth_rilevata{{ $run_suffix }}">Rilevata</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="tsa_growth_result{{ $run_suffix }}" id="tsa_growth_non_rilevata{{ $run_suffix }}" value="non_rilevata" {{ old('tsa_growth_result'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_result'.$run_suffix} : '') == 'non_rilevata' ? 'checked' : '' }} required>
+                                            <input class="form-check-input" type="radio" name="tsa_growth_result{{ $run_suffix }}" id="tsa_growth_non_rilevata{{ $run_suffix }}" value="non_rilevata" {{ old('tsa_growth_result'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_result'.$run_suffix} : '') == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                             <label class="form-check-label" for="tsa_growth_non_rilevata{{ $run_suffix }}">Non Rilevata</label>
                                         </div>
                                     </div>
@@ -260,12 +262,12 @@
                                                     $ufcFieldName = 'ufc_'.$key.$run_suffix;
                                                     $ufc50PercentTsaFieldName = 'ufc_50_percent_tsa_'.$key.$run_suffix;
                                                 @endphp
-                                                <td><input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control form-control-sm" name="{{ $ufcFieldName }}" value="{{ old($ufcFieldName, $is_edit ? $test_c_result->{$ufcFieldName} : '') }}" required></td> {{-- Changed to text input with numeric filter --}}
+                                                <td><input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control form-control-sm" name="{{ $ufcFieldName }}" value="{{ old($ufcFieldName, $is_edit ? $test_c_result->{$ufcFieldName} : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
                                                 <td>
-                                                    <input class="form-check-input" type="checkbox" name="{{ $ufc50PercentTsaFieldName }}" value="1" {{ old($ufc50PercentTsaFieldName, $is_edit ? $test_c_result->{$ufc50PercentTsaFieldName} : '') ? 'checked' : '' }}>
+                                                    <input class="form-check-input" type="checkbox" name="{{ $ufc50PercentTsaFieldName }}" value="1" {{ old($ufc50PercentTsaFieldName, $is_edit ? $test_c_result->{$ufc50PercentTsaFieldName} : '') ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                                 </td>
-                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} required></td>                                                
-                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} required></td>                                                
+                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
+                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}></td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -290,11 +292,11 @@
                                     @endphp
                                     <div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_rilevata" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} required>
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_rilevata" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                             <label class="form-check-label" for="{{ $fieldName }}_rilevata">Rilevata</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_non_rilevata" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} required>
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_non_rilevata" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                             <label class="form-check-label" for="{{ $fieldName }}_non_rilevata">Non Rilevata</label>
                                         </div>
                                     </div>
@@ -303,12 +305,12 @@
                         </fieldset>
                     @endforeach
 
-                    <fieldset {{ $is_readonly ? 'disabled' : '' }}>
+                    <fieldset>
                         {{-- Risultato Produttività --}}
                         <div class="row mt-4">
                             <div class="col-12">
                                 <label for="productivity_result" class="form-label">Risultato di Produttività</label>
-                                <textarea class="form-control" id="productivity_result" name="productivity_result" rows="2">{{ old('productivity_result', $is_edit ? $test_c_result->productivity_result : '') }}</textarea>
+                                <textarea class="form-control" id="productivity_result" name="productivity_result" rows="2" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('productivity_result', $is_edit ? $test_c_result->productivity_result : '') }}</textarea>
                             </div>
                         </div>
 
@@ -318,18 +320,18 @@
                                 <label class="form-label fw-bold">Esito Finale</label>
                                 <div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'idoneo' ? 'checked' : '' }} required>
+                                        <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                         <label class="form-check-label" for="outcome_idoneo">Idoneo</label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} required>
+                                        <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                         <label class="form-check-label" for="outcome_non_idoneo">Non Idoneo</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-8" id="non-compliance-section" style="display: none;">
                                 <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
-                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" value="{{ old('non_compliance_ref', $is_edit ? $test_c_result->non_compliance_ref : '') }}">
+                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" value="{{ old('non_compliance_ref', $is_edit ? $test_c_result->non_compliance_ref : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                 <div class="invalid-feedback">Il riferimento di non conformità è obbligatorio quando l'esito è "Non Idoneo".</div>
                             </div>
                         </div>
@@ -338,7 +340,7 @@
                         <div class="row mt-4">
                             <div class="col-12">
                                 <label for="notes" class="form-label">Note</label>
-                                <textarea class="form-control" id="notes" name="notes" rows="3">{{ old('notes', $is_edit ? $test_c_result->notes : '') }}</textarea>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_c_result->notes : '') }}</textarea>
                             </div>
                         </div>
                     </fieldset>
@@ -348,7 +350,7 @@
                         <div class="row mt-4">
                             <div class="col-12">
                                 <label for="modification_reason" class="form-label">Motivo della Modifica</label>
-                                <textarea class="form-control" id="modification_reason" name="modification_reason" rows="2" required minlength="10">{{ old('modification_reason') }}</textarea>
+                                <textarea class="form-control" id="modification_reason" name="modification_reason" rows="2" minlength="10">{{ old('modification_reason') }}</textarea>
                             </div>
                         </div>
                     @endif
