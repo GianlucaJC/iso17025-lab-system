@@ -19,5 +19,5 @@ Per favore, procedi con la revisione e la validazione del test cliccando sul pul
 Visualizza e Valida il Test
 @endcomponent
 
-Grazie per la collaborazione,<br>
+Grazie per la collaborazione
 @endcomponent
