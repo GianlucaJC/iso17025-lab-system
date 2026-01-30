@@ -80,77 +80,105 @@ class AcceptanceController extends Controller
         $filterTestBStatus = $request->input('filter_test_b_status', 'all');
         $filterTestCStatus = $request->input('filter_test_c_status', 'all');
 
-        // Apply filters for Test A
-        if ($filterTestAStatus !== 'all') {
-            $acceptancesQuery->where(function ($query) use ($filterTestAStatus) {
-                if ($filterTestAStatus === 'not_compiled') {
-                    $query->whereDoesntHave('testAResult');
-                } elseif ($filterTestAStatus === 'in_compilation') {
-                    $query->whereHas('testAResult', function ($q) {
-                        $q->whereNull('lab_signed_at');
+        // Helper function to apply status filters consistently
+        $applyTestStatusFilter = function ($query, $status, $relation, $isTwoPhase = false) {
+            if ($status === 'not_compiled') {
+                $query->whereDoesntHave($relation);
+            } elseif ($status === 'validated') {
+                $query->whereHas($relation, function ($q) {
+                    $q->where(function ($sub) {
+                        $sub->whereNotNull('rl_signature_id')->orWhereNotNull('rl_signed_at');
                     });
-                } elseif ($filterTestAStatus === 'signed') {
-                    $query->whereHas('testAResult', function ($q) {
-                        $q->whereNotNull('lab_signed_at')->whereNull('rl_signature_id');
+                });
+            } elseif ($status === 'signed') {
+                $query->whereHas($relation, function ($q) {
+                    $q->whereNotNull('lab_signed_at')->where(function ($sub) {
+                        $sub->whereNull('rl_signature_id')->whereNull('rl_signed_at');
                     });
-                } elseif ($filterTestAStatus === 'validated') {
-                    $query->whereHas('testAResult', function ($q) {
-                        $q->whereNotNull('rl_signature_id');
+                });
+            } elseif ($isTwoPhase) {
+                if ($status === 'in_compilation') {
+                    $query->whereHas($relation, function ($q) {
+                        $q->whereNull('lab_signed_at')->where(function ($sub) {
+                            $sub->whereNull('outcome')->orWhere('outcome', '');
+                        });
+                    });
+                } elseif ($status === 'ready_to_sign') {
+                    $query->whereHas($relation, function ($q) {
+                        $q->whereNull('lab_signed_at')->where(function ($sub) {
+                            $sub->whereNotNull('outcome')->where('outcome', '!=', '');
+                        });
                     });
                 }
+            } else { // Single phase tests (A and C)
+                if ($status === 'in_compilation' || $status === 'ready_to_sign') {
+                    $query->whereHas($relation, function ($q) {
+                        $q->whereNull('lab_signed_at')->where(function ($sub) {
+                            $sub->whereNull('rl_signature_id')->whereNull('rl_signed_at');
+                        });
+                    });
+                }
+            }
+        };
+
+        // Apply filters for Test A
+        if ($filterTestAStatus !== 'all') {
+            $acceptancesQuery->where(function ($query) use ($applyTestStatusFilter, $filterTestAStatus) {
+                $applyTestStatusFilter($query, $filterTestAStatus, 'testAResult');
             });
         }
 
         // Apply filters for Test B
         if ($filterTestBStatus !== 'all') {
-            $acceptancesQuery->where(function ($query) use ($filterTestBStatus) {
-                if ($filterTestBStatus === 'not_compiled') {
-                    $query->whereDoesntHave('testBResult');
-                } elseif ($filterTestBStatus === 'in_compilation') {
-                    $query->whereHas('testBResult', function ($q) {
-                        $q->whereNull('lab_signed_at');
-                    });
-                } elseif ($filterTestBStatus === 'signed') {
-                    $query->whereHas('testBResult', function ($q) {
-                        $q->whereNotNull('lab_signed_at')->whereNull('rl_signature_id');
-                    });
-                } elseif ($filterTestBStatus === 'validated') {
-                    $query->whereHas('testBResult', function ($q) {
-                        $q->whereNotNull('rl_signature_id');
-                    });
-                }
+            $acceptancesQuery->where(function ($query) use ($applyTestStatusFilter, $filterTestBStatus) {
+                $applyTestStatusFilter($query, $filterTestBStatus, 'testBResult', true);
             });
         }
 
         // Apply filters for Test C
         if ($filterTestCStatus !== 'all') {
-            $acceptancesQuery->where(function ($query) use ($filterTestCStatus) {
-                if ($filterTestCStatus === 'not_compiled') {
-                    $query->whereDoesntHave('testCResult');
-                } elseif ($filterTestCStatus === 'in_compilation') {
-                    $query->whereHas('testCResult', function ($q) {
-                        $q->whereNull('lab_signed_at');
-                    });
-                } elseif ($filterTestCStatus === 'signed') {
-                    $query->whereHas('testCResult', function ($q) {
-                        $q->whereNotNull('lab_signed_at')->whereNull('rl_signed_at');
-                    });
-                } elseif ($filterTestCStatus === 'validated') {
-                    $query->whereHas('testCResult', function ($q) {
-                        $q->whereNotNull('rl_signed_at');
-                    });
-                }
+            $acceptancesQuery->where(function ($query) use ($applyTestStatusFilter, $filterTestCStatus) {
+                $applyTestStatusFilter($query, $filterTestCStatus, 'testCResult');
             });
         }
+
 
         // Eager load relationships for completeness check in the view
         $acceptancesQuery->with(['testAResult', 'testBResult', 'testCResult']);
 
         $acceptances = $acceptancesQuery->latest()->get(); // Apply latest() and get() at the end
 
-        // Add is_pdf_complete status to each acceptance
+        // Add is_pdf_complete and detailed test statuses to each acceptance
         $acceptances->each(function ($acceptance) {
             $acceptance->is_pdf_complete = $this->isPdfComplete($acceptance);
+
+            // Helper function to determine status based on the test result record
+            $getTestStatus = function ($testResult, $isTwoPhase = false) {
+                if (!$testResult) {
+                    return 'not_compiled';
+                }
+                if ($testResult->rl_signed_at ?? $testResult->rl_signature_id) {
+                    return 'validated';
+                }
+                if ($testResult->lab_signed_at) {
+                    return 'signed';
+                }
+
+                // Per i test a due fasi (come il Test B), se l'esito ('outcome') non è ancora stato compilato,
+                // il test è considerato "in compilazione".
+                if ($isTwoPhase && empty($testResult->outcome)) {
+                    return 'in_compilation';
+                }
+
+                // In tutti gli altri casi (test a fase singola o test a due fasi già completati),
+                // se il record esiste e non è ancora firmato, è "pronto per la firma".
+                return 'ready_to_sign';
+            };
+
+            // Determine status for each test
+            $acceptance->test_a_status = $getTestStatus($acceptance->testAResult);
+            $acceptance->test_b_status = $getTestStatus($acceptance->testBResult, true); // Test B is two-phase
+            $acceptance->test_c_status = $getTestStatus($acceptance->testCResult);
         });
 
         return view('acceptance.index', [

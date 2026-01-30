@@ -7,6 +7,8 @@
     @php
         $is_edit = isset($test_b_result);
         $is_readonly = $is_readonly ?? false;
+        $is_initial_creation = $is_initial_creation ?? false;
+        $is_completion_phase = ($is_edit && is_null($test_b_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
     @endphp
     <title>{{ $form_title }} Test B - Produttività</title>
@@ -127,15 +129,15 @@
                             <div class="col-md-6">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', $is_edit ? $test_b_result->test_end_datetime->format('Y-m-d') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', $is_edit ? $test_b_result->test_end_datetime->format('H:i') : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -173,15 +175,15 @@
                             <div class="col-md-3">
                                 <label class="form-label">Inizio Incubazione</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run1" value="{{ old('incubation_start_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run1" value="{{ old('incubation_start_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run1" value="{{ old('incubation_start_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run1" value="{{ old('incubation_start_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Fine Incubazione</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run1" value="{{ old('incubation_end_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run1" value="{{ old('incubation_end_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run1" value="{{ old('incubation_end_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run1" value="{{ old('incubation_end_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -226,16 +228,16 @@
                                         $currentValue2 = old($fieldName2, $is_edit ? $test_b_result->{$fieldName2} : '');
                                     @endphp
                                     <td>
-                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}> Rilevata
                                     </td>
                                     <td>
-                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}> Non Rilevata
                                     </td>
                                     <td>
-                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}> Rilevata
                                     </td>
                                     <td>
-                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
+                                        <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}> Non Rilevata
                                     </td>
                                 </tr>
                                 @endforeach
@@ -252,7 +254,7 @@
                             <div class="row g-3 mb-3 align-items-end">
                                 <div class="col-md-3">
                                     <label for="incubator_{{ $temp }}_run2" class="form-label">Incubatore</label>
-                                    <select class="form-select @error('incubator_'.$temp.'_run2') is-invalid @enderror" id="incubator_{{ $temp }}_run2" name="incubator_{{ $temp }}_run2" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <select class="form-select @error('incubator_'.$temp.'_run2') is-invalid @enderror" id="incubator_{{ $temp }}_run2" name="incubator_{{ $temp }}_run2" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                         <option value="">Seleziona incubatore...</option>
                                         @foreach($incubators as $incubator)
                                             @php
@@ -270,20 +272,20 @@
                                 <div class="col-md-3">
                                     <label class="form-label">Inizio Incubazione</label>
                                     <div class="input-group">
-                                        <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run2" value="{{ old('incubation_start_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                        <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run2" value="{{ old('incubation_start_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                        <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run2" value="{{ old('incubation_start_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
+                                        <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run2" value="{{ old('incubation_start_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Fine Incubazione</label>
                                     <div class="input-group">
-                                        <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run2" value="{{ old('incubation_end_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                        <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run2" value="{{ old('incubation_end_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                        <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run2" value="{{ old('incubation_end_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                        <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run2" value="{{ old('incubation_end_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <label for="temperature_{{ $temp }}_run2" class="form-label">Temperatura (°C)</label>
-                                    <input type="number" step="0.1" class="form-control @error('temperature_'.$temp.'_run2') is-invalid @enderror" id="temperature_{{ $temp }}_run2" name="temperature_{{ $temp }}_run2" value="{{ old('temperature_'.$temp.'_run2', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run2'} : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="number" step="0.1" class="form-control @error('temperature_'.$temp.'_run2') is-invalid @enderror" id="temperature_{{ $temp }}_run2" name="temperature_{{ $temp }}_run2" value="{{ old('temperature_'.$temp.'_run2', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run2'} : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                     <div class="invalid-feedback">
                                         @error('temperature_'.$temp.'_run2') {{ $message }} @else Inserire la temperatura. @enderror
                                     </div>
@@ -323,16 +325,16 @@
                                             $currentValue2 = old($fieldName2, $is_edit ? $test_b_result->{$fieldName2} : '');
                                         @endphp
                                         <td>
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_rilevata" value="rilevata" {{ $currentValue1 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}> Rilevata
                                         </td>
                                         <td>
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName1 }}" id="{{ $fieldName1 }}_non_rilevata" value="non_rilevata" {{ $currentValue1 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}> Non Rilevata
                                         </td>
                                         <td>
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly ? 'required' : '' }}> Rilevata
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_rilevata" value="rilevata" {{ $currentValue2 == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}> Rilevata
                                         </td>
                                         <td>
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}> Non Rilevata
+                                            <input class="form-check-input" type="radio" name="{{ $fieldName2 }}" id="{{ $fieldName2 }}_non_rilevata" value="non_rilevata" {{ $currentValue2 == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}> Non Rilevata
                                         </td>
                                     </tr>
                                     @endforeach
@@ -348,13 +350,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_b_result->outcome : '') == 'idoneo' ? 'checked' : '' }} required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_b_result->outcome : '') == 'idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     <label class="form-check-label" for="outcome_idoneo">Idoneo</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_b_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_b_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                     <label class="form-check-label" for="outcome_non_idoneo">Non Idoneo</label>
                                 </div>
                             </div>
@@ -363,7 +365,7 @@
                             <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
-                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC" value="{{ old('non_compliance_ref', $is_edit ? $test_b_result->non_compliance_ref : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC" value="{{ old('non_compliance_ref', $is_edit ? $test_b_result->non_compliance_ref : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                             </div>
                         </div>
                     </fieldset>
@@ -371,7 +373,7 @@
                     {{-- Note --}}
                     <fieldset class="mb-4">
                         <legend class="h5">Note</legend>
-                        <textarea class="form-control" name="notes" rows="3" placeholder="Eventuali note aggiuntive" {{ $is_readonly ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_b_result->notes : '') }}</textarea>
+                        <textarea class="form-control" name="notes" rows="3" placeholder="Eventuali note aggiuntive" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_b_result->notes : '') }}</textarea>
                     </fieldset>
 
                     {{-- Motivazione Modifica --}}
@@ -379,12 +381,12 @@
                     <fieldset class="mb-4">
                         <legend class="h5">Motivazione della Modifica</legend>
                         <div class="form-group">
-                            <label for="modification_reason" class="form-label">La modifica dei risultati richiede una motivazione (min. 10 caratteri).</label>
-                            <textarea class="form-control @error('modification_reason') is-invalid @enderror" id="modification_reason" name="modification_reason" rows="3" required minlength="10">{{ old('modification_reason') }}</textarea>
+                            <label for="modification_reason" class="form-label">La motivazione è richiesta se si modificano i dati iniziali (prima del completamento della prova) o per qualsiasi modifica successiva al completamento. (min. 10 caratteri)</label>
+                            <textarea class="form-control @error('modification_reason') is-invalid @enderror" id="modification_reason" name="modification_reason" rows="3" minlength="10">{{ old('modification_reason') }}</textarea>
                             @error('modification_reason')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @else
-                                <div class="invalid-feedback">Per favore, inserisci una motivazione per la modifica.</div>
+                                <div class="invalid-feedback">Per favore, inserisci una motivazione valida per la modifica.</div>
                             @enderror
                         </div>
                     </fieldset>
@@ -492,8 +494,7 @@
                 form.addEventListener('submit', function(event) {
                     // Prima, controlla specificamente i radio button richiesti
                     const radioNames = [...new Set(
-                        Array.from(form.querySelectorAll('input[type="radio"][required]'))
-                        .map(radio => radio.name)
+                        Array.from(form.querySelectorAll('input[type="radio"][required]')).map(radio => radio.name)
                     )];
 
                     let isRadioGroupInvalid = false;
@@ -533,13 +534,17 @@
             const nonComplianceInput = document.getElementById('non_compliance_ref');
             function toggleNonCompliance() {
                 const isNonIdoneo = document.getElementById('outcome_non_idoneo').checked;
+                const isDisabled = document.getElementById('outcome_non_idoneo').disabled;
+
                 if (isNonIdoneo) {
                     nonComplianceSection.style.display = 'block';
-                    nonComplianceInput.required = true;
+                    if (!isDisabled) {
+                        nonComplianceInput.required = true;
+                    }
                 } else {
                     nonComplianceSection.style.display = 'none';
                     nonComplianceInput.required = false;
-                    nonComplianceInput.value = '';
+                    // nonComplianceInput.value = ''; // Non pulire il valore, potrebbe essere utile se l'utente cambia idea
                 }
             }
             outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));

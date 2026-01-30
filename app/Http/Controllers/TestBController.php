@@ -7,6 +7,8 @@ use App\Models\InstrumentItem;
 use App\Models\TestBResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TestSignedForValidation;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Http; // Re-add Http facade
 use Illuminate\Support\Facades\Log;   // Re-add Log facade
@@ -121,6 +123,7 @@ class TestBController extends Controller
             'selected_plates_run2' => $selected_plates_run2,
             'incubators' => $incubators,
             'usersMap' => $usersMap,
+            'is_initial_creation' => true, // Flag per la vista per inibire i campi del 2o step
         ]);
     }
 
@@ -133,7 +136,7 @@ class TestBController extends Controller
             abort(403, 'Azione non permessa.');
         }
 
-        $validatedData = $this->validateRequest($request);
+        $validatedData = $this->validateRequest($request, false);
 
         $dataToSave = $this->prepareData($validatedData, $request);
         $dataToSave['acceptance_id'] = $acceptance->id;
@@ -173,9 +176,39 @@ class TestBController extends Controller
             $dataToSave['plate_id_end_plate2_22_run2']   = $plate_ids[27] ?? null;
         }
 
+        // Assicura che tutti i campi fillable non forniti nella creazione iniziale siano impostati a null.
+        // Questo previene errori SQL se le colonne del DB sono NULLABLE ma non hanno un valore di default.
+        // Se le colonne NON sono NULLABLE, questo causerà un errore "cannot be null", indicando
+        // la necessità di una modifica allo schema del database.
+        $model = new TestBResult();
+        $allFillable = $model->getFillable();
+        foreach ($allFillable as $fillableKey) {
+            if (!array_key_exists($fillableKey, $dataToSave)) {
+                $dataToSave[$fillableKey] = null;
+            }
+        }
+
         TestBResult::create($dataToSave);
 
-        return redirect()->route('acceptance.index')->with('success', 'Risultati del Test B salvati con successo!');
+        // --- Generazione URL Google Calendar ---
+        $reminderDays = env('TEST_B_INCUBATION_REMINDER_DAYS', 7);
+        $startDate = \Carbon\Carbon::parse($dataToSave['test_start_datetime']);
+        $reminderDate = $startDate->copy()->addDays($reminderDays);
+
+        $eventStartDate = $reminderDate->format('Ymd');
+        $eventEndDate = $reminderDate->copy()->addDay()->format('Ymd'); // All-day event, so end date is the next day
+
+        $title = urlencode("Completamento Test B - Lotto: {$acceptance->lotto}");
+        $details = urlencode(
+            "Promemoria per completare il Test B (Produttività) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
+            "Link all'applicazione: " . route('acceptance.index')
+        );
+
+        $calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$eventStartDate}/{$eventEndDate}&details={$details}";
+
+        return redirect()->route('acceptance.index')
+            ->with('success', 'Risultati iniziali del Test B salvati con successo!')
+            ->with('calendarUrl', $calendarUrl);
     }
 
     /**
@@ -187,7 +220,8 @@ class TestBController extends Controller
         $isOwner = $test_b_result->operator_id === $currentUser['id'];
         $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
         $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
-        $is_readonly = $isAdmin || $isLabManager || !$isOwner || $test_b_result->lab_signed_at || $test_b_result->rl_signature_id;
+        $is_completion_phase = is_null($test_b_result->test_end_datetime);
+        $is_readonly = $isAdmin || $isLabManager || !$isOwner || $test_b_result->lab_signed_at || $test_b_result->rl_signature_id;        
 
         // --- Inizio blocco recupero utenti via API (re-added) ---
         $usersMap = [];
@@ -285,6 +319,7 @@ class TestBController extends Controller
             'selected_plates_run2' => $selected_plates_run2,
             'usersMap' => $usersMap, // Pass usersMap to the view
             'incubators' => $incubators,
+            'is_completion_phase' => $is_completion_phase,
         ]);
     }
 
@@ -303,7 +338,10 @@ class TestBController extends Controller
 
         $validatedData = $this->validateRequest($request, true);
         $dataToSave = $this->prepareData($validatedData, $request);
-        $dataToSave['modification_reason'] = $validatedData['modification_reason'];
+        
+        if (isset($validatedData['modification_reason'])) {
+            $dataToSave['modification_reason'] = $validatedData['modification_reason'];
+        }
 
         $test_b_result->update($dataToSave);
 
@@ -342,7 +380,25 @@ class TestBController extends Controller
         $test_b_result->lab_signed_at = now();
         $test_b_result->save();
 
-        return redirect()->route('acceptance.index')->with('success', 'Test B firmato con successo!'); // Reindirizza all'elenco
+        // --- Invia notifica email ai RL ---
+        $rlEmails = $this->getRlEmails();
+        if (empty($rlEmails)) {
+            Session::flash('notification_warning', 'ATTENZIONE: Nessun Responsabile di Laboratorio con email valida trovato. La notifica non è stata inviata.');
+        } else {
+            $operatorName = $currentUser['operatore'] ?? 'N/D';
+            $testType = 'Test B - Produttività';
+            $acceptance = $test_b_result->acceptance;
+            try {
+                Mail::to($rlEmails)->send(new TestSignedForValidation($test_b_result, $acceptance, $operatorName, $testType));
+                Session::flash('notification_success', 'Notifica di validazione inviata con successo a: ' . implode(', ', $rlEmails));
+            } catch (\Exception $e) {
+                Log::error("Invio email di notifica fallito per Test B ID {$test_b_result->id}: " . $e->getMessage());
+                Session::flash('notification_error', 'ATTENZIONE: La notifica di validazione non è stata inviata. Controllare la configurazione del server di posta. Errore: ' . $e->getMessage());
+            }
+        }
+        // --- Fine notifica ---
+
+        return redirect()->route('acceptance.index')->with('success', 'Test B firmato con successo!');
     }
 
     /**
@@ -385,44 +441,47 @@ class TestBController extends Controller
      */
     private function validateRequest(Request $request, bool $isUpdate = false): array
     {
-        // Regole di validazione
-        $growthRule = ['required', Rule::in(['rilevata', 'non_rilevata'])];
-        $plateIdRule = 'required|numeric';
-
+        // Determina il contesto: accettazione e se è un test doppio
         if ($isUpdate) {
-            // Per l'aggiornamento, il modello TestBResult è nella rotta
             $test_b_result = $request->route('test_b_result');
             $acceptance = $test_b_result->acceptance;
         } else {
-            // Per la creazione, il modello Acceptance è nella rotta
             $acceptance = $request->route('acceptance');
         }
         $is_double_test_b = $acceptance ? in_array('test2', $acceptance->double_tests ?? []) : false;
 
-        $rules = [
+        // --- Definizione Gruppi di Regole ---
+        $growthRule = ['required', Rule::in(['rilevata', 'non_rilevata'])];
+
+        // Regole per la prima fase di compilazione (Creazione)
+        $initial_rules = [
             'test_start_date' => 'required|date',
             'test_start_time' => 'required|date_format:H:i',
+            'incubator_35_run1' => 'required|string|max:255',
+            'incubation_start_date_35_run1' => 'required|date',
+            'incubation_start_time_35_run1' => 'required|date_format:H:i',
+            'temperature_35_run1' => 'required|numeric|min:0|max:50',
+            'incubator_22_run1' => 'required|string|max:255',
+            'incubation_start_date_22_run1' => 'required|date',
+            'incubation_start_time_22_run1' => 'required|date_format:H:i',
+            'temperature_22_run1' => 'required|numeric|min:0|max:50',
+        ];
+
+        // Regole per la seconda fase di compilazione (Completamento)
+        $completion_rules = [
             'test_end_date' => 'required|date|after_or_equal:test_start_date',
             'test_end_time' => 'required|date_format:H:i',
-            'incubator_35_run1' => 'required|string|max:255', // Incubation Data
-            'incubation_start_date_35_run1' => 'required|date', // Incubation Data
-            'incubation_start_time_35_run1' => 'required|date_format:H:i', // Incubation Data
-            'incubation_end_date_35_run1' => 'required|date|after_or_equal:incubation_start_date_35_run1', // Incubation Data
-            'incubation_end_time_35_run1' => 'required|date_format:H:i', // Incubation Data
-            'temperature_35_run1' => 'required|numeric|min:0|max:50', // Incubation Data
-            'growth_result_35_start_plate1_run1' => $growthRule, // Growth rules for 35C
+            'incubation_end_date_35_run1' => 'required|date|after_or_equal:incubation_start_date_35_run1',
+            'incubation_end_time_35_run1' => 'required|date_format:H:i',
+            'growth_result_35_start_plate1_run1' => $growthRule,
             'growth_result_35_start_plate2_run1' => $growthRule,
             'growth_result_35_mid_plate1_run1' => $growthRule,
             'growth_result_35_mid_plate2_run1' => $growthRule,
             'growth_result_35_end_plate1_run1' => $growthRule,
             'growth_result_35_end_plate2_run1' => $growthRule,
-            'incubator_22_run1' => 'required|string|max:255', // Incubation Data
-            'incubation_start_date_22_run1' => 'required|date', // Incubation Data
-            'incubation_start_time_22_run1' => 'required|date_format:H:i', // Incubation Data
-            'incubation_end_date_22_run1' => 'required|date|after_or_equal:incubation_start_date_22_run1', // Incubation Data
-            'incubation_end_time_22_run1' => 'required|date_format:H:i', // Incubation Data
-            'temperature_22_run1' => 'required|numeric|min:0|max:50', // Incubation Data
-            'growth_result_22_start_plate1_run1' => $growthRule, // Growth rules for 22C
+            'incubation_end_date_22_run1' => 'required|date|after_or_equal:incubation_start_date_22_run1',
+            'incubation_end_time_22_run1' => 'required|date_format:H:i',
+            'growth_result_22_start_plate1_run1' => $growthRule,
             'growth_result_22_start_plate2_run1' => $growthRule,
             'growth_result_22_mid_plate1_run1' => $growthRule,
             'growth_result_22_mid_plate2_run1' => $growthRule,
@@ -433,37 +492,69 @@ class TestBController extends Controller
             'notes' => 'nullable|string|max:2000',
         ];
 
-
+        // Aggiungi regole per il doppio test se necessario
         if ($is_double_test_b) {
-            $rules['incubator_35_run2'] = 'required|string|max:255';
-            $rules['incubation_start_date_35_run2'] = 'required|date';
-            $rules['incubation_start_time_35_run2'] = 'required|date_format:H:i';
-            $rules['incubation_end_date_35_run2'] = 'required|date|after_or_equal:incubation_start_date_35_run2';
-            $rules['incubation_end_time_35_run2'] = 'required|date_format:H:i';
-            $rules['temperature_35_run2'] = 'required|numeric|min:0|max:50';
-            $rules['growth_result_35_start_plate1_run2'] = $growthRule;
-            $rules['growth_result_35_start_plate2_run2'] = $growthRule;
-            $rules['growth_result_35_mid_plate1_run2'] = $growthRule;
-            $rules['growth_result_35_mid_plate2_run2'] = $growthRule;
-            $rules['growth_result_35_end_plate1_run2'] = $growthRule;
-            $rules['growth_result_35_end_plate2_run2'] = $growthRule;
+            $initial_rules_run2 = [
+                'incubator_35_run2' => 'required|string|max:255',
+                'incubation_start_date_35_run2' => 'required|date',
+                'incubation_start_time_35_run2' => 'required|date_format:H:i',
+                'temperature_35_run2' => 'required|numeric|min:0|max:50',
+                'incubator_22_run2' => 'required|string|max:255',
+                'incubation_start_date_22_run2' => 'required|date',
+                'incubation_start_time_22_run2' => 'required|date_format:H:i',
+                'temperature_22_run2' => 'required|numeric|min:0|max:50',
+            ];
+            $initial_rules = array_merge($initial_rules, $initial_rules_run2);
 
-            $rules['incubator_22_run2'] = 'required|string|max:255';
-            $rules['incubation_start_date_22_run2'] = 'required|date';
-            $rules['incubation_start_time_22_run2'] = 'required|date_format:H:i';
-            $rules['incubation_end_date_22_run2'] = 'required|date|after_or_equal:incubation_start_date_22_run2';
-            $rules['incubation_end_time_22_run2'] = 'required|date_format:H:i';
-            $rules['temperature_22_run2'] = 'required|numeric|min:0|max:50';
-            $rules['growth_result_22_start_plate1_run2'] = $growthRule;
-            $rules['growth_result_22_start_plate2_run2'] = $growthRule;
-            $rules['growth_result_22_mid_plate1_run2'] = $growthRule;
-            $rules['growth_result_22_mid_plate2_run2'] = $growthRule;
-            $rules['growth_result_22_end_plate1_run2'] = $growthRule;
-            $rules['growth_result_22_end_plate2_run2'] = $growthRule;
+            $completion_rules_run2 = [
+                'incubation_end_date_35_run2' => 'required|date|after_or_equal:incubation_start_date_35_run2',
+                'incubation_end_time_35_run2' => 'required|date_format:H:i',
+                'growth_result_35_start_plate1_run2' => $growthRule,
+                'growth_result_35_start_plate2_run2' => $growthRule,
+                'growth_result_35_mid_plate1_run2' => $growthRule,
+                'growth_result_35_mid_plate2_run2' => $growthRule,
+                'growth_result_35_end_plate1_run2' => $growthRule,
+                'growth_result_35_end_plate2_run2' => $growthRule,
+                'incubation_end_date_22_run2' => 'required|date|after_or_equal:incubation_start_date_22_run2',
+                'incubation_end_time_22_run2' => 'required|date_format:H:i',
+                'growth_result_22_start_plate1_run2' => $growthRule,
+                'growth_result_22_start_plate2_run2' => $growthRule,
+                'growth_result_22_mid_plate1_run2' => $growthRule,
+                'growth_result_22_mid_plate2_run2' => $growthRule,
+                'growth_result_22_end_plate1_run2' => $growthRule,
+                'growth_result_22_end_plate2_run2' => $growthRule,
+            ];
+            $completion_rules = array_merge($completion_rules, $completion_rules_run2);
         }
 
-        if ($isUpdate) {
-            $rules['modification_reason'] = 'required|string|min:10|max:500';
+        $modification_reason_rule = ['modification_reason' => 'required|string|min:10|max:500'];
+
+        // --- Logica di Validazione Dinamica ---
+        $rules = [];
+        if (!$isUpdate) {
+            // --- CASO 1: Creazione iniziale ---
+            $rules = $initial_rules;
+        } else {
+            $test_b_result = $request->route('test_b_result');
+            $is_already_complete = !is_null($test_b_result->test_end_datetime);
+            $is_completing_now = $request->filled('test_end_date') && !empty($request->input('test_end_date'));
+
+            if ($is_already_complete) {
+                // --- CASO 2: Modifica di un test già completo ---
+                // Tutti i campi sono obbligatori + motivazione
+                $rules = array_merge($initial_rules, $completion_rules, $modification_reason_rule);
+            } else {
+                // Il test non è ancora completo
+                if ($is_completing_now) {
+                    // --- CASO 3: Completamento del test ---
+                    // Tutti i campi sono obbligatori, ma senza motivazione
+                    $rules = array_merge($initial_rules, $completion_rules);
+                } else {
+                    // --- CASO 4: Modifica dei dati iniziali (prima del completamento) ---
+                    // Solo i campi iniziali sono obbligatori + motivazione
+                    $rules = array_merge($initial_rules, $modification_reason_rule);
+                }
+            }
         }
 
         // Messaggi di errore personalizzati in italiano
@@ -582,25 +673,26 @@ class TestBController extends Controller
 
         // Combina in campi datetime
         $data['test_start_datetime'] = $request->test_start_date . ' ' . $request->test_start_time;
-        $data['test_end_datetime'] = $request->test_end_date . ' ' . $request->test_end_time;
 
-        // Handle run 1 incubation datetimes
-        if ($request->incubation_start_date_35_run1 && $request->incubation_start_time_35_run1) {
-            $data['incubation_start_datetime_35_run1'] = $request->incubation_start_date_35_run1 . ' ' . $request->incubation_start_time_35_run1;
+        if ($request->filled('test_end_date') && $request->filled('test_end_time')) {
+            $data['test_end_datetime'] = $request->test_end_date . ' ' . $request->test_end_time;
         } else {
-            $data['incubation_start_datetime_35_run1'] = null;
+            $data['test_end_datetime'] = null;
         }
-        if ($request->incubation_end_date_35_run1 && $request->incubation_end_time_35_run1) {
+        
+        // Handle run 1 incubation datetimes
+        if ($request->filled('incubation_start_date_35_run1') && $request->filled('incubation_start_time_35_run1')) {
+            $data['incubation_start_datetime_35_run1'] = $request->incubation_start_date_35_run1 . ' ' . $request->incubation_start_time_35_run1;
+        }
+        if ($request->filled('incubation_end_date_35_run1') && $request->filled('incubation_end_time_35_run1')) {
             $data['incubation_end_datetime_35_run1'] = $request->incubation_end_date_35_run1 . ' ' . $request->incubation_end_time_35_run1;
         } else {
             $data['incubation_end_datetime_35_run1'] = null;
         }
-        if ($request->incubation_start_date_22_run1 && $request->incubation_start_time_22_run1) {
+        if ($request->filled('incubation_start_date_22_run1') && $request->filled('incubation_start_time_22_run1')) {
             $data['incubation_start_datetime_22_run1'] = $request->incubation_start_date_22_run1 . ' ' . $request->incubation_start_time_22_run1;
-        } else {
-            $data['incubation_start_datetime_22_run1'] = null;
         }
-        if ($request->incubation_end_date_22_run1 && $request->incubation_end_time_22_run1) {
+        if ($request->filled('incubation_end_date_22_run1') && $request->filled('incubation_end_time_22_run1')) {
             $data['incubation_end_datetime_22_run1'] = $request->incubation_end_date_22_run1 . ' ' . $request->incubation_end_time_22_run1;
         } else {
             $data['incubation_end_datetime_22_run1'] = null;
@@ -608,22 +700,18 @@ class TestBController extends Controller
 
         // Handle run 2 incubation datetimes if it's a double test
         if ($is_double_test_b) {
-            if ($request->incubation_start_date_35_run2 && $request->incubation_start_time_35_run2) {
+            if ($request->filled('incubation_start_date_35_run2') && $request->filled('incubation_start_time_35_run2')) {
                 $data['incubation_start_datetime_35_run2'] = $request->incubation_start_date_35_run2 . ' ' . $request->incubation_start_time_35_run2;
-            } else {
-                $data['incubation_start_datetime_35_run2'] = null;
             }
-            if ($request->incubation_end_date_35_run2 && $request->incubation_end_time_35_run2) {
+            if ($request->filled('incubation_end_date_35_run2') && $request->filled('incubation_end_time_35_run2')) {
                 $data['incubation_end_datetime_35_run2'] = $request->incubation_end_date_35_run2 . ' ' . $request->incubation_end_time_35_run2;
             } else {
                 $data['incubation_end_datetime_35_run2'] = null;
             }
-            if ($request->incubation_start_date_22_run2 && $request->incubation_start_time_22_run2) {
+            if ($request->filled('incubation_start_date_22_run2') && $request->filled('incubation_start_time_22_run2')) {
                 $data['incubation_start_datetime_22_run2'] = $request->incubation_start_date_22_run2 . ' ' . $request->incubation_start_time_22_run2;
-            } else {
-                $data['incubation_start_datetime_22_run2'] = null;
             }
-            if ($request->incubation_end_date_22_run2 && $request->incubation_end_time_22_run2) {
+            if ($request->filled('incubation_end_date_22_run2') && $request->filled('incubation_end_time_22_run2')) {
                 $data['incubation_end_datetime_22_run2'] = $request->incubation_end_date_22_run2 . ' ' . $request->incubation_end_time_22_run2;
             } else {
                 $data['incubation_end_datetime_22_run2'] = null;
@@ -631,5 +719,44 @@ class TestBController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Recupera gli indirizzi email dei Responsabili di Laboratorio (RL).
+     */
+    private function getRlEmails(): array
+    {
+        $rlEmails = [];
+        try {
+            $httpClient = Http::getFacadeRoot();
+            $certPath = env('API_CERT_PATH');
+
+            if ($certPath && file_exists($certPath)) {
+                $httpClient = $httpClient->withOptions(['verify' => $certPath]);
+            }
+            elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
+                $httpClient = $httpClient->withoutVerifying();
+            }
+
+            $usersResponse = $httpClient->post(env('API_LOGIN_URL'), [
+                'api_token' => env('API_LOGIN_SHARED_SECRET'),
+                'action' => 'get_users'
+            ]);
+
+            if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
+                $allUsers = $usersResponse->json('users');
+                foreach ($allUsers as $user) {
+                    // Role 4 is 'Responsabile Laboratorio'
+                    if (isset($user['user17025']) && $user['user17025'] == 4 && !empty($user['email'])) {
+                        $rlEmails[] = $user['email'];
+                    }
+                }
+            } else {
+                Log::error("API call to get users for email notification failed with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to retrieve RL emails for notification: " . $e->getMessage());
+        }
+        return array_unique($rlEmails); // Evita duplicati
     }
 }

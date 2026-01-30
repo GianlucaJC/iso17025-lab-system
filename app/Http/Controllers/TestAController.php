@@ -8,6 +8,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TestSignedForValidation;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Session;
 
@@ -200,6 +202,24 @@ class TestAController extends Controller
         $test_a_result->lab_signed_at = now();
         $test_a_result->save();
 
+        // --- Invia notifica email ai RL ---
+        $rlEmails = $this->getRlEmails();
+        if (empty($rlEmails)) {
+            Session::flash('notification_warning', 'ATTENZIONE: Nessun Responsabile di Laboratorio con email valida trovato. La notifica non è stata inviata.');
+        } else {
+            $operatorName = $currentUser['operatore'] ?? 'N/D';
+            $testType = 'Test A - Controllo pH';
+            $acceptance = $test_a_result->acceptance;
+            try {
+                Mail::to($rlEmails)->send(new TestSignedForValidation($test_a_result, $acceptance, $operatorName, $testType));
+                Session::flash('notification_success', 'Notifica di validazione inviata con successo a: ' . implode(', ', $rlEmails));
+            } catch (\Exception $e) {
+                Log::error("Invio email di notifica fallito per Test A ID {$test_a_result->id}: " . $e->getMessage());
+                Session::flash('notification_error', 'ATTENZIONE: La notifica di validazione non è stata inviata. Controllare la configurazione del server di posta. Errore: ' . $e->getMessage());
+            }
+        }
+        // --- Fine notifica ---
+
         return redirect()->route('acceptance.index')->with('success', 'Test A firmato con successo!');
     }
 
@@ -232,5 +252,44 @@ class TestAController extends Controller
 
         $test_a_result->update(['rl_signature_id' => $currentUser['id'], 'rl_signed_at' => now()]);
         return redirect()->route('test-a.edit', $test_a_result->id)->with('success', 'Test A validato con successo dal Responsabile Laboratorio!');
+    }
+
+    /**
+     * Recupera gli indirizzi email dei Responsabili di Laboratorio (RL).
+     */
+    private function getRlEmails(): array
+    {
+        $rlEmails = [];
+        try {
+            $httpClient = Http::getFacadeRoot();
+            $certPath = env('API_CERT_PATH');
+
+            if ($certPath && file_exists($certPath)) {
+                $httpClient = $httpClient->withOptions(['verify' => $certPath]);
+            }
+            elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
+                $httpClient = $httpClient->withoutVerifying();
+            }
+
+            $usersResponse = $httpClient->post(env('API_LOGIN_URL'), [
+                'api_token' => env('API_LOGIN_SHARED_SECRET'),
+                'action' => 'get_users'
+            ]);
+
+            if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
+                $allUsers = $usersResponse->json('users');
+                foreach ($allUsers as $user) {
+                    // Role 4 is 'Responsabile Laboratorio'
+                    if (isset($user['user17025']) && $user['user17025'] == 4 && !empty($user['email'])) {
+                        $rlEmails[] = $user['email'];
+                    }
+                }
+            } else {
+                Log::error("API call to get users for email notification failed with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to retrieve RL emails for notification: " . $e->getMessage());
+        }
+        return array_unique($rlEmails); // Evita duplicati
     }
 }
