@@ -20,5 +20,4 @@ Visualizza e Valida il Test
 @endcomponent
 
 Grazie per la collaborazione,<br>
-{{ config('app.name') }}
 @endcomponent
