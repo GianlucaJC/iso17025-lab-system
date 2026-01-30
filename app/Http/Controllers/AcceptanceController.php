@@ -290,11 +290,21 @@ class AcceptanceController extends Controller
         $isLabManager = isset($user['user17025']) && $user['user17025'] == 4;
         $isOwner = $acceptance->user_id === $user['id'];
 
+        // Eager load test results to check for signatures
+        $acceptance->load('testAResult', 'testBResult', 'testCResult');
+
+        $isAnyTestSigned = (
+            ($acceptance->testAResult && $acceptance->testAResult->lab_signed_at) ||
+            ($acceptance->testBResult && $acceptance->testBResult->lab_signed_at) ||
+            ($acceptance->testCResult && $acceptance->testCResult->lab_signed_at)
+        );
+
         return view('acceptance.edit', [
             'acceptance' => $acceptance,
             'currentUser' => $user, // Passa currentUser alla vista
             // Passa un flag alla vista per renderla di sola lettura se l'utente non è il proprietario
-            'is_readonly' => !$isOwner || $isAdmin || $isLabManager
+            // o se un test è già stato firmato.
+            'is_readonly' => !$isOwner || $isAdmin || $isLabManager || $isAnyTestSigned
         ]);
     }
 
@@ -315,6 +325,18 @@ class AcceptanceController extends Controller
 
         if (!$isOwner || $isAdmin || $isLabManager) {
             abort(403, 'Azione non autorizzata.');
+        }
+
+        // Aggiungo il nuovo controllo: non si può modificare se un test è firmato.
+        $acceptance->load('testAResult', 'testBResult', 'testCResult');
+        $isAnyTestSigned = (
+            ($acceptance->testAResult && $acceptance->testAResult->lab_signed_at) ||
+            ($acceptance->testBResult && $acceptance->testBResult->lab_signed_at) ||
+            ($acceptance->testCResult && $acceptance->testCResult->lab_signed_at)
+        );
+
+        if ($isAnyTestSigned) {
+            abort(403, 'Azione non autorizzata: impossibile modificare l\'accettazione perché almeno un test associato è già stato firmato.');
         }
 
         $rules = [
