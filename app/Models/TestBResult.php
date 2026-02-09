@@ -99,6 +99,7 @@ class TestBResult extends Model
         'growth_result_22_mid_plate2_run2',
         'growth_result_22_end_plate1_run2',
         'growth_result_22_end_plate2_run2',
+        'productivity_result',
         'outcome',
         'non_compliance_ref',
         'notes',

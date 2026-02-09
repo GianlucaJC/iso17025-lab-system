@@ -305,34 +305,28 @@
                         </fieldset>
                     @endforeach
 
-                    <fieldset>
-                        {{-- Risultato Produttività --}}
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <label for="productivity_result" class="form-label">Risultato di Produttività</label>
-                                <textarea class="form-control" id="productivity_result" name="productivity_result" rows="2" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('productivity_result', $is_edit ? $test_c_result->productivity_result : '') }}</textarea>
-                            </div>
-                        </div>
-
-                        {{-- Esito Finale --}}
-                        <div class="row mt-4 align-items-center">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Esito Finale</label>
-                                <div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
-                                        <label class="form-check-label" for="outcome_idoneo">Idoneo</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
-                                        <label class="form-check-label" for="outcome_non_idoneo">Non Idoneo</label>
-                                    </div>
+                    {{-- Esito --}}
+                    <fieldset class="mb-4">
+                        <legend class="h5">Risultato di Conformità dello Stato Microbiologico</legend>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    <label class="form-check-label" for="outcome_idoneo">Idoneo</label>
                                 </div>
                             </div>
-                            <div class="col-md-8" id="non-compliance-section" style="display: none;">
-                                <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
-                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" value="{{ old('non_compliance_ref', $is_edit ? $test_c_result->non_compliance_ref : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
-                                <div class="invalid-feedback">Il riferimento di non conformità è obbligatorio quando l'esito è "Non Idoneo".</div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_c_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                    <label class="form-check-label" for="outcome_non_idoneo">Non Idoneo</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3" id="non-compliance-section" style="display: none;">
+                            <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
+                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC" value="{{ old('non_compliance_ref', $is_edit ? $test_c_result->non_compliance_ref : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                             </div>
                         </div>
 
@@ -343,7 +337,6 @@
                                 <textarea class="form-control" id="notes" name="notes" rows="3" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_c_result->notes : '') }}</textarea>
                             </div>
                         </div>
-                    </fieldset>
 
                     {{-- Motivo Modifica --}}
                     @if($is_edit && !$is_readonly)

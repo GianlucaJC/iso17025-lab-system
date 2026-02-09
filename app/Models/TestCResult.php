@@ -72,7 +72,6 @@ class TestCResult extends Model
         'ufc_mid_lotto_run2', // New
         'ufc_50_percent_tsa_mid_lotto_run2', // New
         'plate_id_end_lotto_run2', // Existing
-        'growth_result_end_lotto_run2',
         'ufc_end_lotto_run2', // New
         'ufc_50_percent_tsa_end_lotto_run2', // New
         'growth_result_control_blank_run2',
