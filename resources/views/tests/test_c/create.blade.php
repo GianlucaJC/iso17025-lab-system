@@ -11,7 +11,7 @@
         $is_completion_phase = ($is_edit && is_null($test_c_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
     @endphp
-    <title>{{ $form_title }} Test C - Controllo contaminazione microbica</title>
+    <title>{{ $form_title }} Test C - Produttività, Metodo Qualitativo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -63,7 +63,7 @@
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test C: Controllo della contaminazione microbica
+                    Test C: Produttività, Metodo Qualitativo
                 </h3>
             </div>
 
@@ -82,6 +82,7 @@
                     @csrf
                     @if($is_edit)
                         @method('PUT')
+                        <input type="hidden" name="edit_mode" id="edit_mode" value="">
                     @endif
 
                     {{-- Dati di Riferimento --}}
@@ -107,14 +108,14 @@
                     <fieldset class="mb-4 p-3 border rounded">
                         <legend class="h5 w-auto px-2">Dati Generali Prova</legend>
                         <div class="row mb-3 align-items-end">
-                            <div class="col-md-4">
+                            <div class="col-md-4 initial-data-section">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
                                     <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 final-results-section">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
                                     <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
@@ -139,49 +140,51 @@
                         <fieldset class="mb-4 p-3 border rounded">
                             <legend class="h5 w-auto px-2">{{ $run_label }}</legend>
 
-                            {{-- Preparazione --}}
-                            <h6 class="mt-4">Preparazione e Diluizione</h6>
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label class="form-label">Piastra di TSA Sheep Blood (ID / Lotto)</label>
-                                    @php
-                                        $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
-                                    @endphp
-                                    <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
-                                    <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
-                                        <option value="">Seleziona...</option>
-                                        @foreach($pipettes as $pipette)
-                                            <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="pipette_dilution_2{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:100</label>
-                                    <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
-                                        <option value="">Seleziona...</option>
-                                        @foreach($pipettes as $pipette)
-                                            <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="pipette_inoculation{{ $run_suffix }}" class="form-label">Pipetta Inoculo 100 µl</label>
-                                    <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
-                                        <option value="">Seleziona...</option>
-                                        @foreach($pipettes as $pipette)
-                                            <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
-                                        @endforeach
-                                    </select>
+                            <div class="initial-data-section">
+                                {{-- Preparazione --}}
+                                <h6 class="mt-4">Preparazione e Diluizione</h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Piastra di TSA Sheep Blood (ID / Lotto)</label>
+                                        @php
+                                            $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
+                                        @endphp
+                                        <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
+                                        <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <option value="">Seleziona...</option>
+                                            @foreach($pipettes as $pipette)
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pipette_dilution_2{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:100</label>
+                                        <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <option value="">Seleziona...</option>
+                                            @foreach($pipettes as $pipette)
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pipette_inoculation{{ $run_suffix }}" class="form-label">Pipetta Inoculo 100 µl</label>
+                                        <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <option value="">Seleziona...</option>
+                                            @foreach($pipettes as $pipette)
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
                             {{-- Incubazione --}}
                             <h6 class="mt-4">Incubazione Tryptic Soy Agar</h6>
                             <div class="row mb-3 align-items-end">
-                                <div class="col-md-4">
+                                <div class="col-md-4 initial-data-section">
                                     <label for="incubator{{ $run_suffix }}" class="form-label">Incubatore</label>
                                     <select class="form-select" id="incubator{{ $run_suffix }}" name="incubator{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
@@ -190,14 +193,14 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 initial-data-section">
                                     <label class="form-label">Inizio Incubazione</label>
                                     <div class="input-group">
                                         <input type="time" class="form-control" name="incubation_start_time{{ $run_suffix }}" value="{{ old('incubation_start_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_start_datetime'.$run_suffix} ? $test_c_result->{'incubation_start_datetime'.$run_suffix}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <input type="date" class="form-control" name="incubation_start_date{{ $run_suffix }}" value="{{ old('incubation_start_date'.$run_suffix, $is_edit && $test_c_result->{'incubation_start_datetime'.$run_suffix} ? $test_c_result->{'incubation_start_datetime'.$run_suffix}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 final-results-section">
                                     <label class="form-label">Fine Incubazione</label>
                                     <div class="input-group">
                                         <input type="time" class="form-control" name="incubation_end_time{{ $run_suffix }}" value="{{ old('incubation_end_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
@@ -206,15 +209,15 @@
                                 </div>
                             </div>
                             <div class="row mb-3 align-items-end">
-                                <div class="col-md-2">
+                                <div class="col-md-2 initial-data-section">
                                     <label for="temperature{{ $run_suffix }}" class="form-label">Temp.(°C)</label>
                                     <input type="number" step="0.1" class="form-control" id="temperature{{ $run_suffix }}" name="temperature{{ $run_suffix }}" value="{{ old('temperature'.$run_suffix, $is_edit ? $test_c_result->{'temperature'.$run_suffix} : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 final-results-section">
                                     <label for="tsa_growth_ufc{{ $run_suffix }}" class="form-label">Crescita UFC</label> {{-- Changed to text input with numeric filter --}}
                                     <input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control" id="tsa_growth_ufc{{ $run_suffix }}" name="tsa_growth_ufc{{ $run_suffix }}" value="{{ old('tsa_growth_ufc'.$run_suffix, $is_edit ? $test_c_result->{'tsa_growth_ufc'.$run_suffix} : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 final-results-section">
                                     <label class="form-label">Crescita</label>
                                     <div>
                                         <div class="form-check form-check-inline">
@@ -229,75 +232,77 @@
                                 </div>
                             </div>
 
-                            {{-- Risultati Inoculo --}}
-                            <h6 class="mt-4">Risultati Inoculo 1000 - 10000 UFC</h6>
-                            <div class="table-responsive">
-                                <table class="table table-bordered text-center">
-                                    <thead>
-                                        <tr>
-                                            <th class="d-none">Campione</th> {{-- Hidden as requested --}}
-                                            <th>ID Piastra / Lotto</th>
-                                            <th>UFC</th>
-                                            <th>UFC &ge;50% UFC su TSA</th>
-                                            <th>Crescita Rilevata</th>
-                                            <th>Crescita Non Rilevata</th>                                            
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $samples = [
-                                                'start_lotto' => 'Inizio Lotto',
-                                                'mid_lotto' => 'Metà Lotto',
-                                                'end_lotto' => 'Fine Lotto',
-                                            ];
-                                            $current_plates = ($run_suffix === '_run2') ? $selected_plates_run2 : $selected_plates;
-                                        @endphp
-                                        @foreach($samples as $key => $label)
-                                            <tr class="align-middle">
-                                                <td class="d-none">{{ $label }}</td> {{-- Hidden as requested --}}
-                                                <td><span class="badge bg-secondary">{{ $current_plates[$key]['id'] ?? 'N/A' }}</span></td> {{-- Only ID, no lot for these plates --}}
-                                                @php
-                                                    $fieldName = 'growth_result_'.$key.$run_suffix;
-                                                    $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
-                                                    $ufcFieldName = 'ufc_'.$key.$run_suffix;
-                                                    $ufc50PercentTsaFieldName = 'ufc_50_percent_tsa_'.$key.$run_suffix;
-                                                @endphp
-                                                <td><input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control form-control-sm" name="{{ $ufcFieldName }}" value="{{ old($ufcFieldName, $is_edit ? $test_c_result->{$ufcFieldName} : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox" name="{{ $ufc50PercentTsaFieldName }}" value="1" {{ old($ufc50PercentTsaFieldName, $is_edit ? $test_c_result->{$ufc50PercentTsaFieldName} : '') ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
-                                                </td>
-                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
-                                                <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}></td>
+                            <div class="final-results-section">
+                                {{-- Risultati Inoculo --}}
+                                <h6 class="mt-4">Risultati Inoculo 1000 - 10000 UFC</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center">
+                                        <thead>
+                                            <tr>
+                                                <th class="d-none">Campione</th> {{-- Hidden as requested --}}
+                                                <th>ID Piastra / Lotto</th>
+                                                <th>UFC</th>
+                                                <th>UFC &ge;50% UFC su TSA</th>
+                                                <th>Crescita Rilevata</th>
+                                                <th>Crescita Non Rilevata</th>                                            
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {{-- Bianco di Controllo --}}
-                            <h6 class="mt-4">Bianco di Controllo</h6>
-                            <div class="row align-items-center">
-                                <div class="col-md-3">
-                                    <label class="form-label">ID Piastra / Lotto</label>
-                                    @php
-                                        $control_blank_plate = $current_plates['control_blank'];
-                                    @endphp
-                                    <p><span class="badge bg-secondary">{{ $control_blank_plate['id'] ?? 'N/A' }}</span></p> {{-- Only ID, no lot for control blank --}}
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $samples = [
+                                                    'start_lotto' => 'Inizio Lotto',
+                                                    'mid_lotto' => 'Metà Lotto',
+                                                    'end_lotto' => 'Fine Lotto',
+                                                ];
+                                                $current_plates = ($run_suffix === '_run2') ? $selected_plates_run2 : $selected_plates;
+                                            @endphp
+                                            @foreach($samples as $key => $label)
+                                                <tr class="align-middle">
+                                                    <td class="d-none">{{ $label }}</td> {{-- Hidden as requested --}}
+                                                    <td><span class="badge bg-secondary">{{ $current_plates[$key]['id'] ?? 'N/A' }}</span></td> {{-- Only ID, no lot for these plates --}}
+                                                    @php
+                                                        $fieldName = 'growth_result_'.$key.$run_suffix;
+                                                        $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
+                                                        $ufcFieldName = 'ufc_'.$key.$run_suffix;
+                                                        $ufc50PercentTsaFieldName = 'ufc_50_percent_tsa_'.$key.$run_suffix;
+                                                    @endphp
+                                                    <td><input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control form-control-sm" name="{{ $ufcFieldName }}" value="{{ old($ufcFieldName, $is_edit ? $test_c_result->{$ufcFieldName} : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox" name="{{ $ufc50PercentTsaFieldName }}" value="1" {{ old($ufc50PercentTsaFieldName, $is_edit ? $test_c_result->{$ufc50PercentTsaFieldName} : '') ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                                    </td>
+                                                    <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
+                                                    <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}></td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Crescita</label>
-                                    @php
-                                        $fieldName = 'growth_result_control_blank'.$run_suffix;
-                                        $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
-                                    @endphp
-                                    <div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_rilevata" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
-                                            <label class="form-check-label" for="{{ $fieldName }}_rilevata">Rilevata</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_non_rilevata" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
-                                            <label class="form-check-label" for="{{ $fieldName }}_non_rilevata">Non Rilevata</label>
+    
+                                {{-- Bianco di Controllo --}}
+                                <h6 class="mt-4">Bianco di Controllo</h6>
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        <label class="form-label">ID Piastra / Lotto</label>
+                                        @php
+                                            $control_blank_plate = $current_plates['control_blank'];
+                                        @endphp
+                                        <p><span class="badge bg-secondary">{{ $control_blank_plate['id'] ?? 'N/A' }}</span></p> {{-- Only ID, no lot for control blank --}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Crescita</label>
+                                        @php
+                                            $fieldName = 'growth_result_control_blank'.$run_suffix;
+                                            $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
+                                        @endphp
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_rilevata" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                                <label class="form-check-label" for="{{ $fieldName }}_rilevata">Rilevata</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_non_rilevata" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                                <label class="form-check-label" for="{{ $fieldName }}_non_rilevata">Non Rilevata</label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -306,8 +311,17 @@
                     @endforeach
 
                     {{-- Esito --}}
-                    <fieldset class="mb-4">
+                    <fieldset class="mb-4 final-results-section">
                         <legend class="h5">Risultato di Conformità dello Stato Microbiologico</legend>
+
+                        {{-- Risultato Produttività --}}
+                        <div class="row mt-2 mb-3">
+                            <div class="col-12">
+                                <label for="productivity_result" class="form-label">Risultato di Produttività</label>
+                                <textarea class="form-control" id="productivity_result" name="productivity_result" rows="2" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('productivity_result', $is_edit ? $test_c_result->productivity_result : '') }}</textarea>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-check">
@@ -337,23 +351,29 @@
                                 <textarea class="form-control" id="notes" name="notes" rows="3" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_c_result->notes : '') }}</textarea>
                             </div>
                         </div>
+                    </fieldset>
 
-                    {{-- Motivo Modifica --}}
-                    @if($is_edit && !$is_readonly)
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <label for="modification_reason" class="form-label">Motivo della Modifica</label>
-                                <textarea class="form-control" id="modification_reason" name="modification_reason" rows="2" minlength="10">{{ old('modification_reason') }}</textarea>
-                            </div>
+                {{-- Motivo Modifica --}}
+                @if($is_edit && !$is_readonly)
+                    <div class="row mt-4" id="modification-reason-section">
+                        <div class="col-12">
+                            <label for="modification_reason" class="form-label">Motivo della Modifica</label>
+                            <textarea class="form-control" id="modification_reason" name="modification_reason" rows="2" minlength="10">{{ old('modification_reason') }}</textarea>
                         </div>
-                    @endif
-
+                    </div>
+                @endif
                     {{-- Pulsanti Azione --}}
-                    <div class="mt-4">
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
+                            @if($is_readonly)
+                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
+                            @else
+                                <i class="fas fa-times me-2"></i>Annulla
+                            @endif
+                        </a>
                         @if(!$is_readonly)
-                            <button type="submit" class="btn btn-primary">{{ $is_edit ? 'Aggiorna Risultati' : 'Salva Risultati' }}</button>
+                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Modifiche</button>
                         @endif
-                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary">Torna indietro</a>
                     </div>
                 </form>
 
@@ -443,6 +463,12 @@
             Array.prototype.slice.call(forms)
                 .forEach(function (form) {
                     form.addEventListener('submit', function (event) {
+                        // Re-enable all form elements just before submission to ensure their values are included.
+                        // This is necessary because some fields might be disabled by the UI logic (e.g., phase 1 fields when editing phase 2).
+                        form.querySelectorAll('input, select, textarea').forEach(el => {
+                            el.disabled = false;
+                        });
+
                         if (!form.checkValidity()) {
                             event.preventDefault()
                             event.stopPropagation()
@@ -498,5 +524,88 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // The condition now shows the popup for any editable two-phase test.
+            @if ($is_edit && !$is_readonly)
+                
+                const form = document.querySelector('form');
+                form.style.visibility = 'hidden';
+        
+                // This variable is defined in the PHP block at the top of the file.
+                // It's true if we are completing a test, false if we are modifying a completed one.
+                const isCompletionPhase = {{ $is_completion_phase ? 'true' : 'false' }};
+        
+                const setupFormFor = (mode) => {
+                    const editModeInput = document.getElementById('edit_mode');
+                    const reasonSection = document.getElementById('modification-reason-section');
+                    const reasonTextarea = document.getElementById('modification_reason');
+        
+                    const initialSections = document.querySelectorAll('.initial-data-section');
+                    const finalSections = document.querySelectorAll('.final-results-section');
+        
+                    if (mode === 'initial') {
+                        editModeInput.value = 'initial';
+                        
+                        initialSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false));
+                        finalSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true));
+        
+                        // Reason is always required when editing existing phase 1 data.
+                        if (reasonSection) reasonSection.style.display = 'block';
+                        if (reasonTextarea) reasonTextarea.required = true;
+        
+                    } else if (mode === 'final') {
+                        editModeInput.value = 'final';
+        
+                        initialSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true));
+                        finalSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false));
+        
+                        // Handle modification reason visibility and requirement based on completion status.
+                        if (isCompletionPhase) {
+                            // COMPLETING for the first time: no reason needed.
+                            if (reasonSection) reasonSection.style.display = 'none';
+                            if (reasonTextarea) reasonTextarea.required = false;
+                        } else {
+                            // MODIFYING an already completed test: reason is required.
+                            if (reasonSection) reasonSection.style.display = 'block';
+                            if (reasonTextarea) reasonTextarea.required = true;
+                        }
+                    }
+                    form.style.visibility = 'visible';
+                };
+        
+                Swal.fire({
+                    title: 'Cosa desideri fare?',
+                    text: "Scegli se modificare i dati iniziali (Fase 1) o compilare/modificare i risultati finali (Fase 2).",
+                    icon: 'question',
+                    showDenyButton: true,
+                    confirmButtonText: '<i class="fas fa-edit me-2"></i>Modifica Dati (Fase 1)',
+                    denyButtonText: '<i class="fas fa-clipboard-check me-2"></i>Compila Risultati (Fase 2)',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // User chose "Modify Data (Phase 1)"
+                        setupFormFor('initial');
+                        Swal.fire('Modalità: Modifica Fase 1', 'I campi dei dati iniziali sono stati abilitati. La motivazione della modifica è obbligatoria.', 'warning');
+                    } else if (result.isDenied) {
+                        // User chose "Compile/Modify Results (Phase 2)"
+                        setupFormFor('final');
+                        
+                        const swalTitle = isCompletionPhase ? 'Modalità: Compilazione Fase 2' : 'Modalità: Modifica Fase 2';
+                        const swalText = isCompletionPhase 
+                            ? 'I campi relativi ai risultati finali sono stati abilitati.'
+                            : 'I campi dei risultati finali sono stati abilitati. La motivazione della modifica è obbligatoria.';
+                        const swalIcon = isCompletionPhase ? 'info' : 'warning';
+                        Swal.fire(swalTitle, swalText, swalIcon);
+
+                    } else {
+                        // User closed the popup, redirect them to the index page
+                        window.location.href = "{{ route('acceptance.index') }}";
+                    }
+                });
+            @endif
+        });
+        </script>
 </body>
 </html>

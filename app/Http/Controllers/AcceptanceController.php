@@ -74,12 +74,19 @@ class AcceptanceController extends Controller
         // --- Fine blocco recupero utenti ---
 
         $acceptancesQuery = Acceptance::query(); // Start with a base query
-
-        // Get filter parameters from the request
-        $filterTestAStatus = $request->input('filter_test_a_status', 'all');
-        $filterTestBStatus = $request->input('filter_test_b_status', 'all');
-        $filterTestCStatus = $request->input('filter_test_c_status', 'all');
-
+        
+        // Se viene richiesto di evidenziare una riga specifica, ignoriamo i filtri
+        // per assicurarci che la riga sia visibile, e resettiamo i valori dei filtri.
+        if ($request->has('highlight')) {
+            $filterTestAStatus = 'all';
+            $filterTestBStatus = 'all';
+            $filterTestCStatus = 'all';
+        } else {
+            // Altrimenti, usiamo i filtri dalla richiesta o i valori di default.
+            $filterTestAStatus = $request->input('filter_test_a_status', 'all');
+            $filterTestBStatus = $request->input('filter_test_b_status', 'all');
+            $filterTestCStatus = $request->input('filter_test_c_status', 'all');
+        }
         // Helper function to apply status filters consistently
         $applyTestStatusFilter = function ($query, $status, $relation, $isTwoPhase = false) {
             if ($status === 'not_compiled') {
@@ -273,7 +280,7 @@ class AcceptanceController extends Controller
         $acceptance->save();
 
         // Reindirizziamo alla dashboard con un messaggio di successo
-        return redirect()->route('acceptance.index')->with('success', 'Accettazione campioni salvata con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])->with('success', 'Accettazione campioni salvata con successo!');
     }
 
     /**
@@ -415,7 +422,7 @@ class AcceptanceController extends Controller
         $acceptance->sample_conformity = $validatedData['sample_conformity'];
         $acceptance->save();
 
-        return redirect()->route('acceptance.index')->with('success', 'Accettazione aggiornata con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])->with('success', 'Accettazione aggiornata con successo!');
     }
 
     /**

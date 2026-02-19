@@ -188,6 +188,10 @@ class TestBController extends Controller
             }
         }
 
+        // Rimuove esplicitamente il campo 'productivity_result' che è stato spostato al Test C,
+        // per evitare errori di inserimento nel caso sia ancora presente nel model.
+        unset($dataToSave['productivity_result']);
+
         TestBResult::create($dataToSave);
 
         // --- Generazione URL Google Calendar ---
@@ -206,7 +210,7 @@ class TestBController extends Controller
 
         $calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$eventStartDate}/{$eventEndDate}&details={$details}";
 
-        return redirect()->route('acceptance.index')
+        return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])
             ->with('success', 'Risultati iniziali del Test B salvati con successo!')
             ->with('calendarUrl', $calendarUrl);
     }
@@ -345,7 +349,7 @@ class TestBController extends Controller
 
         $test_b_result->update($dataToSave);
 
-        return redirect()->route('acceptance.index')->with('success', 'Risultati del Test B aggiornati con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('success', 'Risultati del Test B aggiornati con successo!');
     }
 
     /**
@@ -398,7 +402,7 @@ class TestBController extends Controller
         }
         // --- Fine notifica ---
 
-        return redirect()->route('acceptance.index')->with('success', 'Test B firmato con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('success', 'Test B firmato con successo!');
     }
 
     /**
@@ -421,19 +425,19 @@ class TestBController extends Controller
 
         // Policy 2: Il test deve essere stato firmato dal tecnico.
         if (!$test_b_result->lab_signed_at) {
-            return redirect()->route('test-b.edit', $test_b_result->id)->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.'); // Reindirizza alla pagina di modifica
+            return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.');
         }
 
         // Policy 3: Il test non deve essere già stato validato.
         if ($test_b_result->rl_signature_id) {
-            return redirect()->route('test-b.edit', $test_b_result->id)->with('error', 'Il test è già stato validato.'); // Reindirizza alla pagina di modifica
+            return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('error', 'Il test è già stato validato.');
         }
 
         // Aggiorna il record con i dati della validazione
         $test_b_result->rl_signature_id = $currentUser['id'];
         $test_b_result->rl_signed_at = now();
         $test_b_result->save();
-        return redirect()->route('test-b.edit', $test_b_result->id)->with('success', 'Test B validato con successo dal Responsabile Laboratorio!'); // Reindirizza alla pagina di modifica
+        return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('success', 'Test B validato con successo dal Responsabile Laboratorio!');
     }
 
     /**
@@ -535,24 +539,35 @@ class TestBController extends Controller
             // --- CASO 1: Creazione iniziale ---
             $rules = $initial_rules;
         } else {
+            // --- CASO UPDATE ---
+            $editMode = $request->input('edit_mode');
             $test_b_result = $request->route('test_b_result');
             $is_already_complete = !is_null($test_b_result->test_end_datetime);
-            $is_completing_now = $request->filled('test_end_date') && !empty($request->input('test_end_date'));
 
-            if ($is_already_complete) {
-                // --- CASO 2: Modifica di un test già completo ---
-                // Tutti i campi sono obbligatori + motivazione
-                $rules = array_merge($initial_rules, $completion_rules, $modification_reason_rule);
+            if ($editMode === 'initial') {
+                // L'utente ha scelto di modificare i dati iniziali.
+                // Richiediamo i campi iniziali e la motivazione.
+                $rules = array_merge($initial_rules, $modification_reason_rule);
+            } elseif ($editMode === 'final') {
+                // L'utente ha scelto di compilare/modificare i risultati finali.
+                // Richiediamo tutti i campi.
+                $rules = array_merge($initial_rules, $completion_rules);
+                
+                // La motivazione è richiesta solo se si stanno modificando i risultati finali già salvati.
+                if ($is_already_complete) {
+                    $rules = array_merge($rules, $modification_reason_rule);
+                }
             } else {
-                // Il test non è ancora completo
+                // Fallback: se 'edit_mode' non è presente (es. JS disabilitato), usiamo la vecchia logica.
+                $is_completing_now = $request->filled('test_end_date') && !empty($request->input('test_end_date'));
+                if ($is_already_complete) {
+                    $rules = array_merge($initial_rules, $completion_rules, $modification_reason_rule);
+                } else {
                 if ($is_completing_now) {
-                    // --- CASO 3: Completamento del test ---
-                    // Tutti i campi sono obbligatori, ma senza motivazione
                     $rules = array_merge($initial_rules, $completion_rules);
                 } else {
-                    // --- CASO 4: Modifica dei dati iniziali (prima del completamento) ---
-                    // Solo i campi iniziali sono obbligatori + motivazione
                     $rules = array_merge($initial_rules, $modification_reason_rule);
+                }
                 }
             }
         }

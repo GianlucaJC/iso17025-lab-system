@@ -11,7 +11,7 @@
         $is_completion_phase = ($is_edit && is_null($test_b_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
     @endphp
-    <title>{{ $form_title }} Test B - Produttività</title>
+    <title>{{ $form_title }} Test B - Controllo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -87,7 +87,7 @@
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test B: Produttività, Metodo Qualitativo
+                    Test B: Controllo della contaminazione microbica
                 </h3>
             </div>
             <div class="card-body p-4">
@@ -106,6 +106,7 @@
                 <form method="POST" action="{{ $is_edit ? route('test-b.update', $test_b_result->id) : route('test-b.store', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit) @method('PUT') @endif
+                    <input type="hidden" name="edit_mode" id="edit_mode" value="">
 
                     {{-- Dati di Riferimento --}}
                     <fieldset class="mb-4">
@@ -126,14 +127,14 @@
                     <fieldset class="mb-4">
                         <legend class="h5">Dati Generali Prova</legend>
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-6 initial-data-section">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 final-results-section">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
@@ -155,7 +156,7 @@
                     <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
                         <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }}</legend>
                         <div class="row g-3 mb-3 align-items-end">
-                            <div class="col-md-3">
+                            <div class="col-md-3 initial-data-section">
                                 <label for="incubator_{{ $temp }}_run1" class="form-label">Incubatore</label>
                                 <select class="form-select @error('incubator_'.$temp.'_run1') is-invalid @enderror" id="incubator_{{ $temp }}_run1" name="incubator_{{ $temp }}_run1" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <option value="">Seleziona incubatore...</option>
@@ -172,21 +173,21 @@
                                     @error('incubator_'.$temp.'_run1') {{ $message }} @else Selezionare un incubatore. @enderror
                                 </div> 
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 initial-data-section">
                                 <label class="form-label">Inizio Incubazione</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run1" value="{{ old('incubation_start_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run1" value="{{ old('incubation_start_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 final-results-section">
                                 <label class="form-label">Fine Incubazione</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run1" value="{{ old('incubation_end_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run1" value="{{ old('incubation_end_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 initial-data-section">
                                 <label for="temperature_{{ $temp }}_run1" class="form-label">Temperatura (°C)</label>
                                 <input type="number" step="0.1" class="form-control @error('temperature_'.$temp.'_run1') is-invalid @enderror" id="temperature_{{ $temp }}_run1" name="temperature_{{ $temp }}_run1" value="{{ old('temperature_'.$temp.'_run1', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run1'} : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 <div class="invalid-feedback">
@@ -195,7 +196,7 @@
                             </div>
                         </div>
 
-                        <table class="table table-bordered text-center">
+                        <div class="final-results-section"><table class="table table-bordered text-center">
                             <thead class="table-light">
                                 <tr>
                                     <th class="d-none">Campione</th>
@@ -242,7 +243,7 @@
                                 </tr>
                                 @endforeach
                             </tbody>
-                        </table>
+                        </table></div>
                     </fieldset>
                     @endforeach
 
@@ -252,7 +253,7 @@
                         <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
                             <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }} (Run 2)</legend>
                             <div class="row g-3 mb-3 align-items-end">
-                                <div class="col-md-3">
+                                <div class="col-md-3 initial-data-section">
                                     <label for="incubator_{{ $temp }}_run2" class="form-label">Incubatore</label>
                                     <select class="form-select @error('incubator_'.$temp.'_run2') is-invalid @enderror" id="incubator_{{ $temp }}_run2" name="incubator_{{ $temp }}_run2" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                         <option value="">Seleziona incubatore...</option>
@@ -269,21 +270,21 @@
                                         @error('incubator_'.$temp.'_run2') {{ $message }} @else Selezionare un incubatore. @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 initial-data-section">
                                     <label class="form-label">Inizio Incubazione</label>
                                     <div class="input-group">
                                         <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run2" value="{{ old('incubation_start_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                         <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run2" value="{{ old('incubation_start_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 final-results-section">
                                     <label class="form-label">Fine Incubazione</label>
                                     <div class="input-group">
                                         <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run2" value="{{ old('incubation_end_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                         <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run2" value="{{ old('incubation_end_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 initial-data-section">
                                     <label for="temperature_{{ $temp }}_run2" class="form-label">Temperatura (°C)</label>
                                     <input type="number" step="0.1" class="form-control @error('temperature_'.$temp.'_run2') is-invalid @enderror" id="temperature_{{ $temp }}_run2" name="temperature_{{ $temp }}_run2" value="{{ old('temperature_'.$temp.'_run2', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run2'} : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                     <div class="invalid-feedback">
@@ -292,7 +293,7 @@
                                 </div>
                             </div>
 
-                            <table class="table table-bordered text-center">
+                            <div class="final-results-section"><table class="table table-bordered text-center">
                                 <thead class="table-light">
                                     <tr>
                                         <th class="d-none">Campione</th>
@@ -339,21 +340,13 @@
                                     </tr>
                                     @endforeach
                                 </tbody>
-                            </table>
+                            </table></div>
                         </fieldset>
                         @endforeach
                     @endif
 
-                    {{-- Esito --}}
-                    <fieldset>
-                        {{-- Risultato Produttività --}}
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <label for="productivity_result" class="form-label">Risultato di Produttività</label>
-                                <textarea class="form-control" id="productivity_result" name="productivity_result" rows="2" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('productivity_result', $is_edit ? $test_b_result->productivity_result : '') }}</textarea>
-                            </div>
-                        </div>
-
+                    <div class="final-results-section">
+                        {{-- Esito --}}
                         {{-- Esito Finale --}}
                         <div class="row mt-4 align-items-center">
                             <div class="col-md-4">
@@ -375,17 +368,17 @@
                                 <div class="invalid-feedback">Il riferimento di non conformità è obbligatorio quando l'esito è "Non Idoneo".</div>
                             </div>
                         </div>
-                    </fieldset>
 
-                    {{-- Note --}}
-                    <fieldset class="mb-4">
-                        <legend class="h5">Note</legend>
-                        <textarea class="form-control" name="notes" rows="3" placeholder="Eventuali note aggiuntive" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_b_result->notes : '') }}</textarea>
-                    </fieldset>
+                        {{-- Note --}}
+                        <fieldset class="mb-4">
+                            <legend class="h5">Note</legend>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="Eventuali note aggiuntive" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>{{ old('notes', $is_edit ? $test_b_result->notes : '') }}</textarea>
+                        </fieldset>
+                    </div>
 
                     {{-- Motivazione Modifica --}}
                     @if($is_edit && !$is_readonly)
-                    <fieldset class="mb-4">
+                    <fieldset class="mb-4" id="modification-reason-section">
                         <legend class="h5">Motivazione della Modifica</legend>
                         <div class="form-group">
                             <label for="modification_reason" class="form-label">La motivazione è richiesta se si modificano i dati iniziali (prima del completamento della prova) o per qualsiasi modifica successiva al completamento. (min. 10 caratteri)</label>
@@ -401,11 +394,15 @@
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
-                            @if($is_readonly) <i class="fas fa-arrow-left me-2"></i>Torna indietro @else <i class="fas fa-arrow-left me-2"></i>Torna indietro @endif
+                            @if($is_readonly)
+                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
+                            @else
+                                <i class="fas fa-times me-2"></i>Annulla
+                            @endif
                         </a>
                         @if(!$is_readonly)
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save me-2"></i>{{ $is_edit ? 'Salva Modifiche' : 'Salva Risultati' }}
+                                <i class="fas fa-save me-2"></i>Salva Modifiche
                             </button>
                         @endif
                     </div>
@@ -499,6 +496,12 @@
             var form = document.querySelector('.needs-validation');
             if (form) {
                 form.addEventListener('submit', function(event) {
+                    // Re-enable all form elements just before submission to ensure their values are included.
+                    // This is necessary because some fields might be disabled by the UI logic (e.g., phase 1 fields when editing phase 2).
+                    form.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.disabled = false;
+                    });
+
                     // Prima, controlla specificamente i radio button richiesti
                     const radioNames = [...new Set(
                         Array.from(form.querySelectorAll('input[type="radio"][required]')).map(radio => radio.name)
@@ -639,6 +642,89 @@
                 });
             }
         });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // The condition now shows the popup for any editable two-phase test.
+        @if ($is_edit && !$is_readonly)
+            
+            const form = document.querySelector('form');
+            form.style.visibility = 'hidden';
+    
+            // This variable is defined in the PHP block at the top of the file.
+            // It's true if we are completing a test, false if we are modifying a completed one.
+            const isCompletionPhase = {{ $is_completion_phase ? 'true' : 'false' }};
+    
+            const setupFormFor = (mode) => {
+                const editModeInput = document.getElementById('edit_mode');
+                const reasonSection = document.getElementById('modification-reason-section');
+                const reasonTextarea = document.getElementById('modification_reason');
+    
+                const initialSections = document.querySelectorAll('.initial-data-section');
+                const finalSections = document.querySelectorAll('.final-results-section');
+    
+                if (mode === 'initial') {
+                    editModeInput.value = 'initial';
+                    
+                    initialSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false));
+                    finalSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true));
+    
+                    // Reason is always required when editing existing phase 1 data.
+                    if (reasonSection) reasonSection.style.display = 'block';
+                    if (reasonTextarea) reasonTextarea.required = true;
+    
+                } else if (mode === 'final') {
+                    editModeInput.value = 'final';
+    
+                    initialSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true));
+                    finalSections.forEach(sec => sec.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false));
+    
+                    // Handle modification reason visibility and requirement based on completion status.
+                    if (isCompletionPhase) {
+                        // COMPLETING for the first time: no reason needed.
+                        if (reasonSection) reasonSection.style.display = 'none';
+                        if (reasonTextarea) reasonTextarea.required = false;
+                    } else {
+                        // MODIFYING an already completed test: reason is required.
+                        if (reasonSection) reasonSection.style.display = 'block';
+                        if (reasonTextarea) reasonTextarea.required = true;
+                    }
+                }
+                form.style.visibility = 'visible';
+            };
+    
+            Swal.fire({
+                title: 'Cosa desideri fare?',
+                text: "Scegli se modificare i dati iniziali (Fase 1) o compilare/modificare i risultati finali (Fase 2).",
+                icon: 'question',
+                showDenyButton: true,
+                confirmButtonText: '<i class="fas fa-edit me-2"></i>Modifica Dati (Fase 1)',
+                denyButtonText: '<i class="fas fa-clipboard-check me-2"></i>Compila Risultati (Fase 2)',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // User chose "Modify Data (Phase 1)"
+                    setupFormFor('initial');
+                    Swal.fire('Modalità: Modifica Fase 1', 'I campi dei dati iniziali sono stati abilitati. La motivazione della modifica è obbligatoria.', 'warning');
+                } else if (result.isDenied) {
+                    // User chose "Compile/Modify Results (Phase 2)"
+                    setupFormFor('final');
+                    
+                    const swalTitle = isCompletionPhase ? 'Modalità: Compilazione Fase 2' : 'Modalità: Modifica Fase 2';
+                    const swalText = isCompletionPhase 
+                        ? 'I campi relativi ai risultati finali sono stati abilitati.'
+                        : 'I campi dei risultati finali sono stati abilitati. La motivazione della modifica è obbligatoria.';
+                    const swalIcon = isCompletionPhase ? 'info' : 'warning';
+                    Swal.fire(swalTitle, swalText, swalIcon);
+
+                } else {
+                    // User closed the popup, redirect them to the index page
+                    window.location.href = "{{ route('acceptance.index') }}";
+                }
+            });
+        @endif
+    });
     </script>
 </body>
 </html>

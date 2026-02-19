@@ -374,8 +374,10 @@
                         @endforeach
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Accettazione</button>
-                    <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">Annulla</a>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg"><i class="fas fa-times me-2"></i>Annulla</a>
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Modifiche</button>
+                    </div>
                 </form>
             </div>
         </div>

@@ -76,7 +76,7 @@ class TestAController extends Controller
         TestAResult::create($validatedData);
 
         // 5. Reindirizziamo all'elenco con un messaggio di successo
-        return redirect()->route('acceptance.index')->with('success', 'Risultati del Test A salvati con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])->with('success', 'Risultati del Test A salvati con successo!');
     }
 
     /**
@@ -171,7 +171,7 @@ class TestAController extends Controller
         $test_a_result->update($validatedData);
 
         // 4. Reindirizziamo all'elenco con un messaggio di successo
-        return redirect()->route('acceptance.index')->with('success', 'Risultati del Test A aggiornati con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_a_result->acceptance_id])->with('success', 'Risultati del Test A aggiornati con successo!');
     }
 
     /**
@@ -220,7 +220,7 @@ class TestAController extends Controller
         }
         // --- Fine notifica ---
 
-        return redirect()->route('acceptance.index')->with('success', 'Test A firmato con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_a_result->acceptance_id])->with('success', 'Test A firmato con successo!');
     }
 
     /**
@@ -251,7 +251,7 @@ class TestAController extends Controller
         }
 
         $test_a_result->update(['rl_signature_id' => $currentUser['id'], 'rl_signed_at' => now()]);
-        return redirect()->route('test-a.edit', $test_a_result->id)->with('success', 'Test A validato con successo dal Responsabile Laboratorio!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_a_result->acceptance_id])->with('success', 'Test A validato con successo dal Responsabile Laboratorio!');
     }
 
     /**

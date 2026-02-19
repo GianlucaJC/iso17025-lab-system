@@ -193,7 +193,7 @@ class TestCController extends Controller
 
         $calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$eventStartDate}/{$eventEndDate}&details={$details}";
 
-        return redirect()->route('acceptance.index')
+        return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])
             ->with('success', 'Risultati iniziali del Test C salvati con successo!')
             ->with('calendarUrl', $calendarUrl);
     }
@@ -311,7 +311,7 @@ class TestCController extends Controller
 
         $test_c_result->update($dataToSave);
 
-        return redirect()->route('acceptance.index')->with('success', 'Risultati del Test C aggiornati con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('success', 'Risultati del Test C aggiornati con successo!');
     }
 
     /**
@@ -364,7 +364,7 @@ class TestCController extends Controller
         }
         // --- Fine notifica ---
 
-        return redirect()->route('acceptance.index')->with('success', 'Test C firmato con successo!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('success', 'Test C firmato con successo!');
     }
 
     /**
@@ -387,12 +387,12 @@ class TestCController extends Controller
 
         // Policy 2: Il test deve essere stato firmato dal tecnico.
         if (!$test_c_result->lab_signed_at) {
-            return redirect()->route('acceptance.index')->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.');
+            return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('error', 'Il test non può essere validato perché non è stato ancora firmato dal tecnico.');
         }
 
         // Policy 3: Il test non deve essere già stato validato.
         if ($test_c_result->rl_signed_at) {
-            return redirect()->route('acceptance.index')->with('error', 'Il test è già stato validato.');
+            return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('error', 'Il test è già stato validato.');
         }
 
         // Aggiorna il record con i dati della validazione
@@ -400,7 +400,7 @@ class TestCController extends Controller
         $test_c_result->rl_signed_at = now();
         $test_c_result->save();
 
-        return redirect()->route('test-c.edit', $test_c_result->id)->with('success', 'Test C validato con successo dal Responsabile Laboratorio!');
+        return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('success', 'Test C validato con successo dal Responsabile Laboratorio!');
     }
 
     /**
@@ -496,39 +496,35 @@ class TestCController extends Controller
             // Case 1: Initial creation
             $rules = $initial_rules;
         } else {
+            // --- CASO UPDATE ---
+            $editMode = $request->input('edit_mode');
             $test_c_result = $request->route('test_c_result');
             $is_already_complete = !is_null($test_c_result->test_end_datetime);
-            $is_completing_now = $request->filled('test_end_date');
 
-            if ($is_already_complete) {
-                // Case 2: Updating a fully completed test
-                $rules = array_merge($initial_rules, $completion_rules, $modification_reason_rule);
-            } else {
-                // The user is filling out an incomplete test.
-                // A reason is required only if they change the initial data.
-                // We check if any of the initial fields in the request differs from the one in the DB.
-                $initial_data_changed = false;
-                if (
-                    $request->input('test_start_date') != $test_c_result->test_start_datetime->format('Y-m-d') ||
-                    $request->input('test_start_time') != $test_c_result->test_start_datetime->format('H:i') ||
-                    $request->input('pipette_dilution_1') != $test_c_result->pipette_dilution_1 ||
-                    $request->input('pipette_dilution_2') != $test_c_result->pipette_dilution_2 ||
-                    $request->input('pipette_inoculation') != $test_c_result->pipette_inoculation ||
-                    $request->input('incubator') != $test_c_result->incubator ||
-                    ($test_c_result->incubation_start_datetime && $request->input('incubation_start_date') != $test_c_result->incubation_start_datetime->format('Y-m-d')) ||
-                    ($test_c_result->incubation_start_datetime && $request->input('incubation_start_time') != $test_c_result->incubation_start_datetime->format('H:i')) ||
-                    $request->input('temperature') != $test_c_result->temperature
-                ) {
-                    $initial_data_changed = true;
+            if ($editMode === 'initial') {
+                // L'utente ha scelto di modificare i dati iniziali.
+                // Richiediamo i campi iniziali e la motivazione.
+                $rules = array_merge($initial_rules, $modification_reason_rule);
+            } elseif ($editMode === 'final') {
+                // L'utente ha scelto di compilare/modificare i risultati finali.
+                // Richiediamo tutti i campi.
+                $rules = array_merge($initial_rules, $completion_rules);
+                
+                // La motivazione è richiesta solo se si stanno modificando i risultati finali già salvati.
+                if ($is_already_complete) {
+                    $rules = array_merge($rules, $modification_reason_rule);
                 }
-
-                if ($is_completing_now) {
-                    // Case 3: Completing the test for the first time
-                    $rules = array_merge($initial_rules, $completion_rules, ($initial_data_changed ? $modification_reason_rule : []));
+            } else {
+                // Fallback: se 'edit_mode' non è presente (es. JS disabilitato), usiamo la vecchia logica.
+                $is_completing_now = $request->filled('test_end_date');
+                if ($is_already_complete) {
+                    $rules = array_merge($initial_rules, $completion_rules, $modification_reason_rule);
                 } else {
-                    // Case 4: Saving partial data (either initial or completion) without finalizing.
-                    // Reason is only required if initial data was touched.
-                    $rules = array_merge($initial_rules, ($initial_data_changed ? $modification_reason_rule : []));
+                if ($is_completing_now) {
+                    $rules = array_merge($initial_rules, $completion_rules);
+                } else {
+                    $rules = array_merge($initial_rules, $modification_reason_rule);
+                }
                 }
             }
         }

@@ -18,6 +18,12 @@
                 max-width: 1520px; /* Default Bootstrap container-xxl is 1320px, adding 200px */
             }
         }
+        tr.highlight > td {
+            /* Usa un colore di evidenziazione di Bootstrap con !important per sovrascrivere gli stili a strisce */
+            background-color: #d1e7dd !important; /* Verde pastello, come Bootstrap 'table-success' */
+            /* Aggiunge una transizione per un effetto di dissolvenza graduale */
+            transition: background-color 1.5s ease-in-out;
+        }
     </style>
     {{-- Dipendenze per DataTables --}}
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
@@ -214,10 +220,10 @@
                                 $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
                                 $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
                             @endphp
-                            <tr>
+                            <tr id="acceptance-row-{{ $acceptance->id }}">
                                 <td>{{ $acceptance->acceptance_number }}</td>
                                 <td>{{ $acceptance->lotto }}</td>
-                                <td>{{ \Carbon\Carbon::parse($acceptance->acceptance_date)->format('d/m/Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y/m/d') }}</td>
                                 <td>
                                     @if(!empty($acceptance->tests))
                                         @foreach($acceptance->tests as $testKey)
@@ -231,7 +237,7 @@
                                     @endif
                                 </td>
                                 
-                                <td>{{ $acceptance->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ $acceptance->created_at->format('Y/m/d H:i') }}</td>
 
                                 {{-- Stato Test A --}}
                                 <td>
@@ -245,12 +251,6 @@
                                                 @break
                                             @case('ready_to_sign')
                                                 <span class="badge bg-info text-dark"><i class="fas fa-pencil-alt me-1"></i>Pronto per Firma</span>
-                                                @break
-                                            @case('in_compilation')
-                                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
-                                                @break
-                                            @case('ready_to_sign')
-                                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
                                                 @break
                                             @case('not_compiled')
                                                 <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Non compilato</span>
@@ -301,6 +301,9 @@
                                                 <span class="badge bg-primary"><i class="fas fa-signature me-1"></i>Firmato dal Tecnico</span>
                                                 @break
                                             @case('ready_to_sign')
+                                                <span class="badge bg-info text-dark"><i class="fas fa-pencil-alt me-1"></i>Pronto per Firma</span>
+                                                @break
+                                            @case('in_compilation')
                                                 <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>In compilazione</span>
                                                 @break
                                             @case('not_compiled')
@@ -495,7 +498,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
-            $('#acceptancesTable').DataTable({
+            const highlightId = {{ request()->get('highlight') ?? 'null' }};
+
+            var table = $('#acceptancesTable').DataTable({
+                order: [[ 4, "desc" ]], // Ordina per 'Data Creazione' decrescente, come default
                 language: {
                     "sEmptyTable":     "Nessun dato presente nella tabella",
                     "sInfo":           "Vista da _START_ a _END_ di _TOTAL_ elementi",
@@ -517,6 +523,41 @@
                     "oAria": {
                         "sSortAscending":  ": attiva per ordinare la colonna in ordine crescente",
                         "sSortDescending": ": attiva per ordinare la colonna in ordine decrescente"
+                    }
+                },
+                initComplete: function () {
+                    if (highlightId) {
+                        var api = this.api();
+                        var row = api.row(`#acceptance-row-${highlightId}`);
+
+                        if (row.any()) {
+                            const performHighlight = () => {
+                                const rowNode = row.node();
+                                if (rowNode) {
+                                    const $rowNode = $(rowNode);
+                                    $('html, body').animate({
+                                        scrollTop: $rowNode.offset().top - 100
+                                    }, 500);
+                                    $rowNode.addClass('highlight');
+                                    setTimeout(() => {
+                                        $rowNode.removeClass('highlight');
+                                    }, 4000);
+                                }
+                            };
+
+                            var pageOfRow = row.page();
+                            var currentPage = api.page();
+
+                            if (currentPage !== pageOfRow) {
+                                api.one('draw.dt', function() {
+                                    performHighlight();
+                                }).page(pageOfRow).draw(false);
+                            } else {
+                                performHighlight();
+                            }
+                        } else {
+                            console.warn(`DataTables non è riuscito a trovare la riga con ID: #acceptance-row-${highlightId}`);
+                        }
                     }
                 }
             });

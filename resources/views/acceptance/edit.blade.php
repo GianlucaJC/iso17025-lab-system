@@ -404,16 +404,18 @@
                     </fieldset>
                     @endif
 
-                    @if(!$is_readonly)
-                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Modifiche</button>
-                    @endif
-                    <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
-                        @if($is_readonly)
-                            <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
-                        @else
-                            Annulla
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
+                            @if($is_readonly)
+                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
+                            @else
+                                <i class="fas fa-times me-2"></i>Annulla
+                            @endif
+                        </a>
+                        @if(!$is_readonly)
+                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-2"></i>Salva Modifiche</button>
                         @endif
-                    </a>
+                    </div>
                 </form>
             </div>
         </div>

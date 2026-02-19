@@ -38,7 +38,7 @@
             font-weight: bold;
             font-size: 1.2rem;
             text-align: center;
-            width: 90px;
+            width: 120px;
             flex-shrink: 0;
         }
         .outcome-radio .form-check-input {
@@ -183,11 +183,15 @@
                             <div class="col-12">
                                 <label for="ph_value_slider" class="form-label">Misura pH</label>
                                 <div class="ph-slider-container p-3 border rounded">
-                                    <i class="fas fa-tint text-muted"></i>
-                                    @php $ph_value = old('ph_value', $is_edit ? $test_a_result->ph_value : '7.4'); @endphp
-                                    <input type="range" class="form-range" id="ph_value_slider" min="6" max="8" step="0.1" value="{{ $ph_value }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="number" class="form-control ph-value-input" id="ph_value" name="ph_value" min="6" max="8" step="0.1" value="{{ number_format((float)$ph_value, 1) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <i class="fas fa-tint text-muted me-2"></i>
+                                    @php 
+                                        $ph_value = old('ph_value', $is_edit ? $test_a_result->ph_value : ''); 
+                                        $slider_value = old('ph_value', ($is_edit && $test_a_result->ph_value) ? $test_a_result->ph_value : '7.4');
+                                    @endphp
+                                    <input type="range" class="form-range" id="ph_value_slider" min="5.0" max="9.0" step="0.1" value="{{ $slider_value }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="number" class="form-control ph-value-input" id="ph_value" name="ph_value" min="0" max="14" step="0.1" value="{{ $ph_value }}" placeholder="pH" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
+                                <div class="invalid-feedback">Inserire un valore di pH valido.</div>
                             </div>
                         </div>
                     </fieldset>
@@ -215,6 +219,7 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="text-center text-muted mt-2"><small>Il colore è un suggerimento. Clicca su una delle opzioni per confermare l'esito.</small></div>
                         <div class="mt-3" id="non-compliance-section" style="display: none;">
                             <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
                             <div class="input-group">
@@ -245,12 +250,12 @@
                             @if($is_readonly)
                                 <i class="fas fa-arrow-left me-2"></i>Torna indietro
                             @else
-                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
+                                <i class="fas fa-times me-2"></i>Annulla
                             @endif
                         </a>
                         @if(!$is_readonly)
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save me-2"></i>{{ $is_edit ? 'Salva Modifiche' : 'Salva Risultati' }}
+                                <i class="fas fa-save me-2"></i>Salva Modifiche
                             </button>
                         @endif
                     </div>
@@ -338,38 +343,83 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Gestione sincronizzata slider e input numerico per il pH
             const phSlider = document.getElementById('ph_value_slider');
             const phInput = document.getElementById('ph_value');
-
-            // Aggiorna l'input numerico quando lo slider viene mosso
-            phSlider.addEventListener('input', function() {
-                phInput.value = parseFloat(this.value).toFixed(1);
-            });
-
-            // Aggiorna lo slider quando si scrive nell'input numerico
-            phInput.addEventListener('input', function() {
-                let value = parseFloat(this.value);
-                // Controlla che il valore sia un numero valido nel range
-                if (!isNaN(value) && value >= 6 && value <= 8) {
-                    phSlider.value = value;
-                }
-            });
-
-            // Formatta e valida il valore quando l'utente lascia il campo
-            phInput.addEventListener('blur', function() {
-                let value = isNaN(parseFloat(this.value)) ? 7.4 : parseFloat(this.value);
-                if (value < 6) value = 6;
-                if (value > 8) value = 8;
-                this.value = value.toFixed(1);
-                phSlider.value = value;
-            });
-
-            // Gestione visibilità campo Non Conformità
+            const idoneoLabel = document.querySelector('label[for="outcome_idoneo"]');
+            const nonIdoneoLabel = document.querySelector('label[for="outcome_non_idoneo"]');
             const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
             const nonComplianceSection = document.getElementById('non-compliance-section');
             const nonComplianceInput = document.getElementById('non_compliance_ref');
 
+            /**
+             * Calcola una tonalità di colore (da 0 a 120) in base al valore di pH.
+             * 0 = Rosso (non conforme), 60 = Giallo (limite), 120 = Verde (conforme).
+             */
+            function getSuggestionHue(ph) {
+                const idealMin = 7.2, idealMax = 7.6, idealCenter = 7.4;
+                const outerMin = 6.8, outerMax = 8.0;
+                const maxHue = 120, midHue = 60, minHue = 0;
+
+                if (ph >= idealMin && ph <= idealMax) {
+                    if (ph < idealCenter) return midHue + ((ph - idealMin) / (idealCenter - idealMin)) * (maxHue - midHue);
+                    else return maxHue - ((ph - idealCenter) / (idealMax - idealCenter)) * (maxHue - midHue);
+                }
+                if (ph > idealMax && ph <= outerMax) return midHue - ((ph - idealMax) / (outerMax - idealMax)) * midHue;
+                if (ph < idealMin && ph >= outerMin) return ((ph - outerMin) / (idealMin - outerMin)) * midHue;
+                
+                return minHue; // Fuori da ogni tolleranza, rosso pieno
+            }
+
+            /**
+             * Aggiorna lo slider e il suggerimento di colore in base all'input del pH.
+             */
+            function updateVisuals() {
+                if (!phInput || !idoneoLabel || !nonIdoneoLabel) return;
+
+                const phValue = parseFloat(phInput.value);
+
+                // Resetta gli stili
+                idoneoLabel.style.backgroundColor = '';
+                idoneoLabel.style.borderColor = '';
+                nonIdoneoLabel.style.backgroundColor = '';
+                nonIdoneoLabel.style.borderColor = '';
+
+                if (phInput.disabled || isNaN(phValue)) {
+                    if (phSlider) phSlider.value = 7.4; // Resetta lo slider se l'input è vuoto
+                    return;
+                }
+
+                // Aggiorna la posizione dello slider
+                if (phSlider && phValue >= parseFloat(phSlider.min) && phValue <= parseFloat(phSlider.max)) {
+                    phSlider.value = phValue;
+                }
+
+                // Aggiorna il suggerimento di colore
+                const hue = getSuggestionHue(phValue);
+                const color = `hsl(${hue}, 85%, 92%)`;
+                const borderColor = `hsl(${hue}, 70%, 80%)`;
+
+                if (hue >= 60) { // Suggerisce Idoneo (da Giallo a Verde)
+                    idoneoLabel.style.backgroundColor = color;
+                    idoneoLabel.style.borderColor = borderColor;
+                } else { // Suggerisce Non Idoneo (da Rosso a Giallo)
+                    nonIdoneoLabel.style.backgroundColor = color;
+                    nonIdoneoLabel.style.borderColor = borderColor;
+                }
+            }
+
+            // Listener per slider e input
+            if (phSlider) {
+                phSlider.addEventListener('input', function() {
+                    phInput.value = parseFloat(this.value).toFixed(1);
+                    updateVisuals();
+                });
+            }
+            if (phInput) {
+                phInput.addEventListener('input', updateVisuals);
+            }
+
+            // Gestione visibilità campo Non Conformità
             function toggleNonCompliance(isInitial) {
                 if (document.getElementById('outcome_non_idoneo').checked) {
                     nonComplianceSection.style.display = 'block';
@@ -377,16 +427,15 @@
                 } else {
                     nonComplianceSection.style.display = 'none';
                     nonComplianceInput.required = false;
-                    nonComplianceInput.value = ''; // Pulisci il campo se si torna a Idoneo
                     if (!isInitial) {
-                        nonComplianceInput.value = ''; // Pulisci il campo se si torna a Idoneo
+                        nonComplianceInput.value = '';
                     }
                 }
             }
-
-            outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
-
-            // Esegui al caricamento per lo stato iniziale
+            outcomeRadios.forEach(radio => radio.addEventListener('change', () => toggleNonCompliance(false)));
+            
+            // Chiamate iniziali al caricamento
+            updateVisuals();
             toggleNonCompliance(true);
 
             // Gestione validazione Bootstrap
@@ -403,9 +452,8 @@
 
             // Gestione conferma validazione con SweetAlert2
             $('form.validate-form').on('submit', function(event) {
-                console.log('Evento submit intercettato per il form di validazione.');
-                event.preventDefault(); // Impedisce l'invio immediato del form
                 var form = this;
+                event.preventDefault();
                 Swal.fire({
                     title: 'Sei sicuro di voler validare questo test?',
                     text: "L'azione è definitiva e renderà il test immutabile.",
@@ -417,8 +465,7 @@
                     cancelButtonText: 'Annulla'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        console.log('Conferma ricevuta, invio il form di validazione.');
-                        form.submit(); // Se l'utente conferma, invia il form
+                        form.submit();
                     }
                 });
             });
