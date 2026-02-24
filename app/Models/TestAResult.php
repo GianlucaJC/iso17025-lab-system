@@ -26,6 +26,8 @@ class TestAResult extends Model
         'acceptance_id',
         'test_date',
         'operator_id',
+        'ph_meter',
+        'ph_probe',
         'ph_value',
         'outcome',
         'non_compliance_ref',

@@ -11,81 +11,22 @@
     @endphp
     <title>{{ $form_title }} Test A - MA_09_Misurazione del pH</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <style>
-        /* Custom width for the main content area */
-        main.container {
-            max-width: 1340px; /* Default Bootstrap container-xl is 1140px, adding 200px */
-        }
-        /* Adjust for larger screens (xxl breakpoint and above) */
-        @media (min-width: 1400px) {
-            main.container {
-                max-width: 1520px; /* Default Bootstrap container-xxl is 1320px, adding 200px */
-            }
-        }
-    </style>
-    <style>
-        .ph-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .ph-slider-container input[type=range] {
-            flex-grow: 1;
-        }
-        .ph-value-input {
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-align: center;
-            width: 120px;
-            flex-shrink: 0;
-        }
-        .outcome-radio .form-check-input {
-            display: none;
-        }
-        .outcome-radio .form-check-label {
-            border: 2px solid #dee2e6;
-            border-radius: .375rem;
-            padding: 1rem;
-            cursor: pointer;
-            text-align: center;
-            width: 100%;
-            transition: all 0.2s ease-in-out;
-        }
-        .outcome-radio .form-check-input:checked + .form-check-label {
-            background-color: var(--bs-primary-bg-subtle);
-            border-color: var(--bs-primary);
-            color: var(--bs-primary-text-emphasis);
-        }
-        .outcome-radio .form-check-input:checked + .form-check-label.text-success {
-             background-color: var(--bs-success-bg-subtle);
-             border-color: var(--bs-success);
-             color: var(--bs-success-text-emphasis);
-        }
-        .outcome-radio .form-check-input:checked + .form-check-label.text-danger {
-             background-color: var(--bs-danger-bg-subtle);
-             border-color: var(--bs-danger);
-             color: var(--bs-danger-text-emphasis);
-        }
-        .outcome-radio .form-check-label .icon {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
-    <!-- Navbar (copiata da altre viste per coerenza) -->
+    {{-- Navbar --}}
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <div>
                 @if(!($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4))
-                    <a href="{{ route('acceptance.create') }}" class="btn btn-success">
-                        <i class="fas fa-plus-circle me-2"></i>Nuova Accettazione
-                    </a>
+                    <a href="{{ route('acceptance.create') }}" class="btn btn-success"><i class="fas fa-plus-circle me-2"></i>Nuova Accettazione</a>
                 @endif
                 <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('acceptance.index') }}">Elenco Accettazioni</a>
+                @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
+                    <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('instruments.index') }}">Gestione Strumenti</a>
+                    <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('methods.index') }}">Gestione revisioni</a>
+                @endif
             </div>
             <div class="d-flex align-items-center">
                 @if(Session::has('user'))
@@ -112,129 +53,120 @@
     </nav>
 
     <main class="container mt-4 flex-grow-1">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="card">
             <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
                 <h3>
                     @if($is_edit)
-                        @if($is_readonly)
-                            <i class="fas fa-eye me-2"></i>Visualizza Risultati Test A: MA_09_Misurazione del pH 
-                        @else
-                            <i class="fas fa-edit me-2"></i>Modifica Risultati Test A: MA_09_Misurazione del pH
-                        @endif
+                        @if($is_readonly) <i class="fas fa-eye me-2"></i>Visualizza @else <i class="fas fa-edit me-2"></i>Modifica @endif
                     @else
-                        <i class="fas fa-vial me-2"></i>Esecuzione Test A: MA_09_Misurazione del pH
+                        <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
+                    Test A: MA_09_Misurazione del pH
                 </h3>
             </div>
             <div class="card-body p-4">
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-                @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-                
                 <form method="POST" action="{{ $is_edit ? route('test-a.update', $test_a_result->id) : route('test-a.store', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit) @method('PUT') @endif
 
-                    <!-- SEZIONE DATI EREDITATI -->
+                    {{-- Dati di Riferimento --}}
                     <fieldset class="mb-4">
                         <legend class="h5">Dati di Riferimento</legend>
                         <div class="row p-3 bg-light border rounded">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Lotto</label>
-                                <p class="form-control-plaintext">{{ $acceptance->lotto }}</p>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">N. Accettazione</label>
-                                <p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">ID Piastra</label>
-                                <p class="form-control-plaintext">
-                                    <span class="badge bg-secondary fs-6">
-                                        <i class="fas fa-vial me-1"></i>
-                                        {{ $acceptance->plates[0] ?? 'N/D' }}
-                                    </span>
-                                </p>
-                            </div>
+                            <div class="col-md-6"><label class="form-label fw-bold">Lotto</label><p class="form-control-plaintext">{{ $acceptance->lotto }}</p></div>
+                            <div class="col-md-6"><label class="form-label fw-bold">N. Accettazione</label><p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p></div>
                         </div>
                     </fieldset>
 
-                    <!-- SEZIONE COMPILAZIONE TEST -->
+                    {{-- Dati Prova --}}
                     <fieldset class="mb-4">
-                        <legend class="h5">Dati della Prova</legend>
+                        <legend class="h5">Dati Prova</legend>
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4 initial-data-section">
                                 <label for="test_date" class="form-label">Data Prova</label>
-                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
+                                <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
-                            <div class="col-md-6">
-                                <label for="operator" class="form-label">Operatore</label>
-                                <input type="text" class="form-control" id="operator" name="operator" value="{{ $currentUser['operatore'] ?? '' }}" readonly {{ $is_readonly ? 'disabled' : '' }}>
+                            <div class="col-md-4">
+                                <label for="ph_meter" class="form-label">ID pH-metro</label>
+                                <select class="form-select @error('ph_meter') is-invalid @enderror" id="ph_meter" name="ph_meter" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <option value="">Seleziona pH-metro...</option>
+                                    @foreach($ph_meters as $meter)
+                                        @php
+                                            $selectedValue = old('ph_meter', $is_edit ? $test_a_result->ph_meter : '');
+                                        @endphp
+                                        <option value="{{ $meter->identifier }}" {{ $selectedValue == $meter->identifier ? 'selected' : '' }}>
+                                            {{ $meter->identifier }} {{ $meter->description ? '('.$meter->description.')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback">
+                                    @error('ph_meter') {{ $message }} @else Selezionare un pH-metro. @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ph_probe" class="form-label">Sonda pH</label>
+                                <select class="form-select @error('ph_probe') is-invalid @enderror" id="ph_probe" name="ph_probe" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <option value="">Seleziona sonda...</option>
+                                    @foreach($ph_probes as $probe)
+                                        @php
+                                            $selectedValue = old('ph_probe', $is_edit ? $test_a_result->ph_probe : '');
+                                        @endphp
+                                        <option value="{{ $probe->identifier }}" {{ $selectedValue == $probe->identifier ? 'selected' : '' }}>
+                                            {{ $probe->identifier }} {{ $probe->description ? '('.$probe->description.')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback">
+                                    @error('ph_probe') {{ $message }} @else Selezionare una sonda. @enderror
+                                </div>
                             </div>
                             <div class="col-12">
-                                <label for="ph_value_slider" class="form-label">Misura pH</label>
-                                <div class="ph-slider-container p-3 border rounded">
-                                    <i class="fas fa-tint text-muted me-2"></i>
-                                    @php 
-                                        $ph_value = old('ph_value', $is_edit ? $test_a_result->ph_value : ''); 
-                                        $slider_value = old('ph_value', ($is_edit && $test_a_result->ph_value) ? $test_a_result->ph_value : '7.4');
-                                    @endphp
-                                    <input type="range" class="form-range" id="ph_value_slider" min="5.0" max="9.0" step="0.1" value="{{ $slider_value }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="number" class="form-control ph-value-input" id="ph_value" name="ph_value" min="0" max="14" step="0.1" value="{{ $ph_value }}" placeholder="pH" required {{ $is_readonly ? 'disabled' : '' }}>
+                                <label for="ph_value_slider" class="form-label">Valore pH (Specifiche: 7.4 ± 0.2)</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="range" class="form-range" id="ph_value_slider" min="6.0" max="9.0" step="0.01" value="{{ old('ph_value', $is_edit ? $test_a_result->ph_value : '7.40') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="number" class="form-control ms-3" id="ph_value" name="ph_value" style="width: 100px;" min="6.0" max="9.0" step="0.01" value="{{ old('ph_value', $is_edit ? $test_a_result->ph_value : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
-                                <div class="invalid-feedback">Inserire un valore di pH valido.</div>
+                                <div id="ph-indicator" class="mt-2 p-2 rounded text-center text-white fw-bold"></div>
                             </div>
                         </div>
                     </fieldset>
 
-                    <!-- SEZIONE ESITO -->
+                    {{-- Esito --}}
                     <fieldset class="mb-4">
                         <legend class="h5">Esito</legend>
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
-                                <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_idoneo" value="idoneo" {{ old('outcome', $is_edit ? $test_a_result->outcome : null) == 'idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
-                                    <label class="form-check-label text-success" for="outcome_idoneo">
-                                        <i class="fas fa-check-circle icon"></i>
-                                        Idoneo
-                                    </label>
+                                <div class="d-grid gap-2">
+                                    <input type="radio" class="btn-check" name="outcome" id="outcome_idoneo" value="idoneo" autocomplete="off" {{ old('outcome', $is_edit ? $test_a_result->outcome : '') == 'idoneo' ? 'checked' : '' }} required {{ $is_readonly ? 'disabled' : '' }}>
+                                    <label class="btn btn-outline-success btn-lg" for="outcome_idoneo"><i class="fas fa-check-circle me-2"></i>Idoneo</label>
+                                    
+                                    <input type="radio" class="btn-check" name="outcome" id="outcome_non_idoneo" value="non_idoneo" autocomplete="off" {{ old('outcome', $is_edit ? $test_a_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
+                                    <label class="btn btn-outline-danger btn-lg" for="outcome_non_idoneo"><i class="fas fa-times-circle me-2"></i>Non Idoneo</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-check outcome-radio">
-                                    <input class="form-check-input" type="radio" name="outcome" id="outcome_non_idoneo" value="non_idoneo" {{ old('outcome', $is_edit ? $test_a_result->outcome : '') == 'non_idoneo' ? 'checked' : '' }} {{ $is_readonly ? 'disabled' : '' }}>
-                                    <label class="form-check-label text-danger" for="outcome_non_idoneo">
-                                        <i class="fas fa-times-circle icon"></i>
-                                        Non Idoneo
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-center text-muted mt-2"><small>Il colore è un suggerimento. Clicca su una delle opzioni per confermare l'esito.</small></div>
-                        <div class="mt-3" id="non-compliance-section" style="display: none;">
-                            <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
-                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" placeholder="Inserire riferimento NC" value="{{ old('non_compliance_ref', $is_edit ? $test_a_result->non_compliance_ref : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                            <div class="col-md-6" id="non-compliance-section" style="display: none;">
+                                <label for="non_compliance_ref" class="form-label">Riferimento Non Conformità</label>
+                                <input type="text" class="form-control" id="non_compliance_ref" name="non_compliance_ref" value="{{ old('non_compliance_ref', $is_edit ? $test_a_result->non_compliance_ref : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
                         </div>
                     </fieldset>
 
-                    <!-- SEZIONE MOTIVAZIONE MODIFICA (solo in edit) -->
-                    @if($is_edit && !$is_readonly)
+                    {{-- Motivazione Modifica --}}
+                    @if ($is_edit && !$is_readonly)
                     <fieldset class="mb-4">
                         <legend class="h5">Motivazione della Modifica</legend>
                         <div class="form-group">
-                            <label for="modification_reason" class="form-label">La modifica dei risultati di un test già salvato richiede una motivazione (min. 10 caratteri).</label>
+                            <label for="modification_reason" class="form-label">La modifica dei risultati richiede una motivazione (min. 10 caratteri).</label>
                             <textarea class="form-control @error('modification_reason') is-invalid @enderror" id="modification_reason" name="modification_reason" rows="3" required minlength="10">{{ old('modification_reason') }}</textarea>
                             @error('modification_reason')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -247,47 +179,28 @@
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('acceptance.index') }}" class="btn btn-secondary btn-lg">
-                            @if($is_readonly)
-                                <i class="fas fa-arrow-left me-2"></i>Torna indietro
-                            @else
-                                <i class="fas fa-times me-2"></i>Annulla
-                            @endif
+                            @if($is_readonly) <i class="fas fa-arrow-left me-2"></i>Torna indietro @else <i class="fas fa-times me-2"></i>Annulla @endif
                         </a>
                         @if(!$is_readonly)
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save me-2"></i>Salva Modifiche
+                                <i class="fas fa-save me-2"></i>{{ $is_edit ? 'Salva Modifiche' : 'Salva Risultati' }}
                             </button>
                         @endif
                     </div>
                 </form>
 
-                {{-- Sezione Firme e Validazione (solo in visualizzazione/edit) --}}
+                {{-- Sezione Firme e Validazione --}}
                 @if($is_edit)
                     <hr class="my-4">
                     <div class="row">
                         <div class="col-md-4">
                             <h6>Operatore</h6>
-                            <p>
-                                @if(isset($usersMap[$test_a_result->operator_id]))
-                                    {{ $usersMap[$test_a_result->operator_id]['operatore'] }}
-                                @else
-                                    ID: {{ $test_a_result->operator_id }} (Utente non trovato)
-                                @endif
-                            </p>
+                            <p>{{ $usersMap[$test_a_result->operator_id]['operatore'] ?? 'N/D' }}</p>
                         </div>
                         <div class="col-md-4">
                             <h6>Firma Tecnico di Laboratorio</h6>
                             @if($test_a_result->lab_signed_at)
-                                <p class="text-success">
-                                    Firmato da
-                                    @if(isset($usersMap[$test_a_result->lab_signature_id]))
-                                        <strong>{{ $usersMap[$test_a_result->lab_signature_id]['operatore'] }}</strong>
-                                    @else
-                                        <strong>ID: {{ $test_a_result->lab_signature_id }}</strong>
-                                    @endif
-                                    <br>
-                                    il {{ optional($test_a_result->lab_signed_at)->format('d/m/Y H:i') }}
-                                </p>
+                                <p class="text-success">Firmato da <strong>{{ $usersMap[$test_a_result->lab_signature_id]['operatore'] ?? 'N/D' }}</strong><br>il {{ $test_a_result->lab_signed_at->format('d/m/Y H:i') }}</p>
                             @else
                                 <p class="text-muted">Non ancora firmato</p>
                             @endif
@@ -295,41 +208,19 @@
                         <div class="col-md-4">
                             <h6>Validazione Responsabile Laboratorio</h6>
                             @if($test_a_result->rl_signed_at)
-                                <p class="text-primary">
-                                    Validato da
-                                    @if(isset($usersMap[$test_a_result->rl_signature_id]))
-                                        <strong>{{ $usersMap[$test_a_result->rl_signature_id]['operatore'] }}</strong>
-                                    @else
-                                        <strong>ID: {{ $test_a_result->rl_signature_id }}</strong>
-                                    @endif
-                                    <br>
-                                    il {{ optional($test_a_result->rl_signed_at)->format('d/m/Y H:i') }}
-                                </p>
+                                <p class="text-primary">Validato da <strong>{{ $usersMap[$test_a_result->rl_signature_id]['operatore'] ?? 'N/D' }}</strong><br>il {{ $test_a_result->rl_signed_at->format('d/m/Y H:i') }}</p>
                             @else
                                 <p class="text-muted">Non ancora validato</p>
-                                @if(
-                                    $test_a_result->lab_signed_at &&
-                                    !$test_a_result->rl_signed_at &&
-                                    isset($currentUser['user17025']) && $currentUser['user17025'] == 4
-                                )
-                                    <form action="{{ route('test-a.validate', $test_a_result->id) }}" method="POST" class="validate-form d-inline">
+                                @if($test_a_result->lab_signed_at && !$test_a_result->rl_signed_at && isset($currentUser['user17025']) && $currentUser['user17025'] == 4)
+                                    <form action="{{ route('test-a.validate', $test_a_result->id) }}" method="POST" class="validate-form">
                                         @csrf
                                         <input type="hidden" name="source" value="run_test">
-                                        <button type="submit" class="btn btn-primary"><i class="fas fa-user-check me-2"></i>Valida Test</button>
+                                        <button type="submit" class="btn btn-primary">Valida Test</button>
                                     </form>
                                 @endif
                             @endif
                         </div>
                     </div>
-
-                    {{-- Link alla cronologia --}}
-                    @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
-                        <div class="mt-4">
-                            <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $test_a_result->id]) }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-history"></i> Vedi Cronologia Modifiche
-                            </a>
-                        </div>
-                    @endif
                 @endif
             </div>
         </div>
@@ -343,101 +234,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const phSlider = document.getElementById('ph_value_slider');
-            const phInput = document.getElementById('ph_value');
-            const idoneoLabel = document.querySelector('label[for="outcome_idoneo"]');
-            const nonIdoneoLabel = document.querySelector('label[for="outcome_non_idoneo"]');
-            const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
-            const nonComplianceSection = document.getElementById('non-compliance-section');
-            const nonComplianceInput = document.getElementById('non_compliance_ref');
-
-            /**
-             * Calcola una tonalità di colore (da 0 a 120) in base al valore di pH.
-             * 0 = Rosso (non conforme), 60 = Giallo (limite), 120 = Verde (conforme).
-             */
-            function getSuggestionHue(ph) {
-                const idealMin = 7.2, idealMax = 7.6, idealCenter = 7.4;
-                const outerMin = 6.8, outerMax = 8.0;
-                const maxHue = 120, midHue = 60, minHue = 0;
-
-                if (ph >= idealMin && ph <= idealMax) {
-                    if (ph < idealCenter) return midHue + ((ph - idealMin) / (idealCenter - idealMin)) * (maxHue - midHue);
-                    else return maxHue - ((ph - idealCenter) / (idealMax - idealCenter)) * (maxHue - midHue);
-                }
-                if (ph > idealMax && ph <= outerMax) return midHue - ((ph - idealMax) / (outerMax - idealMax)) * midHue;
-                if (ph < idealMin && ph >= outerMin) return ((ph - outerMin) / (idealMin - outerMin)) * midHue;
-                
-                return minHue; // Fuori da ogni tolleranza, rosso pieno
-            }
-
-            /**
-             * Aggiorna lo slider e il suggerimento di colore in base all'input del pH.
-             */
-            function updateVisuals() {
-                if (!phInput || !idoneoLabel || !nonIdoneoLabel) return;
-
-                const phValue = parseFloat(phInput.value);
-
-                // Resetta gli stili
-                idoneoLabel.style.backgroundColor = '';
-                idoneoLabel.style.borderColor = '';
-                nonIdoneoLabel.style.backgroundColor = '';
-                nonIdoneoLabel.style.borderColor = '';
-
-                if (phInput.disabled || isNaN(phValue)) {
-                    if (phSlider) phSlider.value = 7.4; // Resetta lo slider se l'input è vuoto
-                    return;
-                }
-
-                // Aggiorna la posizione dello slider
-                if (phSlider && phValue >= parseFloat(phSlider.min) && phValue <= parseFloat(phSlider.max)) {
-                    phSlider.value = phValue;
-                }
-
-                // Aggiorna il suggerimento di colore
-                const hue = getSuggestionHue(phValue);
-                const color = `hsl(${hue}, 85%, 92%)`;
-                const borderColor = `hsl(${hue}, 70%, 80%)`;
-
-                if (hue >= 60) { // Suggerisce Idoneo (da Giallo a Verde)
-                    idoneoLabel.style.backgroundColor = color;
-                    idoneoLabel.style.borderColor = borderColor;
-                } else { // Suggerisce Non Idoneo (da Rosso a Giallo)
-                    nonIdoneoLabel.style.backgroundColor = color;
-                    nonIdoneoLabel.style.borderColor = borderColor;
-                }
-            }
-
-            // Listener per slider e input
-            if (phSlider) {
-                phSlider.addEventListener('input', function() {
-                    phInput.value = parseFloat(this.value).toFixed(1);
-                    updateVisuals();
-                });
-            }
-            if (phInput) {
-                phInput.addEventListener('input', updateVisuals);
-            }
-
-            // Gestione visibilità campo Non Conformità
-            function toggleNonCompliance(isInitial) {
-                if (document.getElementById('outcome_non_idoneo').checked) {
-                    nonComplianceSection.style.display = 'block';
-                    nonComplianceInput.required = true;
-                } else {
-                    nonComplianceSection.style.display = 'none';
-                    nonComplianceInput.required = false;
-                    if (!isInitial) {
-                        nonComplianceInput.value = '';
-                    }
-                }
-            }
-            outcomeRadios.forEach(radio => radio.addEventListener('change', () => toggleNonCompliance(false)));
-            
-            // Chiamate iniziali al caricamento
-            updateVisuals();
-            toggleNonCompliance(true);
-
             // Gestione validazione Bootstrap
             var form = document.querySelector('.needs-validation');
             if (form) {
@@ -450,10 +246,71 @@
                 }, false);
             }
 
+            // Gestione visibilità campo Non Conformità
+            const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
+            const nonComplianceSection = document.getElementById('non-compliance-section');
+            const nonComplianceInput = document.getElementById('non_compliance_ref');
+
+            function toggleNonCompliance() {
+                const isNonIdoneo = document.getElementById('outcome_non_idoneo').checked;
+                if (isNonIdoneo) {
+                    nonComplianceSection.style.display = 'block';
+                    nonComplianceInput.required = true;
+                } else {
+                    nonComplianceSection.style.display = 'none';
+                    nonComplianceInput.required = false;
+                }
+            }
+
+            outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
+            toggleNonCompliance(); // Esegui al caricamento
+
+            // Gestione slider pH
+            const slider = document.getElementById('ph_value_slider');
+            const numberInput = document.getElementById('ph_value');
+            const indicator = document.getElementById('ph-indicator');
+            const minOk = 7.2;
+            const maxOk = 7.6;
+
+            function updatePhIndicator(value) {
+                const ph = parseFloat(value);
+                if (isNaN(ph) || value === '') {
+                    indicator.textContent = '';
+                    indicator.className = 'mt-2 p-2 rounded text-center fw-bold';
+                    return;
+                }
+
+                if (ph >= minOk && ph <= maxOk) {
+                    indicator.textContent = 'Valore CONFORME';
+                    indicator.className = 'mt-2 p-2 rounded text-center fw-bold bg-success-subtle text-success-emphasis';
+                } else {
+                    indicator.textContent = 'Valore NON CONFORME';
+                    indicator.className = 'mt-2 p-2 rounded text-center fw-bold bg-danger-subtle text-danger-emphasis';
+                }
+            }
+
+            if (slider && numberInput && indicator) {
+                slider.addEventListener('input', function() {
+                    numberInput.value = this.value;
+                    updatePhIndicator(this.value);
+                });
+
+                numberInput.addEventListener('input', function() {
+                    // Clamp value to slider's min/max
+                    if (parseFloat(this.value) > parseFloat(slider.max)) this.value = slider.max;
+                    if (parseFloat(this.value) < parseFloat(slider.min)) this.value = slider.min;
+                    slider.value = this.value;
+                    updatePhIndicator(this.value);
+                });
+
+                // Initial state
+                updatePhIndicator(numberInput.value);
+            }
+
             // Gestione conferma validazione con SweetAlert2
             $('form.validate-form').on('submit', function(event) {
-                var form = this;
                 event.preventDefault();
+                var form = this;
                 Swal.fire({
                     title: 'Sei sicuro di voler validare questo test?',
                     text: "L'azione è definitiva e renderà il test immutabile.",

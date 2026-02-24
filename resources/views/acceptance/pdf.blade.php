@@ -136,6 +136,8 @@
             <table class="info-table">
                 <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</td></tr>
                 <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
+                <tr><td><strong>ID pH-metro:</strong></td><td>{{ $testAResult->ph_meter ?? 'N/D' }}</td></tr>
+                <tr><td><strong>Sonda pH:</strong></td><td>{{ $testAResult->ph_probe ?? 'N/D' }}</td></tr>
             </table>
             <table>
                 <thead><tr><th>Parametro</th><th>Specifiche</th><th>Risultato e Incertezza</th></tr></thead>

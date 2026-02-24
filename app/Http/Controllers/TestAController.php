@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InstrumentItem;
 use App\Models\Acceptance;
 use App\Models\TestAResult;
 use Illuminate\Validation\Rule;
@@ -36,9 +37,19 @@ class TestAController extends Controller
 
         $currentUser = Session::get('user');
 
+        $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'pH-metro');
+        })->get();
+
+        $ph_probes = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Sonda pH');
+        })->get();
+
         return view('tests.test_a.create', [
             'acceptance' => $acceptance,
-            'currentUser' => $currentUser
+            'currentUser' => $currentUser,
+            'ph_meters' => $ph_meters,
+            'ph_probes' => $ph_probes,
         ]);
     }
 
@@ -63,6 +74,8 @@ class TestAController extends Controller
         // 2. Validazione dei dati del form
         $validatedData = $request->validate([
             'test_date' => 'required|date',
+            'ph_meter' => 'required|string|max:255',
+            'ph_probe' => 'required|string|max:255',
             'ph_value' => 'required|numeric|min:0|max:14',
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
@@ -130,12 +143,22 @@ class TestAController extends Controller
         // Carichiamo l'accettazione associata per avere i dati di contesto
         $acceptance = $test_a_result->acceptance;
 
+        $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'pH-metro');
+        })->get();
+
+        $ph_probes = InstrumentItem::whereHas('instrument', function ($query) {
+            $query->where('name', 'Sonda pH');
+        })->get();
+
         return view('tests.test_a.create', [
             'acceptance' => $acceptance,
             'test_a_result' => $test_a_result, // Passiamo il risultato esistente alla vista
             'currentUser' => $currentUser,
             'is_readonly' => $is_readonly,
             'usersMap' => $usersMap,
+            'ph_meters' => $ph_meters,
+            'ph_probes' => $ph_probes,
         ]);
     }
 
@@ -161,6 +184,8 @@ class TestAController extends Controller
         // 2. Validazione
         $validatedData = $request->validate([
             'test_date' => 'required|date',
+            'ph_meter' => 'required|string|max:255',
+            'ph_probe' => 'required|string|max:255',
             'ph_value' => 'required|numeric|min:0|max:14',
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
