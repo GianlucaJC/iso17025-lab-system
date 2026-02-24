@@ -30,6 +30,12 @@
             z-index: -1000; /* Behind content */
             white-space: nowrap;
         }
+        .test-section {
+            page-break-inside: avoid;
+        }
+        .notes-section {
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 <body>
@@ -77,7 +83,7 @@
     @endif
 
     <main>
-        <div style="text-align: right; margin-bottom: 20px;">
+        <div style="text-align: right; margin-top: 90px;">
             <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
             Via Uruguay 64026,<br>
             Roseto degli Abruzzi (TE) Italia
@@ -132,113 +138,119 @@
 
         {{-- 1. Controllo del pH (Test A) --}}
         @if($testAResult)
-            <h3>1. MA_09_Misurazione del pH</h3>
-            <table class="info-table">
-                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</td></tr>
-                <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
-                <tr><td><strong>ID pH-metro:</strong></td><td>{{ $testAResult->ph_meter ?? 'N/D' }}</td></tr>
-                <tr><td><strong>Sonda pH:</strong></td><td>{{ $testAResult->ph_probe ?? 'N/D' }}</td></tr>
-            </table>
-            <table>
-                <thead><tr><th>Parametro</th><th>Specifiche</th><th>Risultato e Incertezza</th></tr></thead>
-                <tbody>
+            <div class="test-section">
+                <h3>1. MA_09_Misurazione del pH</h3>
+                <table class="info-table">
+                    <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>ID pH-metro:</strong></td><td>{{ $testAResult->ph_meter ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>Sonda pH:</strong></td><td>{{ $testAResult->ph_probe ?? 'N/D' }}</td></tr>
+                </table>
+                <table>
+                    <thead><tr><th>Parametro</th><th>Specifiche</th><th>Risultato e Incertezza</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>Valore di pH (25°C)</td>
+                            <td>7.4 ± 0.2</td>
+                            <td>{{ number_format($testAResult->ph_value, 2) }} ± INC</td> {{-- 'INC' è un placeholder --}}
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="info-table" style="margin-top: 5px;">
                     <tr>
-                        <td>Valore di pH (25°C)</td>
-                        <td>7.4 ± 0.2</td>
-                        <td>{{ number_format($testAResult->ph_value, 2) }} ± INC</td> {{-- 'INC' è un placeholder --}}
+                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td>
+                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td>
                     </tr>
-                </tbody>
-            </table>
-            <table class="info-table" style="margin-top: 5px;">
-                <tr>
-                    <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td>
-                    <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td>
-                </tr>
-            </table>
+                </table>
+            </div>
         @endif
 
         {{-- 2. Produttività, Metodo Qualitativo (Test C) --}}
         @if($testCResult)
-            <h3>2. MA_60_Valutazione produttività XLD</h3>
-            <table class="info-table">
-                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</td></tr>
-                <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
-                <tr><td><strong>Inoculo:</strong></td><td>&#8804; 100 CFU</td></tr>
-            </table>
-            <table>
-                <thead><tr><th>Ceppo di controllo</th><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
-                <tbody>
+            <div class="test-section">
+                <h3>2. MA_60_Valutazione produttività XLD</h3>
+                <table class="info-table">
+                    <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>Inoculo:</strong></td><td>&#8804; 100 CFU</td></tr>
+                </table>
+                <table>
+                    <thead><tr><th>Ceppo di controllo</th><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>Salmonella typhimurium ATCC 14028</td>
+                            <td>24 ± 3h a 35 ± 2°C</td>
+                            <td>Colonie rosse con centro nero</td>
+                            <td>{{ $testCResult->tsa_growth_result == 'rilevata' ? 'Rilevata' : 'Non Rilevata' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="info-table" style="margin-top: 5px;">
                     <tr>
-                        <td>Salmonella typhimurium ATCC 14028</td>
-                        <td>24 ± 3h a 35 ± 2°C</td>
-                        <td>Colonie rosse con centro nero</td>
-                        <td>{{ $testCResult->tsa_growth_result == 'rilevata' ? 'Rilevata' : 'Non Rilevata' }}</td>
+                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_start_datetime)->format('d.m.Y') }}</td>
+                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_end_datetime)->format('d.m.Y') }}</td>
                     </tr>
-                </tbody>
-            </table>
-            <table class="info-table" style="margin-top: 5px;">
-                <tr>
-                    <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_start_datetime)->format('d.m.Y') }}</td>
-                    <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_end_datetime)->format('d.m.Y') }}</td>
-                </tr>
-            </table>
+                </table>
+            </div>
         @endif
 
         {{-- 3. Controllo della contaminazione microbica (Test B) --}}
         @if($testBResult)
-            <h3>3. MA_61_Contaminazione microbica</h3>
-            @php
-                $testBPlates = array_filter([
-                    $testBResult->plate_id_start_plate1_35_run1, $testBResult->plate_id_start_plate2_35_run1,
-                    $testBResult->plate_id_mid_plate1_35_run1,   $testBResult->plate_id_mid_plate2_35_run1,
-                    $testBResult->plate_id_end_plate1_35_run1,   $testBResult->plate_id_end_plate2_35_run1,
-                    $testBResult->plate_id_start_plate1_22_run1, $testBResult->plate_id_start_plate2_22_run1,
-                    $testBResult->plate_id_mid_plate1_22_run1,   $testBResult->plate_id_mid_plate2_22_run1,
-                    $testBResult->plate_id_end_plate1_22_run1,   $testBResult->plate_id_end_plate2_22_run1,
-                ]);
-            @endphp
-            <table class="info-table">
-                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</td></tr>
-                <tr><td><strong>ID Campione:</strong></td><td>{{ implode(' – ', $testBPlates) }}</td></tr>
-            </table>
-            <table>
-                <thead><tr><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
-                <tbody>
-                    @php
-                        // Logica per determinare il risultato aggregato per 35C
-                        $growth_35 = 'Nessuna crescita';
-                        if (
-                            $testBResult->growth_result_35_start_plate1_run1 == 'rilevata' || $testBResult->growth_result_35_start_plate2_run1 == 'rilevata' ||
-                            $testBResult->growth_result_35_mid_plate1_run1 == 'rilevata'   || $testBResult->growth_result_35_mid_plate2_run1 == 'rilevata'   ||
-                            $testBResult->growth_result_35_end_plate1_run1 == 'rilevata'   || $testBResult->growth_result_35_end_plate2_run1 == 'rilevata'
-                        ) { $growth_35 = 'Crescita rilevata'; }
+            <div class="test-section">
+                <h3>3. MA_61_Contaminazione microbica</h3>
+                @php
+                    $testBPlates = array_filter([
+                        $testBResult->plate_id_start_plate1_35_run1, $testBResult->plate_id_start_plate2_35_run1,
+                        $testBResult->plate_id_mid_plate1_35_run1,   $testBResult->plate_id_mid_plate2_35_run1,
+                        $testBResult->plate_id_end_plate1_35_run1,   $testBResult->plate_id_end_plate2_35_run1,
+                        $testBResult->plate_id_start_plate1_22_run1, $testBResult->plate_id_start_plate2_22_run1,
+                        $testBResult->plate_id_mid_plate1_22_run1,   $testBResult->plate_id_mid_plate2_22_run1,
+                        $testBResult->plate_id_end_plate1_22_run1,   $testBResult->plate_id_end_plate2_22_run1,
+                    ]);
+                @endphp
+                <table class="info-table">
+                    <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>ID Campione:</strong></td><td>{{ implode(' – ', $testBPlates) }}</td></tr>
+                </table>
+                <table>
+                    <thead><tr><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
+                    <tbody>
+                        @php
+                            // Logica per determinare il risultato aggregato per 35C
+                            $growth_35 = 'Nessuna crescita';
+                            if (
+                                $testBResult->growth_result_35_start_plate1_run1 == 'rilevata' || $testBResult->growth_result_35_start_plate2_run1 == 'rilevata' ||
+                                $testBResult->growth_result_35_mid_plate1_run1 == 'rilevata'   || $testBResult->growth_result_35_mid_plate2_run1 == 'rilevata'   ||
+                                $testBResult->growth_result_35_end_plate1_run1 == 'rilevata'   || $testBResult->growth_result_35_end_plate2_run1 == 'rilevata'
+                            ) { $growth_35 = 'Crescita rilevata'; }
 
-                        // Logica per determinare il risultato aggregato per 22C
-                        $growth_22 = 'Nessuna crescita';
-                        if (
-                            $testBResult->growth_result_22_start_plate1_run1 == 'rilevata' || $testBResult->growth_result_22_start_plate2_run1 == 'rilevata' ||
-                            $testBResult->growth_result_22_mid_plate1_run1 == 'rilevata'   || $testBResult->growth_result_22_mid_plate2_run1 == 'rilevata'   ||
-                            $testBResult->growth_result_22_end_plate1_run1 == 'rilevata'   || $testBResult->growth_result_22_end_plate2_run1 == 'rilevata'
-                        ) { $growth_22 = 'Crescita rilevata'; }
-                    @endphp
+                            // Logica per determinare il risultato aggregato per 22C
+                            $growth_22 = 'Nessuna crescita';
+                            if (
+                                $testBResult->growth_result_22_start_plate1_run1 == 'rilevata' || $testBResult->growth_result_22_start_plate2_run1 == 'rilevata' ||
+                                $testBResult->growth_result_22_mid_plate1_run1 == 'rilevata'   || $testBResult->growth_result_22_mid_plate2_run1 == 'rilevata'   ||
+                                $testBResult->growth_result_22_end_plate1_run1 == 'rilevata'   || $testBResult->growth_result_22_end_plate2_run1 == 'rilevata'
+                            ) { $growth_22 = 'Crescita rilevata'; }
+                        @endphp
+                        <tr>
+                            <td>35 ± 2°C, 7 giorni</td>
+                            <td>Nessuna crescita</td>
+                            <td>{{ $growth_35 }}</td>
+                        </tr>
+                        <tr>
+                            <td>22,5 ± 2°C, 7 giorni</td>
+                            <td>Nessuna crescita</td>
+                            <td>{{ $growth_22 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="info-table" style="margin-top: 5px;">
                     <tr>
-                        <td>35 ± 2°C, 7 giorni</td>
-                        <td>Nessuna crescita</td>
-                        <td>{{ $growth_35 }}</td>
+                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_start_datetime)->format('d.m.Y') }}</td>
+                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_end_datetime)->format('d.m.Y') }}</td>
                     </tr>
-                    <tr>
-                        <td>22,5 ± 2°C, 7 giorni</td>
-                        <td>Nessuna crescita</td>
-                        <td>{{ $growth_22 }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <table class="info-table" style="margin-top: 5px;">
-                <tr>
-                    <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_start_datetime)->format('d.m.Y') }}</td>
-                    <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_end_datetime)->format('d.m.Y') }}</td>
-                </tr>
-            </table>
+                </table>
+            </div>
         @endif
 
         <table class="signatures">
@@ -265,7 +277,7 @@
             </tr>
         </table>
 
-        <div style="margin-top: 30px;">
+        <div class="notes-section" style="margin-top: 120px;">
             <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
             <h3>NOTA:</h3>
             <p style="font-size: 9px; text-align: justify;">
