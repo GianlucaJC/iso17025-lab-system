@@ -11,7 +11,7 @@
         $is_completion_phase = ($is_edit && is_null($test_b_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
     @endphp
-    <title>{{ $form_title }} Test B - Controllo</title>
+    <title>{{ $form_title }} Test B - MA_61_Contaminazione microbica</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -87,7 +87,7 @@
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test B: Controllo della contaminazione microbica
+                    Test B: MA_61_Contaminazione microbica
                 </h3>
             </div>
             <div class="card-body p-4">
@@ -124,21 +124,21 @@
                     </fieldset>
 
                     {{-- Dati Generali Prova --}}
-                    <fieldset class="mb-4">
+                    <fieldset class="mb-4 d-none">
                         <legend class="h5">Dati Generali Prova</legend>
                         <div class="row g-3">
                             <div class="col-md-6 initial-data-section">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }} required>
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_b_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_b_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
                             <div class="col-md-6 final-results-section">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? '' : '' }}>
+                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_b_result->test_end_datetime) ? $test_b_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? '' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -156,7 +156,7 @@
                     <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
                         <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }}</legend>
                         <div class="row g-3 mb-3 align-items-end">
-                            <div class="col-md-3 initial-data-section">
+                            <div class="col-md-4 initial-data-section">
                                 <label for="incubator_{{ $temp }}_run1" class="form-label">Incubatore</label>
                                 <select class="form-select @error('incubator_'.$temp.'_run1') is-invalid @enderror" id="incubator_{{ $temp }}_run1" name="incubator_{{ $temp }}_run1" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <option value="">Seleziona incubatore...</option>
@@ -173,29 +173,23 @@
                                     @error('incubator_'.$temp.'_run1') {{ $message }} @else Selezionare un incubatore. @enderror
                                 </div> 
                             </div>
-                            <div class="col-md-3 initial-data-section">
+                            <div class="col-md-4 initial-data-section">
                                 <label class="form-label">Inizio Incubazione</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run1" value="{{ old('incubation_start_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run1" value="{{ old('incubation_start_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                 </div>
                             </div>
-                            <div class="col-md-3 final-results-section">
+                            <div class="col-md-4 final-results-section">
                                 <label class="form-label">Fine Incubazione</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run1" value="{{ old('incubation_end_date_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run1" value="{{ old('incubation_end_time_'.$temp.'_run1', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run1'}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                 </div>
                             </div>
-                            <div class="col-md-3 initial-data-section">
-                                <label for="temperature_{{ $temp }}_run1" class="form-label">Temperatura (°C)</label>
-                                <input type="number" step="0.1" class="form-control @error('temperature_'.$temp.'_run1') is-invalid @enderror" id="temperature_{{ $temp }}_run1" name="temperature_{{ $temp }}_run1" value="{{ old('temperature_'.$temp.'_run1', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run1'} : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
-                                <div class="invalid-feedback">
-                                    @error('temperature_'.$temp.'_run1') {{ $message }} @else Inserire la temperatura. @enderror
-                                </div>
-                            </div>
                         </div>
-
+                        @php $defaultValue = ($temp == '22') ? '22.5' : '35'; @endphp
+                        <input type="hidden" name="temperature_{{ $temp }}_run1" value="{{ old('temperature_'.$temp.'_run1', $is_edit ? ($test_b_result->{'temperature_'.$temp.'_run1'} ?? $defaultValue) : $defaultValue) }}">
                         <div class="final-results-section"><table class="table table-bordered text-center">
                             <thead class="table-light">
                                 <tr>
@@ -252,8 +246,8 @@
                         @foreach($incubation_types as $temp => $details)
                         <fieldset class="mb-4 p-3 border rounded {{ $details['color'] }}">
                             <legend class="h6 w-auto px-2">Incubazione a {{ $details['label'] }} (Run 2)</legend>
-                            <div class="row g-3 mb-3 align-items-end">
-                                <div class="col-md-3 initial-data-section">
+                            <div class="row g-3 mb-3 align-items-end"> 
+                                <div class="col-md-4 initial-data-section">
                                     <label for="incubator_{{ $temp }}_run2" class="form-label">Incubatore</label>
                                     <select class="form-select @error('incubator_'.$temp.'_run2') is-invalid @enderror" id="incubator_{{ $temp }}_run2" name="incubator_{{ $temp }}_run2" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                         <option value="">Seleziona incubatore...</option>
@@ -270,29 +264,23 @@
                                         @error('incubator_'.$temp.'_run2') {{ $message }} @else Selezionare un incubatore. @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-3 initial-data-section">
+                                <div class="col-md-4 initial-data-section">
                                     <label class="form-label">Inizio Incubazione</label>
                                     <div class="input-group">
                                         <input type="date" class="form-control" name="incubation_start_date_{{ $temp }}_run2" value="{{ old('incubation_start_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                         <input type="time" class="form-control" name="incubation_start_time_{{ $temp }}_run2" value="{{ old('incubation_start_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_start_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
                                     </div>
                                 </div>
-                                <div class="col-md-3 final-results-section">
+                                <div class="col-md-4 final-results-section">
                                     <label class="form-label">Fine Incubazione</label>
                                     <div class="input-group">
                                         <input type="date" class="form-control" name="incubation_end_date_{{ $temp }}_run2" value="{{ old('incubation_end_date_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                         <input type="time" class="form-control" name="incubation_end_time_{{ $temp }}_run2" value="{{ old('incubation_end_time_'.$temp.'_run2', $is_edit && $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'} ? $test_b_result->{'incubation_end_datetime_'.$temp.'_run2'}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
                                     </div>
                                 </div>
-                                <div class="col-md-3 initial-data-section">
-                                    <label for="temperature_{{ $temp }}_run2" class="form-label">Temperatura (°C)</label>
-                                    <input type="number" step="0.1" class="form-control @error('temperature_'.$temp.'_run2') is-invalid @enderror" id="temperature_{{ $temp }}_run2" name="temperature_{{ $temp }}_run2" value="{{ old('temperature_'.$temp.'_run2', $is_edit ? $test_b_result->{'temperature_'.$temp.'_run2'} : '') }}" {{ $is_readonly ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation ? 'required' : '' }}>
-                                    <div class="invalid-feedback">
-                                        @error('temperature_'.$temp.'_run2') {{ $message }} @else Inserire la temperatura. @enderror
-                                    </div>
-                                </div>
                             </div>
-
+                            @php $defaultValue = ($temp == '22') ? '22.5' : '35'; @endphp
+                            <input type="hidden" name="temperature_{{ $temp }}_run2" value="{{ old('temperature_'.$temp.'_run2', $is_edit ? ($test_b_result->{'temperature_'.$temp.'_run2'} ?? $defaultValue) : $defaultValue) }}">
                             <div class="final-results-section"><table class="table table-bordered text-center">
                                 <thead class="table-light">
                                     <tr>

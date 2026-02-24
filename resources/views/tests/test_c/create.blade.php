@@ -108,18 +108,18 @@
                     <fieldset class="mb-4 p-3 border rounded">
                         <legend class="h5 w-auto px-2">Dati Generali Prova</legend>
                         <div class="row mb-3 align-items-end">
-                            <div class="col-md-4 initial-data-section">
+                            <div class="col-md-4 initial-data-section d-none">
                                 <label class="form-label">Inizio Prova</label>
                                 <div class="input-group">
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                             </div>
-                            <div class="col-md-4 final-results-section">
+                            <div class="col-md-4 final-results-section d-none">
                                 <label class="form-label">Fine Prova</label>
                                 <div class="input-group">
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? '' : '' }}>
+                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? '' : '' }}>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -145,7 +145,7 @@
                                 <h6 class="mt-4">Preparazione e Diluizione</h6>
                                 <div class="row mb-3">
                                     <div class="col-md-3">
-                                        <label class="form-label">Piastra di TSA Sheep Blood (ID / Lotto)</label>
+                                        <label class="form-label">Piastra di TSA Sheep Blood</label>
                                         @php
                                             $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
                                         @endphp

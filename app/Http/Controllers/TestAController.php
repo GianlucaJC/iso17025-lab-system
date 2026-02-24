@@ -208,7 +208,7 @@ class TestAController extends Controller
             Session::flash('notification_warning', 'ATTENZIONE: Nessun Responsabile di Laboratorio con email valida trovato. La notifica non è stata inviata.');
         } else {
             $operatorName = $currentUser['operatore'] ?? 'N/D';
-            $testType = 'Test A - Controllo pH';
+            $testType = 'Test A - MA_09_Misurazione del pH';
             $acceptance = $test_a_result->acceptance;
             try {
                 Mail::to($rlEmails)->send(new TestSignedForValidation($test_a_result, $acceptance, $operatorName, $testType));

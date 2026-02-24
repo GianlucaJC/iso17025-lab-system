@@ -138,6 +138,21 @@ Route::middleware(['auth.api'])->group(function () {
     Route::delete('/instruments/item/{item}', [InstrumentController::class, 'destroyItem'])->name('instruments.destroyItem');
 });
 
+
+// In routes/web.php
+
+// ... altre rotte ...
+
+Route::middleware(['auth.session'])->group(function () {
+    // ...
+    
+    // Method Revisions Management (Admin only)
+    Route::get('/methods', [App\Http\Controllers\MethodRevisionController::class, 'index'])->name('methods.index');
+    Route::put('/methods', [App\Http\Controllers\MethodRevisionController::class, 'update'])->name('methods.update');
+
+    // ... altre rotte ...
+});
+
 // Rotta per la cronologia delle modifiche
 use App\Http\Controllers\AuditController;
 Route::get('/history/{modelNameShort}/{id}', [AuditController::class, 'show'])

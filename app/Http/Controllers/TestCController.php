@@ -187,7 +187,7 @@ class TestCController extends Controller
 
         $title = urlencode("Completamento Test C - Lotto: {$acceptance->lotto}");
         $details = urlencode(
-            "Promemoria per completare il Test C (Contaminazione) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
+            "Promemoria per completare il Test C (MA_60_Valutazione produttività XLD) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
             "Link all'applicazione: " . route('acceptance.index')
         );
 
@@ -352,7 +352,7 @@ class TestCController extends Controller
             Session::flash('notification_warning', 'ATTENZIONE: Nessun Responsabile di Laboratorio con email valida trovato. La notifica non è stata inviata.');
         } else {
             $operatorName = $currentUser['operatore'] ?? 'N/D';
-            $testType = 'Test C - Controllo contaminazione microbica';
+            $testType = 'Test C - MA_60_Valutazione produttività XLD';
             $acceptance = $test_c_result->acceptance;
             try {
                 Mail::to($rlEmails)->send(new TestSignedForValidation($test_c_result, $acceptance, $operatorName, $testType));
@@ -422,8 +422,6 @@ class TestCController extends Controller
 
         // Phase 1 Rules
         $initial_rules = [
-            'test_start_date' => 'required|date',
-            'test_start_time' => 'required|date_format:H:i',
             'pipette_dilution_1' => 'required|string|max:255',
             'pipette_dilution_2' => 'required|string|max:255',
             'pipette_inoculation' => 'required|string|max:255',
@@ -435,8 +433,6 @@ class TestCController extends Controller
 
         // Phase 2 Rules
         $completion_rules = [
-            'test_end_date' => 'required|date|after_or_equal:test_start_date',
-            'test_end_time' => 'required|date_format:H:i',
             'incubation_end_date' => 'required|date|after_or_equal:incubation_start_date',
             'incubation_end_time' => 'required|date_format:H:i',
             'tsa_growth_ufc' => 'nullable|integer|min:0', // New
@@ -545,12 +541,6 @@ class TestCController extends Controller
             'required_if' => 'Il campo :attribute è obbligatorio quando :other è :value.',
             'modification_reason.min' => 'La motivazione della modifica deve contenere almeno :min caratteri.',
 
-            'test_start_date.required' => 'La data di inizio prova è obbligatoria.',
-            'test_start_time.required' => 'L\'ora di inizio prova è obbligatoria.',
-            'test_end_date.required' => 'La data di fine prova è obbligatoria.',
-            'test_end_date.after_or_equal' => 'La data di fine prova deve essere successiva o uguale alla data di inizio prova.',
-            'test_end_time.required' => 'L\'ora di fine prova è obbligatoria.',
-
             'outcome.required' => 'L\'esito del test è obbligatorio.',
             'non_compliance_ref.required_if' => 'Il riferimento di non conformità è obbligatorio quando l\'esito è "Non Idoneo".',
             
@@ -581,36 +571,49 @@ class TestCController extends Controller
         }
         $is_double_test_c = $acceptance ? in_array('test3', $acceptance->double_tests ?? []) : false;
 
-        // Rimuove i campi separati di data/ora per evitare che vengano salvati
-        unset($data['test_start_date'], $data['test_start_time'], $data['test_end_date'], $data['test_end_time']);
-        unset($data['incubation_start_date'], $data['incubation_start_time'], $data['incubation_end_date'], $data['incubation_end_time']);
+        // Rimuove i campi separati di data/ora che verranno combinati
+        $date_time_fields_to_unset = [
+            'test_start_date', 'test_start_time', 'test_end_date', 'test_end_time',
+            'incubation_start_date', 'incubation_start_time', 'incubation_end_date', 'incubation_end_time',
+        ];
+        if ($is_double_test_c) {
+            $date_time_fields_to_unset = array_merge($date_time_fields_to_unset, [
+                'incubation_start_date_run2', 'incubation_start_time_run2', 'incubation_end_date_run2', 'incubation_end_time_run2',
+            ]);
+        }
+        foreach ($date_time_fields_to_unset as $field) {
+            unset($data[$field]);
+        }
         
-        // Combina in campi datetime, gestendo i valori null
-        $data['test_start_datetime'] = $request->test_start_date . ' ' . $request->test_start_time;
-        
-        $data['test_end_datetime'] = ($request->filled('test_end_date') && $request->filled('test_end_time'))
-            ? $request->test_end_date . ' ' . $request->test_end_time
-            : null;
+        $start_dates = [];
+        $end_dates = [];
 
         $data['incubation_start_datetime'] = ($request->filled('incubation_start_date') && $request->filled('incubation_start_time'))
             ? $request->incubation_start_date . ' ' . $request->incubation_start_time
             : null;
+        if ($data['incubation_start_datetime']) $start_dates[] = $data['incubation_start_datetime'];
 
         $data['incubation_end_datetime'] = ($request->filled('incubation_end_date') && $request->filled('incubation_end_time'))
             ? $request->incubation_end_date . ' ' . $request->incubation_end_time
             : null;
+        if ($data['incubation_end_datetime']) $end_dates[] = $data['incubation_end_datetime'];
 
         if ($is_double_test_c) {
-            unset($data['incubation_start_date_run2'], $data['incubation_start_time_run2'], $data['incubation_end_date_run2'], $data['incubation_end_time_run2']);
-            
             $data['incubation_start_datetime_run2'] = ($request->filled('incubation_start_date_run2') && $request->filled('incubation_start_time_run2'))
                 ? $request->incubation_start_date_run2 . ' ' . $request->incubation_start_time_run2
                 : null;
+            if ($data['incubation_start_datetime_run2']) $start_dates[] = $data['incubation_start_datetime_run2'];
 
             $data['incubation_end_datetime_run2'] = ($request->filled('incubation_end_date_run2') && $request->filled('incubation_end_time_run2'))
                 ? $request->incubation_end_date_run2 . ' ' . $request->incubation_end_time_run2
                 : null;
+            if ($data['incubation_end_datetime_run2']) $end_dates[] = $data['incubation_end_datetime_run2'];
         }
+
+        // Imposta test_start_datetime e test_end_datetime in base alle date di incubazione
+        if (!empty($start_dates)) $data['test_start_datetime'] = min($start_dates);
+        if (!empty($end_dates)) $data['test_end_datetime'] = max($end_dates);
+        else $data['test_end_datetime'] = null;
 
         // Handle checkboxes for boolean fields
         $data['ufc_50_percent_tsa_start_lotto'] = $request->has('ufc_50_percent_tsa_start_lotto') ? 1 : 0;

@@ -32,6 +32,7 @@
                 <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('acceptance.index') }}">Elenco Accettazioni</a>
                 @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
                     <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('instruments.index') }}">Gestione Strumenti</a>
+                    <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('methods.index') }}">Gestione revisioni</a>
                     <a class="nav-link d-inline-block align-middle ms-3" href="{{ route('user-management.redirect') }}" target="_blank">
                         <i class="fas fa-users-cog me-1"></i>Gestione Utenti
                     </a>
@@ -161,7 +162,7 @@
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]" @if(in_array('test1', $selectedTests)) checked @endif>
                                 <label class="form-check-label" for="test1">
-                                    Test A (Controllo del pH)
+                                    Test A (MA_09_Misurazione del pH)
                                 </label>
                             </div>
                             <div class="form-check form-check-inline ms-3" id="double-test1-container" style="display: none;">
@@ -173,7 +174,7 @@
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]" @if(in_array('test2', $selectedTests)) checked @endif>
                                 <label class="form-check-label" for="test2">
-                                    Test B (Produttività, Metodo Qualitativo)
+                                    Test B (MA_61_Contaminazione microbica)
                                 </label>
                             </div>
                             <div class="form-check form-check-inline ms-3" id="double-test2-container" style="display: none;">
@@ -185,7 +186,7 @@
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]" @if(in_array('test3', $selectedTests)) checked @endif>
                                 <label class="form-check-label" for="test3">
-                                    Test C (Controllo della contaminazione microbica)
+                                    Test C (MA_60_Valutazione produttività XLD)
                                 </label>
                             </div>
                             <div class="form-check form-check-inline ms-3" id="double-test3-container" style="display: none;">
@@ -205,7 +206,7 @@
                             $plates = old('plates', array_fill(0, 40, null));
                             $test_definitions = [
                                 'test1' => [
-                                    'name' => 'Test A (Controllo del pH)',
+                                    'name' => 'Test A (MA_09_Misurazione del pH)',
                                     'std_plates' => [
                                         0 => 'ID Piastra', // Solo la piastra principale
                                     ],
@@ -214,7 +215,7 @@
                                     ],
                                 ],
                                 'test2' => [
-                                    'name' => 'Test B (Produttività, Metodo Qualitativo)',
+                                    'name' => 'Test B (MA_61_Contaminazione microbica)',
                                     'std_plates' => [
                                         '35°C' => [
                                             '1° Gruppo Piastre' => [4, 5],
@@ -241,7 +242,7 @@
                                     ],
                                 ],
                                 'test3' => [
-                                    'name' => 'Test C (Controllo della contaminazione microbica)',
+                                    'name' => 'Test C (MA_60_Valutazione produttività XLD)',
                                     'std_plates' => [
                                         28 => 'ID Piastra 1',
                                         29 => 'ID Piastra 2',

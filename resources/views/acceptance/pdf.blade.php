@@ -61,9 +61,8 @@
     <header>
         <table style="width: 100%; border: none;">
             <tr>
-                <td style="width: 100%; border: none;">
-                    <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_0<br>
-                    <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
+                <td style="border: none; text-align: center; padding-bottom: 10px;">
+                    <img src="{{ public_path('images/header.png') }}" style="width: 100%; height: auto;">
                 </td>
             </tr>
         </table>
@@ -77,8 +76,17 @@
         <div class="watermark">ANTEPRIMA NON VALIDATA</div>
     @endif
 
-    <main>
-        <h1>RAPPORTO DI PROVA</h1>
+    <main style="margin-top: 90px;">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
+            Via Uruguay 64026,<br>
+            Roseto degli Abruzzi (TE) Italia
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
+            <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_0<br>
+            <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
+        </div>
 
         <h2>Dati Generali</h2>
         <table class="info-table">
@@ -124,9 +132,9 @@
 
         {{-- 1. Controllo del pH (Test A) --}}
         @if($testAResult)
-            <h3>1. Controllo del pH</h3>
+            <h3>1. MA_09_Misurazione del pH</h3>
             <table class="info-table">
-                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">MA09 Rev.5 del 20.10.2023</td></tr>
+                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</td></tr>
                 <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
             </table>
             <table>
@@ -149,9 +157,9 @@
 
         {{-- 2. Produttività, Metodo Qualitativo (Test C) --}}
         @if($testCResult)
-            <h3>2. Produttività, Metodo Qualitativo</h3>
+            <h3>2. MA_60_Valutazione produttività XLD</h3>
             <table class="info-table">
-                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">MA60 Rev.4 del 07.03.2024</td></tr>
+                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</td></tr>
                 <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
                 <tr><td><strong>Inoculo:</strong></td><td>&#8804; 100 CFU</td></tr>
             </table>
@@ -176,7 +184,7 @@
 
         {{-- 3. Controllo della contaminazione microbica (Test B) --}}
         @if($testBResult)
-            <h3>3. Controllo della contaminazione microbica</h3>
+            <h3>3. MA_61_Contaminazione microbica</h3>
             @php
                 $testBPlates = array_filter([
                     $testBResult->plate_id_start_plate1_35_run1, $testBResult->plate_id_start_plate2_35_run1,
@@ -188,7 +196,7 @@
                 ]);
             @endphp
             <table class="info-table">
-                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">MA61 Rev.2 del 07.03.2024</td></tr>
+                <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</td></tr>
                 <tr><td><strong>ID Campione:</strong></td><td>{{ implode(' – ', $testBPlates) }}</td></tr>
             </table>
             <table>

@@ -204,7 +204,7 @@ class TestBController extends Controller
 
         $title = urlencode("Completamento Test B - Lotto: {$acceptance->lotto}");
         $details = urlencode(
-            "Promemoria per completare il Test B (Produttività) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
+            "Promemoria per completare il Test B (MA_61_Contaminazione microbica) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
             "Link all'applicazione: " . route('acceptance.index')
         );
 
@@ -390,7 +390,7 @@ class TestBController extends Controller
             Session::flash('notification_warning', 'ATTENZIONE: Nessun Responsabile di Laboratorio con email valida trovato. La notifica non è stata inviata.');
         } else {
             $operatorName = $currentUser['operatore'] ?? 'N/D';
-            $testType = 'Test B - Produttività';
+            $testType = 'Test B - MA_61_Contaminazione microbica';
             $acceptance = $test_b_result->acceptance;
             try {
                 Mail::to($rlEmails)->send(new TestSignedForValidation($test_b_result, $acceptance, $operatorName, $testType));
@@ -459,8 +459,6 @@ class TestBController extends Controller
 
         // Regole per la prima fase di compilazione (Creazione)
         $initial_rules = [
-            'test_start_date' => 'required|date',
-            'test_start_time' => 'required|date_format:H:i',
             'incubator_35_run1' => 'required|string|max:255',
             'incubation_start_date_35_run1' => 'required|date',
             'incubation_start_time_35_run1' => 'required|date_format:H:i',
@@ -473,8 +471,6 @@ class TestBController extends Controller
 
         // Regole per la seconda fase di compilazione (Completamento)
         $completion_rules = [
-            'test_end_date' => 'required|date|after_or_equal:test_start_date',
-            'test_end_time' => 'required|date_format:H:i',
             'incubation_end_date_35_run1' => 'required|date|after_or_equal:incubation_start_date_35_run1',
             'incubation_end_time_35_run1' => 'required|date_format:H:i',
             'growth_result_35_start_plate1_run1' => $growthRule,
@@ -586,13 +582,6 @@ class TestBController extends Controller
             'required_if' => 'Il campo :attribute è obbligatorio quando :other è :value.',
             'modification_reason.min' => 'La motivazione della modifica deve contenere almeno :min caratteri.',
 
-            // Messaggi specifici per i campi
-            'test_start_date.required' => 'La data di inizio prova è obbligatoria.',
-            'test_start_time.required' => 'L\'ora di inizio prova è obbligatoria.',
-            'test_end_date.required' => 'La data di fine prova è obbligatoria.',
-            'test_end_date.after_or_equal' => 'La data di fine prova deve essere successiva o uguale alla data di inizio prova.',
-            'test_end_time.required' => 'L\'ora di fine prova è obbligatoria.',
-
             'incubator_35_run1.required' => 'L\'incubatore (35°C, Run 1) è obbligatorio.',
             'incubation_start_date_35_run1.required' => 'La data di inizio incubazione (35°C, Run 1) è obbligatoria.',
             'incubation_start_time_35_run1.required' => 'L\'ora di inizio incubazione (35°C, Run 1) è obbligatoria.',
@@ -677,38 +666,43 @@ class TestBController extends Controller
 
         $is_double_test_b = $acceptance ? in_array('test2', $acceptance->double_tests ?? []) : false;
 
-        // Rimuove i campi separati di data/ora
-        unset($data['test_start_date'], $data['test_start_time'], $data['test_end_date'], $data['test_end_time']);
-        unset($data['incubation_start_date_35_run1'], $data['incubation_start_time_35_run1'], $data['incubation_end_date_35_run1'], $data['incubation_end_time_35_run1']);
-        unset($data['incubation_start_date_22_run1'], $data['incubation_start_time_22_run1'], $data['incubation_end_date_22_run1'], $data['incubation_end_time_22_run1']);
+        // Rimuove i campi separati di data/ora che verranno combinati
+        $date_time_fields_to_unset = [
+            'test_start_date', 'test_start_time', 'test_end_date', 'test_end_time',
+            'incubation_start_date_35_run1', 'incubation_start_time_35_run1', 'incubation_end_date_35_run1', 'incubation_end_time_35_run1',
+            'incubation_start_date_22_run1', 'incubation_start_time_22_run1', 'incubation_end_date_22_run1', 'incubation_end_time_22_run1',
+        ];
         if ($is_double_test_b) {
-            unset($data['incubation_start_date_35_run2'], $data['incubation_start_time_35_run2'], $data['incubation_end_date_35_run2'], $data['incubation_end_time_35_run2']);
-            unset($data['incubation_start_date_22_run2'], $data['incubation_start_time_22_run2'], $data['incubation_end_date_22_run2'], $data['incubation_end_time_22_run2']);
+            $date_time_fields_to_unset = array_merge($date_time_fields_to_unset, [
+                'incubation_start_date_35_run2', 'incubation_start_time_35_run2', 'incubation_end_date_35_run2', 'incubation_end_time_35_run2',
+                'incubation_start_date_22_run2', 'incubation_start_time_22_run2', 'incubation_end_date_22_run2', 'incubation_end_time_22_run2',
+            ]);
         }
-
-        // Combina in campi datetime
-        $data['test_start_datetime'] = $request->test_start_date . ' ' . $request->test_start_time;
-
-        if ($request->filled('test_end_date') && $request->filled('test_end_time')) {
-            $data['test_end_datetime'] = $request->test_end_date . ' ' . $request->test_end_time;
-        } else {
-            $data['test_end_datetime'] = null;
+        foreach ($date_time_fields_to_unset as $field) {
+            unset($data[$field]);
         }
         
+        $start_dates = [];
+        $end_dates = [];
+
         // Handle run 1 incubation datetimes
         if ($request->filled('incubation_start_date_35_run1') && $request->filled('incubation_start_time_35_run1')) {
             $data['incubation_start_datetime_35_run1'] = $request->incubation_start_date_35_run1 . ' ' . $request->incubation_start_time_35_run1;
+            $start_dates[] = $data['incubation_start_datetime_35_run1'];
         }
         if ($request->filled('incubation_end_date_35_run1') && $request->filled('incubation_end_time_35_run1')) {
             $data['incubation_end_datetime_35_run1'] = $request->incubation_end_date_35_run1 . ' ' . $request->incubation_end_time_35_run1;
+            $end_dates[] = $data['incubation_end_datetime_35_run1'];
         } else {
             $data['incubation_end_datetime_35_run1'] = null;
         }
         if ($request->filled('incubation_start_date_22_run1') && $request->filled('incubation_start_time_22_run1')) {
             $data['incubation_start_datetime_22_run1'] = $request->incubation_start_date_22_run1 . ' ' . $request->incubation_start_time_22_run1;
+            $start_dates[] = $data['incubation_start_datetime_22_run1'];
         }
         if ($request->filled('incubation_end_date_22_run1') && $request->filled('incubation_end_time_22_run1')) {
             $data['incubation_end_datetime_22_run1'] = $request->incubation_end_date_22_run1 . ' ' . $request->incubation_end_time_22_run1;
+            $end_dates[] = $data['incubation_end_datetime_22_run1'];
         } else {
             $data['incubation_end_datetime_22_run1'] = null;
         }
@@ -717,20 +711,36 @@ class TestBController extends Controller
         if ($is_double_test_b) {
             if ($request->filled('incubation_start_date_35_run2') && $request->filled('incubation_start_time_35_run2')) {
                 $data['incubation_start_datetime_35_run2'] = $request->incubation_start_date_35_run2 . ' ' . $request->incubation_start_time_35_run2;
+                $start_dates[] = $data['incubation_start_datetime_35_run2'];
             }
             if ($request->filled('incubation_end_date_35_run2') && $request->filled('incubation_end_time_35_run2')) {
                 $data['incubation_end_datetime_35_run2'] = $request->incubation_end_date_35_run2 . ' ' . $request->incubation_end_time_35_run2;
+                $end_dates[] = $data['incubation_end_datetime_35_run2'];
             } else {
                 $data['incubation_end_datetime_35_run2'] = null;
             }
             if ($request->filled('incubation_start_date_22_run2') && $request->filled('incubation_start_time_22_run2')) {
                 $data['incubation_start_datetime_22_run2'] = $request->incubation_start_date_22_run2 . ' ' . $request->incubation_start_time_22_run2;
+                $start_dates[] = $data['incubation_start_datetime_22_run2'];
             }
             if ($request->filled('incubation_end_date_22_run2') && $request->filled('incubation_end_time_22_run2')) {
                 $data['incubation_end_datetime_22_run2'] = $request->incubation_end_date_22_run2 . ' ' . $request->incubation_end_time_22_run2;
+                $end_dates[] = $data['incubation_end_datetime_22_run2'];
             } else {
                 $data['incubation_end_datetime_22_run2'] = null;
             }
+        }
+
+        // Imposta test_start_datetime alla data di inizio incubazione più vecchia
+        if (!empty($start_dates)) {
+            $data['test_start_datetime'] = min($start_dates);
+        }
+
+        // Imposta test_end_datetime alla data di fine incubazione più recente
+        if (!empty($end_dates)) {
+            $data['test_end_datetime'] = max($end_dates);
+        } else {
+            $data['test_end_datetime'] = null;
         }
 
         return $data;

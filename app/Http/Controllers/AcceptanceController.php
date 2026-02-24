@@ -436,6 +436,9 @@ class AcceptanceController extends Controller
         // Eager load relationships to avoid N+1 queries
         $acceptance->load('testAResult', 'testBResult', 'testCResult');
 
+        // --- Fetch Method Revisions ---
+        $methodRevisions = \App\Models\MethodRevision::all()->keyBy('method_key');
+
         // --- Inizio blocco recupero utenti via API (da refattorizzare in un service) ---
         $usersMap = [];
         try {
@@ -486,6 +489,7 @@ class AcceptanceController extends Controller
             'usersMap' => $usersMap,
             'productInfo' => $productInfo,
             'report_date' => $report_date,
+            'methodRevisions' => $methodRevisions,
         ];
 
         // Aggiungo la variabile isPdfComplete ai dati passati alla vista
