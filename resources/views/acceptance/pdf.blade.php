@@ -265,6 +265,21 @@
             </tr>
         </table>
 
+        <div style="page-break-before: always;">
+            <h3 style="margin-top: 100px;">NOTA:</h3>
+            <p style="font-size: 9px; text-align: justify;">
+                L'incertezza riportata in questo documento è l'incertezza estesa ottenuta moltiplicando l'incertezza tipo composta per un fattore di
+                copertura
+                k = 2, per una distribuzione normale e un livello di confidenza di circa il 95%.<br><br>
+                Le Specifiche riportate nel presente documento sono definite da Liofilchem Srl.<br><br>
+                I risultati contenuti nel presente rapporto si riferiscono esclusivamente al campione provato.<br><br>
+                Il presente rapporto può essere riprodotto solo integralmente.<br><br>
+                Il campione è stato sottoposto alle prove come pervenuto in laboratorio.<br><br>
+                Il laboratorio declina ogni responsabilità relativa alle informazioni fornite dal cliente riportate nel presente Rapporto che possono avere
+                influenza sulla validità dei risultati.<br><br>
+                (1)Dato fornito dal cliente
+            </p>
+        </div>
     </main>
     <script type="text/php">
         if (isset($pdf)) {
