@@ -76,7 +76,7 @@
         <div class="watermark">ANTEPRIMA NON VALIDATA</div>
     @endif
 
-    <main style="margin-top: 90px;">
+    <main>
         <div style="text-align: right; margin-bottom: 20px;">
             <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
             Via Uruguay 64026,<br>
