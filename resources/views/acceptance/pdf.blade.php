@@ -265,8 +265,9 @@
             </tr>
         </table>
 
-        <div style="page-break-before: always;">
-            <h3 style="margin-top: 100px;">NOTA:</h3>
+        <div style="margin-top: 30px;">
+            <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
+            <h3>NOTA:</h3>
             <p style="font-size: 9px; text-align: justify;">
                 L'incertezza riportata in questo documento è l'incertezza estesa ottenuta moltiplicando l'incertezza tipo composta per un fattore di
                 copertura
