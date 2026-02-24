@@ -83,7 +83,7 @@
     @endif
 
     <main>
-        <div style="text-align: right; margin-top: 90px;">
+        <div style="text-align: right; margin-bottom: 20px;">
             <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
             Via Uruguay 64026,<br>
             Roseto degli Abruzzi (TE) Italia
@@ -296,13 +296,15 @@
     </main>
     <script type="text/php">
         if (isset($pdf)) {
+            // Metodo robusto per la numerazione: usiamo i placeholder speciali di dompdf.
+            // Questi vengono sostituiti correttamente durante la seconda passata di rendering.
             $font = $fontMetrics->getFont("DejaVu Sans", "normal");
             $size = 10;
-            $pageText = "Pagina " . $PAGE_NUM . " di " . $PAGE_COUNT;
-            $text_width = $fontMetrics->get_text_width($pageText, $font, $size);
-            // Posiziona il testo nell'angolo in alto a destra, tenendo conto dei margini
-            $x = $pdf->get_width() - $text_width - 40; // 40px è il margine destro
-            $y = 15; // Posizione verticale dall'alto, all'interno del margine superiore
+            $pageText = "Pagina {PAGE_NUM} di {PAGE_COUNT}";
+            // Per l'allineamento a destra, calcoliamo la larghezza di un testo di esempio (il più lungo possibile).
+            $text_width = $fontMetrics->get_text_width("Pagina 10 di 10", $font, $size);
+            $x = $pdf->get_width() - $text_width - 40;
+            $y = 15;
             $pdf->page_text($x, $y, $pageText, $font, $size);
         }
     </script>
