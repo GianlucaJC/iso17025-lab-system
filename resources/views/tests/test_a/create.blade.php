@@ -96,6 +96,9 @@
                                 <label for="test_date" class="form-label">Data Prova</label>
                                 <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
+
+              
+
                             <div class="col-md-4">
                                 <label for="ph_meter" class="form-label">ID pH-metro</label>
                                 <select class="form-select @error('ph_meter') is-invalid @enderror" id="ph_meter" name="ph_meter" {{ $is_readonly ? 'disabled' : '' }} required>

@@ -38,11 +38,11 @@ class TestAController extends Controller
         $currentUser = Session::get('user');
 
         $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'pH-metro');
+            $query->whereRaw('LOWER(name) = ?', ['phmetro']);
         })->get();
 
         $ph_probes = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Sonda pH');
+            $query->whereRaw('LOWER(name) = ?', ['sonda ph']);
         })->get();
 
         return view('tests.test_a.create', [
@@ -144,11 +144,11 @@ class TestAController extends Controller
         $acceptance = $test_a_result->acceptance;
 
         $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'pH-metro');
+            $query->whereRaw('LOWER(name) = ?', ['phmetro']);
         })->get();
 
         $ph_probes = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Sonda pH');
+            $query->whereRaw('LOWER(name) = ?', ['sonda ph']);
         })->get();
 
         return view('tests.test_a.create', [

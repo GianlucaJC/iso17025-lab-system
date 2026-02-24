@@ -102,12 +102,12 @@ class TestCController extends Controller
         ];
 
         $incubators = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Incubatore');
+            $query->whereRaw('LOWER(name) = ?', ['incubatore']);
         })->get();
 
 
         $pipettes = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Pipetta');
+            $query->whereRaw('LOWER(name) = ?', ['pipetta']);
         })->get();
 
         return view('tests.test_c.create', [
@@ -268,11 +268,11 @@ class TestCController extends Controller
         // The plate IDs and lots are now stored directly in test_c_results, so no fallback to acceptance plates is needed here.
 
         $incubators = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Incubatore');
+            $query->whereRaw('LOWER(name) = ?', ['incubatore']);
         })->get();
 
         $pipettes = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Pipetta');
+            $query->whereRaw('LOWER(name) = ?', ['pipetta']);
         })->get();
 
         return view('tests.test_c.create', [

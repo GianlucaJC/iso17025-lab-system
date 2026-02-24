@@ -111,7 +111,7 @@ class TestBController extends Controller
         $test_b_plates = []; // Questa variabile non è più usata direttamente per la visualizzazione
 
         $incubators = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Incubatore');
+            $query->whereRaw('LOWER(name) = ?', ['incubatore']);
         })->get();
 
         return view('tests.test_b.create', [
@@ -309,7 +309,7 @@ class TestBController extends Controller
         $test_b_plates = []; // This variable is no longer directly used for display in the same way
 
         $incubators = InstrumentItem::whereHas('instrument', function ($query) {
-            $query->where('name', 'Incubatore');
+            $query->whereRaw('LOWER(name) = ?', ['incubatore']);
         })->get();
 
         return view('tests.test_b.create', [
