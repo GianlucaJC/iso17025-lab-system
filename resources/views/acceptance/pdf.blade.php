@@ -5,8 +5,8 @@
     <title>Rapporto di Prova {{ $acceptance->acceptance_number }}</title>
     <style>
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #333; }
-        @page { margin: 80px 40px 70px 40px; }
-        header { position: fixed; top: -70px; left: 0px; right: 0px; height: 60px; }
+        @page { margin: 100px 40px 70px 40px; }
+        header { position: fixed; top: -90px; left: 0px; right: 0px; height: 60px; }
         footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 50px; text-align: center; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
         h1, h2, h3 { font-weight: normal; }
         h1 { font-size: 16px; text-align: center; margin-bottom: 20px; text-decoration: underline; }
