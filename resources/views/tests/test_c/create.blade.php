@@ -54,8 +54,8 @@
         </div>
     </nav>
 
-    <main class="container mt-4 flex-grow-1">
-        <div class="card">
+        <main class="container mt-4 flex-grow-1">
+        <div class="card position-relative">
             <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
                 <h3>
                     @if($is_edit)
@@ -78,6 +78,21 @@
                     </div>
                 @endif
 
+                {{-- INIZIO: Blocco Operatore Accettazione --}}
+                @if(isset($usersMap) && isset($acceptance))
+                <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1 text-muted small">Op. Accettazione</h6>
+                            <p class="card-text mb-0 fw-bold">
+                                <i class="fas fa-user-check me-1 text-primary"></i>
+                                {{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                {{-- FINE: Blocco Operatore Accettazione --}}
                 <form action="{{ $is_edit ? route('test-c.update', $test_c_result->id) : route('test-c.store', $acceptance->id) }}" method="POST" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit)
@@ -96,35 +111,6 @@
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">N. Accettazione</label>
                                 <p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Operatore Accettazione</label>
-                                @php $acceptanceOperatorName = $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D'; @endphp
-                                <p class="form-control-plaintext">{{ $acceptanceOperatorName }}</p>
-                            </div>
-                        </div>
-                    </fieldset>
-                    
-                    <fieldset class="mb-4 p-3 border rounded">
-                        <legend class="h5 w-auto px-2">Dati Generali Prova</legend>
-                        <div class="row mb-3 align-items-end">
-                            <div class="col-md-4 initial-data-section d-none">
-                                <label class="form-label">Inizio Prova</label>
-                                <div class="input-group">
-                                    <input type="time" class="form-control" name="test_start_time" value="{{ old('test_start_time', $is_edit ? $test_c_result->test_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="date" class="form-control" name="test_start_date" value="{{ old('test_start_date', $is_edit ? $test_c_result->test_start_datetime->format('Y-m-d') : \Carbon\Carbon::parse($acceptance->acceptance_date)->format('Y-m-d')) }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                </div>
-                            </div>
-                            <div class="col-md-4 final-results-section d-none">
-                                <label class="form-label">Fine Prova</label>
-                                <div class="input-group">
-                                    <input type="time" class="form-control" name="test_end_time" value="{{ old('test_end_time', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? '' : '' }}>
-                                    <input type="date" class="form-control" name="test_end_date" value="{{ old('test_end_date', ($is_edit && $test_c_result->test_end_datetime) ? $test_c_result->test_end_datetime->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? '' : '' }}>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Operatore</label>
-                                <p class="form-control-plaintext">{{ $usersMap[$test_c_result->operator_id ?? $currentUser['id']]['operatore'] ?? 'N/D' }}</p>
                             </div>
                         </div>
                     </fieldset>

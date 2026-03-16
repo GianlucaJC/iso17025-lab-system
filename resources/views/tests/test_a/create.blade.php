@@ -63,7 +63,7 @@
             </div>
         @endif
 
-        <div class="card">
+        <div class="card position-relative">
             <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
                 <h3>
                     @if($is_edit)
@@ -75,6 +75,21 @@
                 </h3>
             </div>
             <div class="card-body p-4">
+                {{-- INIZIO: Blocco Operatore Accettazione --}}
+                @if(isset($usersMap) && isset($acceptance))
+                <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1 text-muted small">Op. Accettazione</h6>
+                            <p class="card-text mb-0 fw-bold">
+                                <i class="fas fa-user-check me-1 text-primary"></i>
+                                {{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                {{-- FINE: Blocco Operatore Accettazione --}}
                 <form method="POST" action="{{ $is_edit ? route('test-a.update', $test_a_result->id) : route('test-a.store', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit) @method('PUT') @endif
@@ -133,14 +148,15 @@
                                     @error('ph_probe') {{ $message }} @else Selezionare una sonda. @enderror
                                 </div>
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-4"> {{-- Modificato da col-12 a col-md-4 per limitare la larghezza --}}
                                 <label for="ph_value_slider" class="form-label">Valore pH (Specifiche: 7.4 ± 0.2)</label>
-                                <div class="d-flex align-items-center">
-                                    <input type="range" class="form-range" id="ph_value_slider" min="6.0" max="9.0" step="0.01" value="{{ old('ph_value', $is_edit ? $test_a_result->ph_value : '7.40') }}" {{ $is_readonly ? 'disabled' : '' }}>
-                                    <input type="number" class="form-control ms-3" id="ph_value" name="ph_value" style="width: 100px;" min="6.0" max="9.0" step="0.01" value="{{ old('ph_value', $is_edit ? $test_a_result->ph_value : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
-                                </div>
-                                <div id="ph-indicator" class="mt-2 p-2 rounded text-center text-white fw-bold"></div>
+                                <input type="number" class="form-control" id="ph_value" name="ph_value" min="6.0" max="9.0" step="0.01" value="{{ old('ph_value', $is_edit ? $test_a_result->ph_value : '') }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
+                            {{-- Il campo di input numerico per il pH ora occupa 4 colonne su schermi medi e grandi. --}}
+
+                            {{-- La barra del pH (slider) è stata rimossa per uniformità con le altre schermate. --}}
+                            {{-- Il campo di input numerico per il pH rimane. --}}
+                            {{-- L'indicatore di conformità del pH è stato rimosso insieme allo slider. --}}
                         </div>
                     </fieldset>
 
@@ -267,48 +283,6 @@
 
             outcomeRadios.forEach(radio => radio.addEventListener('change', toggleNonCompliance));
             toggleNonCompliance(); // Esegui al caricamento
-
-            // Gestione slider pH
-            const slider = document.getElementById('ph_value_slider');
-            const numberInput = document.getElementById('ph_value');
-            const indicator = document.getElementById('ph-indicator');
-            const minOk = 7.2;
-            const maxOk = 7.6;
-
-            function updatePhIndicator(value) {
-                const ph = parseFloat(value);
-                if (isNaN(ph) || value === '') {
-                    indicator.textContent = '';
-                    indicator.className = 'mt-2 p-2 rounded text-center fw-bold';
-                    return;
-                }
-
-                if (ph >= minOk && ph <= maxOk) {
-                    indicator.textContent = 'Valore CONFORME';
-                    indicator.className = 'mt-2 p-2 rounded text-center fw-bold bg-success-subtle text-success-emphasis';
-                } else {
-                    indicator.textContent = 'Valore NON CONFORME';
-                    indicator.className = 'mt-2 p-2 rounded text-center fw-bold bg-danger-subtle text-danger-emphasis';
-                }
-            }
-
-            if (slider && numberInput && indicator) {
-                slider.addEventListener('input', function() {
-                    numberInput.value = this.value;
-                    updatePhIndicator(this.value);
-                });
-
-                numberInput.addEventListener('input', function() {
-                    // Clamp value to slider's min/max
-                    if (parseFloat(this.value) > parseFloat(slider.max)) this.value = slider.max;
-                    if (parseFloat(this.value) < parseFloat(slider.min)) this.value = slider.min;
-                    slider.value = this.value;
-                    updatePhIndicator(this.value);
-                });
-
-                // Initial state
-                updatePhIndicator(numberInput.value);
-            }
 
             // Gestione conferma validazione con SweetAlert2
             $('form.validate-form').on('submit', function(event) {

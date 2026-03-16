@@ -35,8 +35,40 @@ class TestAController extends Controller
             return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuovi test.');
         }
 
-        $currentUser = Session::get('user');
+        // --- Inizio blocco recupero utenti via API ---
+        $usersMap = [];
+        try {
+            $httpClient = Http::getFacadeRoot();
+            $certPath = env('API_CERT_PATH');
 
+            if ($certPath && file_exists($certPath)) {
+                $httpClient = $httpClient->withOptions(['verify' => $certPath]);
+            }
+            elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
+                $httpClient = $httpClient->withoutVerifying();
+            }
+
+            $requestBody = [
+                'api_token' => env('API_LOGIN_SHARED_SECRET'),
+                'action' => 'get_users'
+            ];
+            if ($currentUser && isset($currentUser['username'])) {
+                $requestBody['username'] = $currentUser['username'];
+            }
+
+            $usersResponse = $httpClient->post(env('API_LOGIN_URL'), $requestBody);
+
+            if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
+                $usersMap = collect($usersResponse->json('users'))->keyBy('id')->all();
+            } else {
+                Log::error("API call to get users failed in TestAController@create with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
+            }
+        } catch (ConnectionException $e) {
+            Log::error("Impossibile recuperare la lista utenti dall'API in TestAController@create (Connection Error): " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("Errore inatteso durante il recupero della lista utenti dall'API in TestAController@create: " . $e->getMessage());
+        }
+        // --- Fine blocco recupero utenti ---
         $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
             $query->whereRaw('LOWER(name) = ?', ['phmetro']);
         })->get();
@@ -50,6 +82,7 @@ class TestAController extends Controller
             'currentUser' => $currentUser,
             'ph_meters' => $ph_meters,
             'ph_probes' => $ph_probes,
+            'usersMap' => $usersMap,
         ]);
     }
 

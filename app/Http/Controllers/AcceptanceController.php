@@ -516,16 +516,21 @@ class AcceptanceController extends Controller
      */
     private function isPdfComplete(Acceptance $acceptance): bool
     {
+        // Se il campione è non conforme, non sono richiesti test, quindi il PDF è considerato completo.
+        if ($acceptance->sample_conformity === 'non_conforme') {
+            return true;
+        }
+
         $requiredTests = $acceptance->tests ?? [];
 
-        // If no tests were selected for this acceptance, it cannot be "complete"
-        if (empty($requiredTests)) {
+        // Se il campione è conforme ma non sono stati selezionati test, non è completo.
+        if (empty($requiredTests) && $acceptance->sample_conformity === 'conforme') {
             return false;
         }
 
         foreach ($requiredTests as $testKey) {
-            if ($testKey === 'test1' && (!$acceptance->testAResult || !$acceptance->testAResult->rl_signature_id)) return false;
-            if ($testKey === 'test2' && (!$acceptance->testBResult || !$acceptance->testBResult->rl_signature_id)) return false;
+            if ($testKey === 'test1' && (!$acceptance->testAResult || !$acceptance->testAResult->rl_signed_at)) return false;
+            if ($testKey === 'test2' && (!$acceptance->testBResult || !$acceptance->testBResult->rl_signed_at)) return false;
             if ($testKey === 'test3' && (!$acceptance->testCResult || !$acceptance->testCResult->rl_signed_at)) return false;
         }
 

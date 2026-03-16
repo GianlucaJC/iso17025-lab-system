@@ -204,12 +204,11 @@ class TestCController extends Controller
     public function edit(TestCResult $test_c_result)
     {
         $currentUser = Session::get('user');
-        $isOwner = $test_c_result->operator_id === $currentUser['id'];
-        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
-        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;        
+        $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
         $is_completion_phase = is_null($test_c_result->test_end_datetime);
-        $is_readonly = $isAdmin || $isLabManager || !$isOwner || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at;
-
+        // Il form è in sola lettura se l'utente non è un tecnico di laboratorio,
+        // o se il test è stato firmato/validato.
+        $is_readonly = !$isLabTechnician || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at;
         // --- Inizio blocco recupero utenti via API ---
         $usersMap = [];
         try {
@@ -296,11 +295,11 @@ class TestCController extends Controller
     public function update(Request $request, TestCResult $test_c_result)
     {
         $currentUser = Session::get('user');
-        $isOwner = $test_c_result->operator_id === $currentUser['id'];
-        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
-        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
-        if (!$isOwner || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at || $isAdmin || $isLabManager) {
-            abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
+        $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
+
+        // Policy: non si può modificare se non si è un tecnico di laboratorio, o se il test è firmato/validato.
+        if (!$isLabTechnician || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at) {
+            abort(403, 'Azione non autorizzata: solo i tecnici di laboratorio possono modificare un test non firmato/validato.');
         }
 
         $validatedData = $this->validateRequest($request, true);
@@ -327,12 +326,6 @@ class TestCController extends Controller
             abort(403, 'Azione non autorizzata: solo i tecnici di laboratorio possono firmare i test.');
         }
 
-        $isOwner = $test_c_result->operator_id === $currentUser['id'];
-
-        // Policy 2: Solo il proprietario del test può firmare.
-        if (!$isOwner) {            
-            abort(403, 'Azione non autorizzata: solo l\'operatore che ha compilato il test può firmare.');
-        }
         // Policy 3: Il test non deve essere già firmato o validato.
         if ($test_c_result->lab_signed_at && !$test_c_result->rl_signed_at) { // Aggiunto controllo per non bloccare se già validato
             return redirect()->route('acceptance.index')->with('error', 'Il test è già stato firmato.');

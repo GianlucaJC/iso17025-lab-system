@@ -322,9 +322,7 @@
                                     @if ($acceptance->sample_conformity === 'conforme')
                                         <div class="mb-1">
                                             @if(in_array('test1', $acceptance->tests))
-                                                @php
-                                                    $isOwnerA = $acceptance->testAResult && $acceptance->testAResult->operator_id == $currentUser['id'];
-                                                @endphp
+                                                @php $isOwnerA = $acceptance->testAResult && $acceptance->testAResult->operator_id == $currentUser['id']; @endphp
                                                 @switch($acceptance->test_a_status)
                                                     @case('validated')
                                                         <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success" title="Visualizza Test A (Validato)"><i class="fas fa-user-check"></i> Test A</a>
@@ -359,9 +357,6 @@
                                         </div>
                                         <div class="mb-1">
                                             @if(in_array('test2', $acceptance->tests))
-                                                @php
-                                                    $isOwnerB = $acceptance->testBResult && $acceptance->testBResult->operator_id == $currentUser['id'];
-                                                @endphp
                                                 @switch($acceptance->test_b_status)
                                                     @case('validated')
                                                         <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success" title="Visualizza Test B (Validato)"><i class="fas fa-user-check"></i> Test B</a>
@@ -370,9 +365,9 @@
                                                         <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-primary" title="Visualizza Test B (Firmato)"><i class="fas fa-signature"></i> Test B</a>
                                                         @break
                                                     @case('ready_to_sign')
-                                                        @if($isOwnerB && !$isAdmin)
+                                                        @if($isLabTechnician && !$isAdmin)
                                                             <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati Test B"><i class="fas fa-edit"></i> Test B</a>
-                                                            @if($isLabTechnician)
+                                                            @if($isLabTechnician) {{-- This inner if is now redundant but harmless --}}
                                                                 <form action="{{ route('test-b.sign', $acceptance->testBResult) }}" method="POST" class="d-inline sign-form">
                                                                     @csrf
                                                                     <button type="submit" class="btn btn-sm btn-outline-success" title="Firma Test B"><i class="fas fa-signature"></i> Firma</button>
@@ -383,7 +378,7 @@
                                                         @endif
                                                         @break
                                                     @case('in_compilation')
-                                                        @if($isOwnerB && !$isAdmin)
+                                                        @if($isLabTechnician && !$isAdmin)
                                                             <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning" title="Completa/Modifica Risultati Test B"><i class="fas fa-edit"></i> Test B</a>
                                                         @else
                                                             <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test B"><i class="fas fa-eye"></i> Test B</a>
@@ -403,9 +398,6 @@
                                         </div>
                                         <div>
                                             @if(in_array('test3', $acceptance->tests))
-                                                @php
-                                                    $isOwnerC = $acceptance->testCResult && $acceptance->testCResult->operator_id == $currentUser['id'];
-                                                @endphp
                                                 @switch($acceptance->test_c_status)
                                                     @case('validated')
                                                         <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-success" title="Visualizza Test C (Validato)"><i class="fas fa-user-check"></i> Test C</a>
@@ -414,9 +406,9 @@
                                                         <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-primary" title="Visualizza Test C (Firmato)"><i class="fas fa-signature"></i> Test C</a>
                                                         @break
                                                     @case('ready_to_sign')
-                                                        @if($isOwnerC && !$isAdmin)
+                                                        @if($isLabTechnician && !$isAdmin)
                                                             <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati Test C"><i class="fas fa-edit"></i> Test C</a>
-                                                            @if($isLabTechnician)
+                                                            @if($isLabTechnician) {{-- This inner if is now redundant but harmless --}}
                                                                 <form action="{{ route('test-c.sign', $acceptance->testCResult) }}" method="POST" class="d-inline sign-form">
                                                                     @csrf
                                                                     <button type="submit" class="btn btn-sm btn-outline-success" title="Firma Test C"><i class="fas fa-signature"></i> Firma</button>
@@ -427,7 +419,7 @@
                                                         @endif
                                                         @break
                                                     @case('in_compilation')
-                                                        @if($isOwnerC && !$isAdmin)
+                                                        @if($isLabTechnician && !$isAdmin)
                                                             <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning" title="Completa/Modifica Risultati Test C"><i class="fas fa-edit"></i> Test C</a>
                                                         @else
                                                             <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test C"><i class="fas fa-eye"></i> Test C</a>
@@ -625,8 +617,8 @@
                             <h5 class="mt-3"><i class="fas fa-users-cog me-2 text-primary"></i>Gestione Ruoli e Permessi</h5>
                             <p>Il sistema si basa su ruoli definiti per garantire che solo il personale autorizzato possa eseguire determinate azioni, come richiesto dalla norma:</p>
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <span class="badge bg-primary">Tecnico di Laboratorio</span>: Responsabile della creazione delle accettazioni e dell'esecuzione/compilazione dei test. Può modificare solo i dati da lui inseriti, a patto che non siano stati ancora firmati. Appone la prima firma elettronica (<strong>Firma Tecnico</strong>).
+                                <li class="list-group-item text-start">
+                                    <span class="badge bg-primary">Tecnico di Laboratorio</span>: Responsabile della creazione delle accettazioni e dell'esecuzione/compilazione dei test. Può modificare i test, a patto che non siano stati ancora firmati dal Tecnico di Laboratorio o validati dal Responsabile di Laboratorio. Appone la prima firma elettronica (<strong>Firma Tecnico</strong>).
                                 </li>
                                 <li class="list-group-item">
                                     <span class="badge bg-success">Responsabile Laboratorio</span>: Supervisiona i risultati. Non può creare o modificare dati operativi, ma ha il compito di validare i test già firmati dal tecnico, apponendo la seconda firma elettronica (<strong>Validazione RL</strong>).

@@ -42,6 +42,7 @@
     @php
         $approvalDate = null;
         $reportDate = $report_date; // Mantiene la data originale come fallback
+        $watermarkText = ''; // Inizializza la variabile per evitare errori
 
         if ($isPdfComplete) {
             $validationDates = [];
@@ -62,6 +63,26 @@
                 $approvalDate = $latestDate->format('d.m.Y');
                 $reportDate = $approvalDate;
             }
+        } else {
+            // PDF non è completo, determina la filigrana corretta
+            $hasAnyRlSignedTest = false;
+            $requiredTests = $acceptance->tests ?? [];
+
+            if (in_array('test1', $requiredTests) && $testAResult && $testAResult->rl_signed_at) {
+                $hasAnyRlSignedTest = true;
+            }
+            if (!$hasAnyRlSignedTest && in_array('test2', $requiredTests) && $testBResult && $testBResult->rl_signed_at) {
+                $hasAnyRlSignedTest = true;
+            }
+            if (!$hasAnyRlSignedTest && in_array('test3', $requiredTests) && $testCResult && $testCResult->rl_signed_at) {
+                $hasAnyRlSignedTest = true;
+            }
+
+            if ($hasAnyRlSignedTest) {
+                $watermarkText = 'RdP incompleto';
+            } else {
+                $watermarkText = 'Anteprima non validata';
+            }
         }
     @endphp
     <header>
@@ -79,7 +100,7 @@
     </footer>
 
     @if(!$isPdfComplete)
-        <div class="watermark">ANTEPRIMA NON VALIDATA</div>
+        <div class="watermark">{{ $watermarkText }}</div>
     @endif
 
     <main>
@@ -102,7 +123,7 @@
             </tr>
             <tr>
                 <td><strong>Data di campionamento:</strong></td>
-                <td>{{ \Carbon\Carbon::parse($acceptance->sampling_date)->format('d.m.Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($acceptance->sampling_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
             <tr>
                 <td><strong>Campionato da:</strong></td>
@@ -110,7 +131,7 @@
             </tr>
             <tr>
                 <td><strong>Data accettazione:</strong></td>
-                <td>{{ \Carbon\Carbon::parse($acceptance->acceptance_date)->format('d.m.Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($acceptance->acceptance_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
         </table>
 
@@ -130,7 +151,7 @@
             </tr>
             <tr>
                 <td><strong>Data di scadenza:</strong></td>
-                <td>{{ \Carbon\Carbon::parse($productInfo['expiry_date'])->format('d.m.Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($productInfo['expiry_date'])->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
         </table>
 
@@ -158,8 +179,8 @@
                 </table>
                 <table class="info-table" style="margin-top: 5px;">
                     <tr>
-                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td>
-                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td>
+                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
+                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
                     </tr>
                 </table>
             </div>
@@ -187,8 +208,8 @@
                 </table>
                 <table class="info-table" style="margin-top: 5px;">
                     <tr>
-                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_start_datetime)->format('d.m.Y') }}</td>
-                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_end_datetime)->format('d.m.Y') }}</td>
+                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_start_datetime)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
+                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_end_datetime)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
                     </tr>
                 </table>
             </div>
@@ -246,8 +267,8 @@
                 </table>
                 <table class="info-table" style="margin-top: 5px;">
                     <tr>
-                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_start_datetime)->format('d.m.Y') }}</td>
-                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_end_datetime)->format('d.m.Y') }}</td>
+                        <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_start_datetime)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
+                        <td style="width: 25%;"><strong>Data Fine Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testBResult->test_end_datetime)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
                     </tr>
                 </table>
             </div>

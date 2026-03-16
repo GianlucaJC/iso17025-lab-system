@@ -603,8 +603,8 @@
                             <h5 class="mt-3"><i class="fas fa-users-cog me-2 text-primary"></i>Gestione Ruoli e Permessi</h5>
                             <p>Il sistema si basa su ruoli definiti per garantire che solo il personale autorizzato possa eseguire determinate azioni, come richiesto dalla norma:</p>
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <span class="badge bg-primary">Tecnico di Laboratorio</span>: Responsabile della creazione delle accettazioni e dell'esecuzione/compilazione dei test. Può modificare solo i dati da lui inseriti, a patto che non siano stati ancora firmati. Appone la prima firma elettronica (<strong>Firma Tecnico</strong>).
+                                <li class="list-group-item text-start">
+                                    <span class="badge bg-primary">Tecnico di Laboratorio</span>: Responsabile della creazione delle accettazioni e dell'esecuzione/compilazione dei test. Può modificare i test, a patto che non siano stati ancora firmati dal Tecnico di Laboratorio o validati dal Responsabile di Laboratorio. Appone la prima firma elettronica (<strong>Firma Tecnico</strong>).
                                 </li>
                                 <li class="list-group-item">
                                     <span class="badge bg-success">Responsabile Laboratorio</span>: Supervisiona i risultati. Non può creare o modificare dati operativi, ma ha il compito di validare i test già firmati dal tecnico, apponendo la seconda firma elettronica (<strong>Validazione RL</strong>).

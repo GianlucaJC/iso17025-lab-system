@@ -79,7 +79,7 @@
             </div>
         @endif
 
-        <div class="card">
+        <div class="card position-relative">
             <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
                 <h3>
                     @if($is_edit)
@@ -103,6 +103,22 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
+                {{-- INIZIO: Blocco Operatore Accettazione --}}
+                @if(isset($usersMap) && isset($acceptance))
+                <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1 text-muted small">Op. Accettazione</h6>
+                            <p class="card-text mb-0 fw-bold">
+                                <i class="fas fa-user-check me-1 text-primary"></i>
+                                {{ $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                {{-- FINE: Blocco Operatore Accettazione --}}
+
                 <form method="POST" action="{{ $is_edit ? route('test-b.update', $test_b_result->id) : route('test-b.store', $acceptance->id) }}" class="needs-validation" novalidate>
                     @csrf
                     @if($is_edit) @method('PUT') @endif
@@ -113,13 +129,7 @@
                         <legend class="h5">Dati di Riferimento</legend>
                         <div class="row p-3 bg-light border rounded">
                             <div class="col-md-4"><label class="form-label fw-bold">Lotto</label><p class="form-control-plaintext">{{ $acceptance->lotto }}</p></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">N. Accettazione</label><p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p></div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Operatore Accettazione</label>
-                                @php
-                                    $acceptanceOperatorName = $usersMap[$acceptance->user_id]['operatore'] ?? 'N/D';
-                                @endphp
-                                <p class="form-control-plaintext">{{ $acceptanceOperatorName }}</p></div>
+                            <div class="col-md-8"><label class="form-label fw-bold">N. Accettazione</label><p class="form-control-plaintext">{{ $acceptance->acceptance_number }}</p></div>
                         </div>
                     </fieldset>
 
@@ -581,8 +591,8 @@
                             <h5 class="mt-3"><i class="fas fa-users-cog me-2 text-primary"></i>Gestione Ruoli e Permessi</h5>
                             <p>Il sistema si basa su ruoli definiti per garantire che solo il personale autorizzato possa eseguire determinate azioni, come richiesto dalla norma:</p>
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <span class="badge bg-primary">Tecnico di Laboratorio</span>: Responsabile della creazione delle accettazioni e dell'esecuzione/compilazione dei test. Può modificare solo i dati da lui inseriti, a patto che non siano stati ancora firmati. Appone la prima firma elettronica (<strong>Firma Tecnico</strong>).
+                                <li class="list-group-item text-start">
+                                    <span class="badge bg-primary">Tecnico di Laboratorio</span>: Responsabile della creazione delle accettazioni e dell'esecuzione/compilazione dei test. Può modificare i test, a patto che non siano stati ancora firmati dal Tecnico di Laboratorio o validati dal Responsabile di Laboratorio. Appone la prima firma elettronica (<strong>Firma Tecnico</strong>).
                                 </li>
                                 <li class="list-group-item">
                                     <span class="badge bg-success">Responsabile Laboratorio</span>: Supervisiona i risultati. Non può creare o modificare dati operativi, ma ha il compito di validare i test già firmati dal tecnico, apponendo la seconda firma elettronica (<strong>Validazione RL</strong>).
