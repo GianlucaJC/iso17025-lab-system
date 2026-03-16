@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MethodRevision;
 use App\Models\Acceptance;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
@@ -24,7 +25,10 @@ class AcceptanceController extends Controller
             return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuove accettazioni.');
         }
 
-        return view('acceptance.create', ['currentUser' => $currentUser]);
+        return view('acceptance.create', [
+            'currentUser' => $currentUser,
+            'methodRevisions' => MethodRevision::all()->keyBy('method_key'),
+        ]);
     }
 
     /**
@@ -195,6 +199,7 @@ class AcceptanceController extends Controller
             'filterTestAStatus' => $filterTestAStatus,
             'filterTestBStatus' => $filterTestBStatus,
             'filterTestCStatus' => $filterTestCStatus,
+            'methodRevisions' => MethodRevision::all()->keyBy('method_key'),
         ]);
     }
 
@@ -309,7 +314,8 @@ class AcceptanceController extends Controller
         return view('acceptance.edit', [
             'acceptance' => $acceptance,
             'currentUser' => $user, // Passa currentUser alla vista
-            // Passa un flag alla vista per renderla di sola lettura se l'utente non è il proprietario
+            'methodRevisions' => MethodRevision::all()->keyBy('method_key'),
+            // Passa un flag alla vista per renderla di sola lettura se l'utente non è il proprietario,
             // o se un test è già stato firmato.
             'is_readonly' => !$isOwner || $isAdmin || $isLabManager || $isAnyTestSigned
         ]);

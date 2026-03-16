@@ -161,7 +161,7 @@
                         <div class="col-md-4">
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]" @if(in_array('test1', $selectedTests)) checked @endif>
-                                <label class="form-check-label" for="test1">
+                                <label class="form-check-label" for="test1" title="{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}">
                                     Test A (MA_09_Misurazione del pH)
                                 </label>
                             </div>
@@ -173,7 +173,7 @@
                         <div class="col-md-4">
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]" @if(in_array('test2', $selectedTests)) checked @endif>
-                                <label class="form-check-label" for="test2">
+                                <label class="form-check-label" for="test2" title="{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}">
                                     Test B (MA_61_Contaminazione microbica)
                                 </label>
                             </div>
@@ -185,7 +185,7 @@
                         <div class="col-md-4">
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]" @if(in_array('test3', $selectedTests)) checked @endif>
-                                <label class="form-check-label" for="test3">
+                                <label class="form-check-label" for="test3" title="{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}">
                                     Test C (MA_60_Valutazione produttività XLD)
                                 </label>
                             </div>

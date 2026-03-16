@@ -10,8 +10,10 @@
         $is_initial_creation = $is_initial_creation ?? false;
         $is_completion_phase = ($is_edit && is_null($test_c_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
+        $method = $methodRevisions['test_c'] ?? null;
+        $methodDisplayName = $method ? ($method->method_name . ' (' . $method->revision_string . ')') : 'MA_60_Valutazione produttività XLD';
     @endphp
-    <title>{{ $form_title }} Test C - Produttività, Metodo Qualitativo</title>
+    <title>{{ $form_title }} Test C - {{ $method ? $method->method_name : 'MA_60_Valutazione produttività XLD' }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -56,15 +58,15 @@
 
         <main class="container mt-4 flex-grow-1">
         <div class="card position-relative">
-            <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
-                <h3>
+            <div class="card-header py-2 {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
+                <h5 class="mb-0">
                     @if($is_edit)
                         @if($is_readonly) <i class="fas fa-eye me-2"></i>Visualizza @else <i class="fas fa-edit me-2"></i>Modifica @endif
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test C: Produttività, Metodo Qualitativo
-                </h3>
+                    Test C: {{ $methodDisplayName }}
+                </h5>
             </div>
 
             <div class="card-body">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InstrumentItem;
+use App\Models\MethodRevision;
 use App\Models\Acceptance;
 use App\Models\TestCResult;
 use Illuminate\Http\Request;
@@ -110,6 +111,8 @@ class TestCController extends Controller
             $query->whereRaw('LOWER(name) = ?', ['pipetta']);
         })->get();
 
+        $methodRevisions = MethodRevision::all()->keyBy('method_key');
+
         return view('tests.test_c.create', [
             'acceptance' => $acceptance,
             'currentUser' => Session::get('user'),
@@ -119,6 +122,7 @@ class TestCController extends Controller
             'incubators' => $incubators,
             'pipettes' => $pipettes,
             'usersMap' => $usersMap,
+            'methodRevisions' => $methodRevisions,
             'is_initial_creation' => true, // Flag per la vista per inibire i campi del 2o step
         ]);
     }
@@ -209,40 +213,40 @@ class TestCController extends Controller
         // Il form è in sola lettura se l'utente non è un tecnico di laboratorio,
         // o se il test è stato firmato/validato.
         $is_readonly = !$isLabTechnician || $test_c_result->lab_signed_at || $test_c_result->rl_signed_at;
+
         // --- Inizio blocco recupero utenti via API ---
         $usersMap = [];
-        try {
-            $httpClient = Http::getFacadeRoot();
-            $certPath = env('API_CERT_PATH');
+        try { // Assicurati che il try inizi qui
+             $httpClient = Http::getFacadeRoot();
+             $certPath = env('API_CERT_PATH');
 
-            if ($certPath && file_exists($certPath)) {
-                $httpClient = $httpClient->withOptions(['verify' => $certPath]);
-            }
-            elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
-                $httpClient = $httpClient->withoutVerifying();
-            }
+             if ($certPath && file_exists($certPath)) {
+                 $httpClient = $httpClient->withOptions(['verify' => $certPath]);
+             }
+             elseif (filter_var(env('API_SSL_VERIFY', true), FILTER_VALIDATE_BOOLEAN) === false) {
+                 $httpClient = $httpClient->withoutVerifying();
+             }
 
-            $requestBody = [
-                'api_token' => env('API_LOGIN_SHARED_SECRET'),
-                'action' => 'get_users'
-            ];
-            if ($currentUser && isset($currentUser['username'])) {
-                $requestBody['username'] = $currentUser['username'];
-            }
+             $requestBody = [
+                 'api_token' => env('API_LOGIN_SHARED_SECRET'),
+                 'action' => 'get_users'
+             ];
+             if ($currentUser && isset($currentUser['username'])) {
+                 $requestBody['username'] = $currentUser['username'];
+             }
 
-            $usersResponse = $httpClient->post(env('API_LOGIN_URL'), $requestBody);
+             $usersResponse = $httpClient->post(env('API_LOGIN_URL'), $requestBody);
 
-            if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
-                $usersMap = collect($usersResponse->json('users'))->keyBy('id')->all();
-            } else {
-                Log::error("API call to get users failed in TestCController@edit with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
-            }
+             if ($usersResponse->successful() && !empty($usersResponse->json('users'))) {
+                 $usersMap = collect($usersResponse->json('users'))->keyBy('id')->all();
+             } else {
+                 Log::error("API call to get users failed in TestCController@edit with status " . $usersResponse->status() . ". Response: " . $usersResponse->body());
+             }
         } catch (ConnectionException $e) {
             Log::error("Impossibile recuperare la lista utenti dall'API in TestCController@edit (Connection Error): " . $e->getMessage());
         } catch (\Throwable $e) {
             Log::error("Errore inatteso durante il recupero della lista utenti dall'API in TestCController@edit: " . $e->getMessage());
         }
-        // --- Fine blocco recupero utenti ---
 
         $acceptance = $test_c_result->acceptance;
 
@@ -285,6 +289,7 @@ class TestCController extends Controller
             'incubators' => $incubators,
             'pipettes' => $pipettes,
             'usersMap' => $usersMap,
+            'methodRevisions' => MethodRevision::all()->keyBy('method_key'),
             'is_completion_phase' => $is_completion_phase,
         ]);
     }

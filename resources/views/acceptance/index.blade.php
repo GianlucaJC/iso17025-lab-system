@@ -121,10 +121,10 @@
                 {{-- Legenda Test Eseguiti --}}
                 <div class="p-3 border rounded bg-light mt-3">
                     <h6 class="mb-2">Legenda Test Eseguiti:</h6>
-                    <ul class="list-unstyled mb-0 d-flex flex-wrap gap-3">
-                        <li><span class="badge bg-secondary">Test A</span>: MA_09_Misurazione del pH</li>
-                        <li><span class="badge bg-secondary">Test B</span>: MA_61_Contaminazione microbica</li>
-                        <li><span class="badge bg-secondary">Test C</span>: MA_60_Valutazione produttività XLD</li>
+                    <ul class="list-unstyled mb-0 d-flex flex-wrap gap-3 small">
+                        <li><span class="badge bg-secondary">Test A</span>: MA_09_Misurazione del pH ({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">Test B</span>: MA_61_Contaminazione microbica ({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">Test C</span>: MA_60_Valutazione produttività XLD ({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</li>
                         <li><span class="badge bg-info text-dark">2x</span>: Eseguito in doppio</li>
                     </ul>
                 </div>

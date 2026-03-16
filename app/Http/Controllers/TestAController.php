@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MethodRevision;
 use App\Models\InstrumentItem;
 use App\Models\Acceptance;
 use App\Models\TestAResult;
@@ -77,6 +78,8 @@ class TestAController extends Controller
             $query->whereRaw('LOWER(name) = ?', ['sonda ph']);
         })->get();
 
+        $methodRevisions = MethodRevision::all()->keyBy('method_key');
+
         $is_double_test_a = in_array('test1', $acceptance->double_tests ?? []);
 
         return view('tests.test_a.create', [
@@ -86,6 +89,7 @@ class TestAController extends Controller
             'ph_probes' => $ph_probes,
             'usersMap' => $usersMap,
             'is_double_test_a' => $is_double_test_a,
+            'methodRevisions' => $methodRevisions,
         ]);
     }
 
@@ -186,6 +190,8 @@ class TestAController extends Controller
         // Carichiamo l'accettazione associata per avere i dati di contesto
         $acceptance = $test_a_result->acceptance;
 
+        $methodRevisions = MethodRevision::all()->keyBy('method_key');
+
         $is_double_test_a = in_array('test1', $acceptance->double_tests ?? []);
 
         $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
@@ -205,6 +211,7 @@ class TestAController extends Controller
             'ph_meters' => $ph_meters,
             'ph_probes' => $ph_probes,
             'is_double_test_a' => $is_double_test_a,
+            'methodRevisions' => $methodRevisions,
         ]);
     }
 

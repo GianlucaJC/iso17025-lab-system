@@ -10,8 +10,10 @@
         $is_initial_creation = $is_initial_creation ?? false;
         $is_completion_phase = ($is_edit && is_null($test_b_result->test_end_datetime)) ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
+        $method = $methodRevisions['test_b'] ?? null;
+        $methodDisplayName = $method ? ($method->method_name . ' (' . $method->revision_string . ')') : 'MA_61_Contaminazione microbica';
     @endphp
-    <title>{{ $form_title }} Test B - MA_61_Contaminazione microbica</title>
+    <title>{{ $form_title }} Test B - {{ $methodDisplayName }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -80,15 +82,15 @@
         @endif
 
         <div class="card position-relative">
-            <div class="card-header {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
-                <h3>
+            <div class="card-header py-2 {{ $is_edit && !$is_readonly ? 'bg-warning' : 'bg-primary text-white' }}">
+                <h5 class="mb-0">
                     @if($is_edit)
                         @if($is_readonly) <i class="fas fa-eye me-2"></i>Visualizza @else <i class="fas fa-edit me-2"></i>Modifica @endif
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test B: MA_61_Contaminazione microbica
-                </h3>
+                    Test B: {{ $methodDisplayName }}
+                </h5>
             </div>
             <div class="card-body p-4">
                 @if (session('success'))

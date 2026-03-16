@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Acceptance;
+use App\Models\MethodRevision;
 use App\Models\InstrumentItem;
 use App\Models\TestBResult;
 use Illuminate\Http\Request;
@@ -109,10 +110,14 @@ class TestBController extends Controller
             ],
         ];
         $test_b_plates = []; // Questa variabile non è più usata direttamente per la visualizzazione
+        
+        $methodRevisions = MethodRevision::all()->keyBy('method_key');
 
         $incubators = InstrumentItem::whereHas('instrument', function ($query) {
             $query->whereRaw('LOWER(name) = ?', ['incubatore']);
         })->get();
+
+        $methodRevisions = MethodRevision::all()->keyBy('method_key');
 
         return view('tests.test_b.create', [
             'acceptance' => $acceptance,
@@ -123,6 +128,7 @@ class TestBController extends Controller
             'selected_plates_run2' => $selected_plates_run2,
             'incubators' => $incubators,
             'usersMap' => $usersMap,
+            'methodRevisions' => $methodRevisions,
             'is_initial_creation' => true, // Flag per la vista per inibire i campi del 2o step
         ]);
     }
@@ -322,6 +328,7 @@ class TestBController extends Controller
             'selected_plates_run2' => $selected_plates_run2,
             'usersMap' => $usersMap, // Pass usersMap to the view
             'incubators' => $incubators,
+            'methodRevisions' => MethodRevision::all()->keyBy('method_key'),
             'is_completion_phase' => $is_completion_phase,
         ]);
     }
