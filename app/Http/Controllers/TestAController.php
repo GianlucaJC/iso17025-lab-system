@@ -77,12 +77,15 @@ class TestAController extends Controller
             $query->whereRaw('LOWER(name) = ?', ['sonda ph']);
         })->get();
 
+        $is_double_test_a = in_array('test1', $acceptance->double_tests ?? []);
+
         return view('tests.test_a.create', [
             'acceptance' => $acceptance,
             'currentUser' => $currentUser,
             'ph_meters' => $ph_meters,
             'ph_probes' => $ph_probes,
             'usersMap' => $usersMap,
+            'is_double_test_a' => $is_double_test_a,
         ]);
     }
 
@@ -104,12 +107,19 @@ class TestAController extends Controller
             return redirect()->route('acceptance.index')->with('error', 'I risultati per il Test A di questa accettazione sono già stati inseriti.');
         }
 
+        $is_double_test_a = in_array('test1', $acceptance->double_tests ?? []);
+        $double_test_rule = $is_double_test_a ? 'required' : 'nullable';
+
         // 2. Validazione dei dati del form
         $validatedData = $request->validate([
             'test_date' => 'required|date',
             'ph_meter' => 'required|string|max:255',
             'ph_probe' => 'required|string|max:255',
             'ph_value' => 'required|numeric|min:0|max:14',
+            // Validation rules for double test fields
+            'ph_meter_double' => [$double_test_rule, 'string', 'max:255'],
+            'ph_probe_double' => [$double_test_rule, 'string', 'max:255'],
+            'ph_value_double' => [$double_test_rule, 'numeric', 'min:0', 'max:14'],
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
         ]);
@@ -176,6 +186,8 @@ class TestAController extends Controller
         // Carichiamo l'accettazione associata per avere i dati di contesto
         $acceptance = $test_a_result->acceptance;
 
+        $is_double_test_a = in_array('test1', $acceptance->double_tests ?? []);
+
         $ph_meters = InstrumentItem::whereHas('instrument', function ($query) {
             $query->whereRaw('LOWER(name) = ?', ['phmetro']);
         })->get();
@@ -192,6 +204,7 @@ class TestAController extends Controller
             'usersMap' => $usersMap,
             'ph_meters' => $ph_meters,
             'ph_probes' => $ph_probes,
+            'is_double_test_a' => $is_double_test_a,
         ]);
     }
 
@@ -214,12 +227,19 @@ class TestAController extends Controller
             abort(403, 'Azione non autorizzata: il test è firmato o validato e non può essere modificato.');
         }
 
+        $is_double_test_a = in_array('test1', $test_a_result->acceptance->double_tests ?? []);
+        $double_test_rule = $is_double_test_a ? 'required' : 'nullable';
+
         // 2. Validazione
         $validatedData = $request->validate([
             'test_date' => 'required|date',
             'ph_meter' => 'required|string|max:255',
             'ph_probe' => 'required|string|max:255',
             'ph_value' => 'required|numeric|min:0|max:14',
+            // Validation rules for double test fields
+            'ph_meter_double' => [$double_test_rule, 'string', 'max:255'],
+            'ph_probe_double' => [$double_test_rule, 'string', 'max:255'],
+            'ph_value_double' => [$double_test_rule, 'numeric', 'min:0', 'max:14'],
             'outcome' => ['required', Rule::in(['idoneo', 'non_idoneo'])],
             'non_compliance_ref' => 'required_if:outcome,non_idoneo|nullable|string|max:255',
             'modification_reason' => 'required|string|min:10|max:500',

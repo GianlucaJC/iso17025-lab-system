@@ -29,6 +29,9 @@ class TestAResult extends Model
         'ph_meter',
         'ph_probe',
         'ph_value',
+        'ph_meter_double',
+        'ph_probe_double',
+        'ph_value_double',
         'outcome',
         'non_compliance_ref',
         'rl_signature_id', // Aggiunto per la validazione del Responsabile Laboratorio

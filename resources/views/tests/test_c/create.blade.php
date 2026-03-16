@@ -115,16 +115,10 @@
                         </div>
                     </fieldset>
 
-                    @php
-                        $runs = ['' => 'Run 1'];
-                        if ($is_double_test_c) {
-                            $runs['_run2'] = 'Run 2 (Doppio)';
-                        }
-                    @endphp
-
-                    @foreach($runs as $run_suffix => $run_label)
-                        <fieldset class="mb-4 p-3 border rounded">
-                            <legend class="h5 w-auto px-2">{{ $run_label }}</legend>
+                    {{-- Prima Esecuzione (Run 1) --}}
+                    <fieldset class="mb-4 p-3 border rounded">
+                        <legend class="h5 w-auto px-2">Produttività, Metodo Qualitativo</legend>
+                        @php $run_suffix = ''; @endphp
 
                             <div class="initial-data-section">
                                 {{-- Preparazione --}}
@@ -134,6 +128,182 @@
                                         <label class="form-label">Piastra di TSA Sheep Blood</label>
                                         @php
                                             $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
+                                        @endphp
+                                        <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
+                                        <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <option value="">Seleziona...</option>
+                                            @foreach($pipettes as $pipette)
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pipette_dilution_2{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:100</label>
+                                        <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <option value="">Seleziona...</option>
+                                            @foreach($pipettes as $pipette)
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pipette_inoculation{{ $run_suffix }}" class="form-label">Pipetta Inoculo 100 µl</label>
+                                        <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                            <option value="">Seleziona...</option>
+                                            @foreach($pipettes as $pipette)
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Incubazione --}}
+                            <h6 class="mt-4">Incubazione Tryptic Soy Agar</h6>
+                            <div class="row mb-3 align-items-end">
+                                <div class="col-md-4 initial-data-section">
+                                    <label for="incubator{{ $run_suffix }}" class="form-label">Incubatore</label>
+                                    <select class="form-select" id="incubator{{ $run_suffix }}" name="incubator{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                        <option value="">Seleziona...</option>
+                                        @foreach($incubators as $incubator) {{-- Variabile $incubators definita nel controller --}}
+                                            <option value="{{ $incubator->identifier }}" {{ old('incubator'.$run_suffix, $is_edit ? $test_c_result->{'incubator'.$run_suffix} : '') == $incubator->identifier ? 'selected' : '' }}>{{ $incubator->identifier }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4 initial-data-section">
+                                    <label class="form-label">Inizio Incubazione</label>
+                                    <div class="input-group">
+                                        <input type="time" class="form-control" name="incubation_start_time" value="{{ old('incubation_start_time', $is_edit && $test_c_result->incubation_start_datetime ? $test_c_result->incubation_start_datetime->format('H:i') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                        <input type="date" class="form-control" name="incubation_start_date" value="{{ old('incubation_start_date', $is_edit && $test_c_result->incubation_start_datetime ? $test_c_result->incubation_start_datetime->format('Y-m-d') : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 final-results-section">
+                                    <label class="form-label">Fine Incubazione</label>
+                                    <div class="input-group">
+                                        <input type="time" class="form-control" name="incubation_end_time{{ $run_suffix }}" value="{{ old('incubation_end_time'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('H:i') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                        <input type="date" class="form-control" name="incubation_end_date{{ $run_suffix }}" value="{{ old('incubation_end_date'.$run_suffix, $is_edit && $test_c_result->{'incubation_end_datetime'.$run_suffix} ? $test_c_result->{'incubation_end_datetime'.$run_suffix}->format('Y-m-d') : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3 align-items-end">
+                                <div class="col-md-2 initial-data-section">
+                                    <label for="temperature" class="form-label">Temp.(°C)</label>
+                                    <input type="number" step="0.1" class="form-control" id="temperature" name="temperature" value="{{ old('temperature', $is_edit ? $test_c_result->temperature : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                </div>
+                                <div class="col-md-2 final-results-section">
+                                    <label for="tsa_growth_ufc" class="form-label">Crescita UFC</label> {{-- Changed to text input with numeric filter --}}
+                                    <input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control" id="tsa_growth_ufc" name="tsa_growth_ufc" value="{{ old('tsa_growth_ufc', $is_edit ? $test_c_result->tsa_growth_ufc : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                </div>
+                                <div class="col-md-4 final-results-section">
+                                    <label class="form-label">Crescita</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tsa_growth_result" id="tsa_growth_rilevata" value="rilevata" {{ old('tsa_growth_result', $is_edit ? $test_c_result->tsa_growth_result : '') == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                            <label class="form-check-label" for="tsa_growth_rilevata">Rilevata</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tsa_growth_result" id="tsa_growth_non_rilevata" value="non_rilevata" {{ old('tsa_growth_result', $is_edit ? $test_c_result->tsa_growth_result : '') == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                            <label class="form-check-label" for="tsa_growth_non_rilevata">Non Rilevata</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="final-results-section">
+                                {{-- Risultati Inoculo --}}
+                                <h6 class="mt-4">Risultati Inoculo 1000 - 10000 UFC</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center">
+                                        <thead>
+                                            <tr>
+                                                <th class="d-none">Campione</th> {{-- Hidden as requested --}}
+                                                <th>ID Piastra / Lotto</th>
+                                                <th>UFC</th>
+                                                <th>UFC &ge;50% UFC su TSA</th>
+                                                <th>Crescita Rilevata</th>
+                                                <th>Crescita Non Rilevata</th>                                            
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $samples = [
+                                                    'start_lotto' => 'Inizio Lotto',
+                                                    'mid_lotto' => 'Metà Lotto',
+                                                    'end_lotto' => 'Fine Lotto',
+                                                ];
+                                                $current_plates = $selected_plates; // Per il Run 1
+                                            @endphp
+                                            @foreach($samples as $key => $label)
+                                                <tr class="align-middle">
+                                                    <td class="d-none">{{ $label }}</td> {{-- Hidden as requested --}}
+                                                    <td><span class="badge bg-secondary">{{ $current_plates[$key]['id'] ?? 'N/A' }}</span></td> {{-- Only ID, no lot for these plates --}}
+                                                    @php
+                                                        $fieldName = 'growth_result_'.$key;
+                                                        $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
+                                                        $ufcFieldName = 'ufc_'.$key;
+                                                        $ufc50PercentTsaFieldName = 'ufc_50_percent_tsa_'.$key;
+                                                    @endphp
+                                                    <td><input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control form-control-sm" name="{{ $ufcFieldName }}" value="{{ old($ufcFieldName, $is_edit ? $test_c_result->{$ufcFieldName} : '') }}" {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox" name="{{ $ufc50PercentTsaFieldName }}" value="1" {{ old($ufc50PercentTsaFieldName, $is_edit ? $test_c_result->{$ufc50PercentTsaFieldName} : '') ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                                    </td>
+                                                    <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="rilevata" {{ $currentValue == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}></td>
+                                                    <td><input class="form-check-input" type="radio" name="{{ $fieldName }}" value="non_rilevata" {{ $currentValue == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}></td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {{-- Bianco di Controllo --}}
+                                <h6 class="mt-4">Bianco di Controllo</h6>
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        <label class="form-label">ID Piastra / Lotto</label>
+                                        @php
+                                            $control_blank_plate = $current_plates['control_blank'];
+                                        @endphp
+                                        <p><span class="badge bg-secondary">{{ $control_blank_plate['id'] ?? 'N/A' }}</span></p> {{-- Only ID, no lot for control blank --}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Crescita</label>
+                                        @php
+                                            $fieldName = 'growth_result_control_blank';
+                                            $currentValue = old($fieldName, $is_edit ? $test_c_result->{$fieldName} : '');
+                                        @endphp
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_rilevata" value="rilevata" {{ old('growth_result_control_blank', $is_edit ? $test_c_result->growth_result_control_blank : '') == 'rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }} {{ !$is_readonly && !$is_initial_creation && !$is_completion_phase ? 'required' : '' }}>
+                                                <label class="form-check-label" for="{{ $fieldName }}_rilevata">Rilevata</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="{{ $fieldName }}" id="{{ $fieldName }}_non_rilevata" value="non_rilevata" {{ old('growth_result_control_blank', $is_edit ? $test_c_result->growth_result_control_blank : '') == 'non_rilevata' ? 'checked' : '' }} {{ $is_readonly || $is_initial_creation ? 'disabled' : '' }}>
+                                                <label class="form-check-label" for="{{ $fieldName }}_non_rilevata">Non Rilevata</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </fieldset>
+
+                    {{-- Seconda Esecuzione (Run 2) - Condizionale --}}
+                    @if($is_double_test_c)
+                        <h5 class="mt-4">Secondo Run (Test in Doppio)</h5>
+                        <fieldset class="mb-4 p-3 border rounded">
+                            <legend class="h5 w-auto px-2">Produttività, Metodo Qualitativo (Run 2)</legend>
+                            @php $run_suffix = '_run2'; @endphp
+
+                            <div class="initial-data-section">
+                                {{-- Preparazione --}}
+                                <h6 class="mt-4">Preparazione e Diluizione</h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Piastra di TSA Sheep Blood</label>
+                                        @php
+                                            $tsa_plate = $selected_plates_run2['tsa_sheep_blood'];
                                         @endphp
                                         <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
                                     </div>
@@ -240,7 +410,7 @@
                                                     'mid_lotto' => 'Metà Lotto',
                                                     'end_lotto' => 'Fine Lotto',
                                                 ];
-                                                $current_plates = ($run_suffix === '_run2') ? $selected_plates_run2 : $selected_plates;
+                                                $current_plates = $selected_plates_run2; // Per il Run 2
                                             @endphp
                                             @foreach($samples as $key => $label)
                                                 <tr class="align-middle">
@@ -263,7 +433,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-    
+
                                 {{-- Bianco di Controllo --}}
                                 <h6 class="mt-4">Bianco di Controllo</h6>
                                 <div class="row align-items-center">
@@ -294,7 +464,7 @@
                                 </div>
                             </div>
                         </fieldset>
-                    @endforeach
+                    @endif
 
                     {{-- Esito --}}
                     <fieldset class="mb-4 final-results-section">

@@ -217,24 +217,24 @@
                                 'test2' => [
                                     'name' => 'Test B (MA_61_Contaminazione microbica)',
                                     'std_plates' => [
-                                        '35°C' => [
+                                        '35°C +/- 2°' => [
                                             '1° Gruppo Piastre' => [4, 5],
                                             '2° Gruppo Piastre' => [6, 7],
                                             '3° Gruppo Piastre' => [8, 9],
                                         ],
-                                        '22°C' => [
+                                        '22°C +/- 2°' => [
                                             '1° Gruppo Piastre' => [10, 11],
                                             '2° Gruppo Piastre' => [12, 13],
                                             '3° Gruppo Piastre' => [14, 15],
                                         ],
                                     ],
                                     'dbl_plates' => [
-                                        '35°C' => [
+                                        '35°C +/- 2°' => [
                                             '1° Gruppo Piastre' => [16, 17],
                                             '2° Gruppo Piastre' => [18, 19],
                                             '3° Gruppo Piastre' => [20, 21],
                                         ],
-                                        '22°C' => [
+                                        '22°C +/- 2°' => [
                                             '1° Gruppo Piastre' => [22, 23],
                                             '2° Gruppo Piastre' => [24, 25],
                                             '3° Gruppo Piastre' => [26, 27],

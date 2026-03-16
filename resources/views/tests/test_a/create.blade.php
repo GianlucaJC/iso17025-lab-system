@@ -8,6 +8,7 @@
         $is_edit = isset($test_a_result);
         $is_readonly = $is_readonly ?? false;
         $form_title = $is_edit ? ($is_readonly ? 'Visualizza Risultati' : 'Modifica Risultati') : 'Esecuzione';
+        $is_double_test_a = $is_double_test_a ?? false;
     @endphp
     <title>{{ $form_title }} Test A - MA_09_Misurazione del pH</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -108,6 +109,7 @@
                         <legend class="h5">Dati Prova</legend>
                         <div class="row g-3">
                             <div class="col-md-4 initial-data-section">
+
                                 <label for="test_date" class="form-label">Data Prova</label>
                                 <input type="date" class="form-control" id="test_date" name="test_date" value="{{ old('test_date', $is_edit ? \Carbon\Carbon::parse($test_a_result->test_date)->format('Y-m-d') : date('Y-m-d')) }}" required {{ $is_readonly ? 'disabled' : '' }}>
                             </div>
@@ -128,11 +130,13 @@
                                     @endforeach
                                 </select>
                                 <div class="invalid-feedback">
+
                                     @error('ph_meter') {{ $message }} @else Selezionare un pH-metro. @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <label for="ph_probe" class="form-label">Sonda pH</label>
+
                                 <select class="form-select @error('ph_probe') is-invalid @enderror" id="ph_probe" name="ph_probe" {{ $is_readonly ? 'disabled' : '' }} required>
                                     <option value="">Seleziona sonda...</option>
                                     @foreach($ph_probes as $probe)
@@ -158,6 +162,54 @@
                             {{-- Il campo di input numerico per il pH rimane. --}}
                             {{-- L'indicatore di conformità del pH è stato rimosso insieme allo slider. --}}
                         </div>
+                        <div id="double_test_fields" style="{{ $is_double_test_a ? '' : 'display:none;' }}">
+                            <hr>
+                            <h5 class="mt-4">Dati Prova (Test in Doppio)</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="ph_meter_double" class="form-label">ID pH-metro (Doppio)</label>
+                                    <select class="form-select @error('ph_meter_double') is-invalid @enderror" id="ph_meter_double" name="ph_meter_double" {{ $is_readonly ? 'disabled' : '' }}>
+                                        <option value="">Seleziona pH-metro...</option>
+                                        @foreach($ph_meters as $meter)
+                                            @php
+                                                $selectedValue = old('ph_meter_double', $is_edit ? ($test_a_result->ph_meter_double ?? '') : '');
+                                            @endphp
+                                            <option value="{{ $meter->identifier }}" {{ $selectedValue == $meter->identifier ? 'selected' : '' }}>
+                                                {{ $meter->identifier }} {{ $meter->description ? '('.$meter->description.')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        @error('ph_meter_double') {{ $message }} @else Selezionare un pH-metro per il test in doppio. @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="ph_probe_double" class="form-label">Sonda pH (Doppio)</label>
+                                    <select class="form-select @error('ph_probe_double') is-invalid @enderror" id="ph_probe_double" name="ph_probe_double" {{ $is_readonly ? 'disabled' : '' }}>
+                                        <option value="">Seleziona sonda...</option>
+                                        @foreach($ph_probes as $probe)
+                                            @php
+                                                $selectedValue = old('ph_probe_double', $is_edit ? ($test_a_result->ph_probe_double ?? '') : '');
+                                            @endphp
+                                            <option value="{{ $probe->identifier }}" {{ $selectedValue == $probe->identifier ? 'selected' : '' }}>
+                                                {{ $probe->identifier }} {{ $probe->description ? '('.$probe->description.')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        @error('ph_probe_double') {{ $message }} @else Selezionare una sonda per il test in doppio. @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="ph_value_double" class="form-label">Valore pH (Doppio)</label>
+                                    <input type="number" class="form-control @error('ph_value_double') is-invalid @enderror" id="ph_value_double" name="ph_value_double" min="6.0" max="9.0" step="0.01" value="{{ old('ph_value_double', $is_edit ? ($test_a_result->ph_value_double ?? '') : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    <div class="invalid-feedback">
+                                        @error('ph_value_double') {{ $message }} @else Inserire un valore di pH per il test in doppio. @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </fieldset>
 
                     {{-- Esito --}}
@@ -306,4 +358,5 @@
         });
     </script>
 </body>
+
 </html>
