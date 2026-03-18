@@ -44,7 +44,9 @@
         $reportDate = $report_date; // Mantiene la data originale come fallback
         $watermarkText = ''; // Inizializza la variabile per evitare errori
 
-        if ($isPdfComplete) {
+        if ($acceptance->annulled_at) {
+            $watermarkText = 'ANNULLATO il ' . \Carbon\Carbon::parse($acceptance->annulled_at)->format('d.m.Y');
+        } elseif ($isPdfComplete) {
             $validationDates = [];
             // Raccoglie tutte le date di validazione disponibili per i test richiesti
             if (in_array('test1', $acceptance->tests) && $testAResult && $testAResult->rl_signed_at) {

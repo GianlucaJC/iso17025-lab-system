@@ -38,7 +38,9 @@ class Acceptance extends Model
         'user_id',
         'modification_reason',
         'sample_conformity',
-        'non_conformity_reason'
+        'non_conformity_reason',
+        'annulled_at',
+        'annulment_reason'
     ];
 
     /**
@@ -51,6 +53,7 @@ class Acceptance extends Model
         'tests' => 'array',
         'double_tests' => 'array',
         'dele' => 'datetime', // Indica a Laravel di trattare 'dele' come un oggetto Carbon
+        'annulled_at' => 'datetime',
     ];
 
     /**

@@ -48,7 +48,11 @@ Route::put('/acceptance/{acceptance}', [AcceptanceController::class, 'update'])
     ->name('acceptance.update')
     ->middleware('auth.api');
 
-Route::get('/acceptance/{acceptance}/pdf', [AcceptanceController::class, 'generatePdf'])->name('acceptance.pdf');    
+Route::get('/acceptance/{acceptance}/pdf', [AcceptanceController::class, 'generatePdf'])->name('acceptance.pdf');
+
+Route::post('/acceptance/{acceptance}/annul', [AcceptanceController::class, 'annul'])
+    ->name('acceptance.annul')
+    ->middleware('auth.api');
 
 // Rotte per i test specifici
 use App\Http\Controllers\TestAController;

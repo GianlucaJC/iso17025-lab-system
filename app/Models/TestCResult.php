@@ -80,6 +80,10 @@ class TestCResult extends Model
         'non_compliance_ref',
         'notes',
         'modification_reason',
+        'lab_signature_id',
+        'lab_signed_at',
+        'rl_signature_id',
+        'rl_signed_at',
     ];
 
     /**

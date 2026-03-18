@@ -104,6 +104,8 @@ class TestBResult extends Model
         'non_compliance_ref',
         'notes',
         'modification_reason',
+        'lab_signature_id',
+        'lab_signed_at',
         'rl_signature_id', // Aggiunto per la validazione del Responsabile Laboratorio
         'rl_signed_at',    // Aggiunto per la data di validazione
     ];

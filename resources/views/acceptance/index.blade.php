@@ -468,6 +468,14 @@
                                                 <i class="fas fa-file-pdf"></i> Anteprima
                                             </a>
                                         @endif
+
+                                        {{-- Bottone Annulla RdP (solo Admin o RL e solo se completo o già annullato) --}}
+                                        @if(($isAdmin || $isLabManager) && $acceptance->is_pdf_complete && !$acceptance->annulled_at)
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-1 annul-rdp-btn" 
+                                                    data-id="{{ $acceptance->id }}" data-number="{{ $acceptance->acceptance_number }}" title="Annulla RdP">
+                                                <i class="fas fa-ban"></i> Annulla
+                                            </button>
+                                        @endif
                                     @endif
                                     {{-- Pulsante Cronologia per Accettazione (solo admin) --}}
                                     @if(isset($currentUser['user17025']) && $currentUser['user17025'] == 1)
@@ -600,6 +608,41 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit(); // Se l'utente conferma, invia il form
+                    }
+                });
+            });
+
+            // Gestione Annullamento RdP con SweetAlert2
+            $('.annul-rdp-btn').on('click', function() {
+                const id = $(this).data('id');
+                const number = $(this).data('number');
+                
+                Swal.fire({
+                    title: 'Annullamento RdP ' + number,
+                    text: 'L\'annullamento rimuoverà tutte le firme digitali e permetterà nuovamente la modifica dei dati. Inserire la motivazione:',
+                    input: 'textarea',
+                    inputPlaceholder: 'Inserisci qui la motivazione (min. 10 caratteri)...',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sì, annulla RdP',
+                    cancelButtonText: 'Interrompi',
+                    preConfirm: (reason) => {
+                        if (!reason || reason.length < 10) {
+                            Swal.showValidationMessage('La motivazione deve essere di almeno 10 caratteri.');
+                        }
+                        return reason;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = $('<form>', {
+                            'method': 'POST',
+                            'action': `/acceptance/${id}/annul`
+                        }).append($('<input>', { 'type': 'hidden', 'name': '_token', 'value': '{{ csrf_token() }}' }))
+                          .append($('<input>', { 'type': 'hidden', 'name': 'annulment_reason', 'value': result.value }));
+                        $('body').append(form);
+                        form.submit();
                     }
                 });
             });

@@ -34,6 +34,8 @@ class TestAResult extends Model
         'ph_value_double',
         'outcome',
         'non_compliance_ref',
+        'lab_signature_id',
+        'lab_signed_at',
         'rl_signature_id', // Aggiunto per la validazione del Responsabile Laboratorio
         'rl_signed_at',    // Aggiunto per la data di validazione
         'modification_reason',

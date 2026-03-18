@@ -433,6 +433,52 @@ class AcceptanceController extends Controller
     }
 
     /**
+     * Annulla un Rapporto di Prova completo, rimuovendo le firme e permettendo nuove modifiche.
+     */
+    public function annul(Request $request, Acceptance $acceptance)
+    {
+        $currentUser = Session::get('user');
+        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
+        $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
+
+        if (!$isAdmin && !$isLabManager) {
+            abort(403, 'Azione non autorizzata. Solo l\'Admin o il Responsabile di Laboratorio possono annullare un RdP.');
+        }
+
+        $request->validate([
+            'annulment_reason' => 'required|string|min:10|max:1000',
+        ]);
+
+        // Registra l'annullamento sull'accettazione
+        $acceptance->update([
+            'annulled_at' => now(),
+            'annulment_reason' => $request->annulment_reason
+        ]);
+
+        // Rimuove le firme da tutti i test associati
+        $results = [
+            $acceptance->testAResult,
+            $acceptance->testBResult,
+            $acceptance->testCResult
+        ];
+
+        foreach ($results as $res) {
+            if ($res) {
+                $res->update([
+                    'lab_signature_id' => null, // Rimuove firma tecnico
+                    'lab_signed_at' => null,    // Rimuove data firma tecnico
+                    'rl_signature_id' => null,
+                    'rl_signed_at' => null,
+                    'modification_reason' => 'Annullamento RdP: ' . $request->annulment_reason
+                ]);
+            }
+        }
+
+        return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])
+            ->with('success', 'Rapporto di Prova annullato con successo. Le firme sono state rimosse e i dati sono ora modificabili.');
+    }
+
+    /**
      * Genera il Rapporto di Prova in formato PDF.
      *
      * @param  \App\Models\Acceptance  $acceptance
@@ -544,6 +590,11 @@ class AcceptanceController extends Controller
      */
     private function isPdfComplete(Acceptance $acceptance): bool
     {
+        // Se il rapporto è stato annullato, non è mai considerato completo
+        if ($acceptance->annulled_at) {
+            return false;
+        }
+
         // Se il campione è non conforme, non sono richiesti test, quindi il PDF è considerato completo.
         if ($acceptance->sample_conformity === 'non_conforme') {
             return true;
