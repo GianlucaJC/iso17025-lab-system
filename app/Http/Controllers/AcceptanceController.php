@@ -438,11 +438,11 @@ class AcceptanceController extends Controller
     public function annul(Request $request, Acceptance $acceptance)
     {
         $currentUser = Session::get('user');
-        $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
         $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
+        $isQA = isset($currentUser['user17025']) && $currentUser['user17025'] == 5;
 
-        if (!$isAdmin && !$isLabManager) {
-            abort(403, 'Azione non autorizzata. Solo l\'Admin o il Responsabile di Laboratorio possono annullare un RdP.');
+        if (!$isLabManager && !$isQA) {
+            abort(403, 'Azione non autorizzata. Solo il Responsabile di Laboratorio o il Responsabile Assicurazione Qualità possono annullare un RdP.');
         }
 
         $request->validate([

@@ -220,6 +220,7 @@
                                 $isAdmin = isset($currentUser['user17025']) && $currentUser['user17025'] == 1;
                                 $isLabTechnician = isset($currentUser['user17025']) && $currentUser['user17025'] == 3;
                                 $isLabManager = isset($currentUser['user17025']) && $currentUser['user17025'] == 4;
+                        $isQA = isset($currentUser['user17025']) && $currentUser['user17025'] == 5;
                             @endphp
                             <tr id="acceptance-row-{{ $acceptance->id }}">
                                 <td>{{ $acceptance->acceptance_number }}</td>
@@ -469,8 +470,8 @@
                                             </a>
                                         @endif
 
-                                        {{-- Bottone Annulla RdP (solo Admin o RL e solo se completo o già annullato) --}}
-                                        @if(($isAdmin || $isLabManager) && $acceptance->is_pdf_complete && !$acceptance->annulled_at)
+                                {{-- Bottone Annulla RdP (solo RL o RAQ e solo se completo o non già annullato) --}}
+                                @if(($isLabManager || $isQA) && $acceptance->is_pdf_complete && !$acceptance->annulled_at)
                                             <button type="button" class="btn btn-sm btn-outline-danger ms-1 annul-rdp-btn" 
                                                     data-id="{{ $acceptance->id }}" data-number="{{ $acceptance->acceptance_number }}" title="Annulla RdP">
                                                 <i class="fas fa-ban"></i> Annulla
