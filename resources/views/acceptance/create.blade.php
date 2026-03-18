@@ -610,6 +610,9 @@
                                     <span class="badge bg-success">Responsabile Laboratorio</span>: Supervisiona i risultati. Non può creare o modificare dati operativi, ma ha il compito di validare i test già firmati dal tecnico, apponendo la seconda firma elettronica (<strong>Validazione RL</strong>).
                                 </li>
                                 <li class="list-group-item">
+                                    <span class="badge bg-info text-dark">Responsabile Assicurazione Qualità</span>: Agisce come viewer per il monitoraggio della conformità. Ha visibilità completa sui dati di accettazione e sui risultati dei test. Come l'Admin, non può alterare i dati, ma non ha accesso alle funzioni di gestione (strumenti, utenti, revisioni) né alla visualizzazione della cronologia.
+                                </li>
+                                <li class="list-group-item">
                                     <span class="badge bg-danger">Admin</span>: Ha visibilità completa su tutti i dati a scopo di audit e supervisione. Può visualizzare la cronologia delle modifiche ma non può alterare i dati di accettazione o i risultati dei test per preservare l'integrità del dato.
                                 </li>
                             </ul>
