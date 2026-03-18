@@ -20,8 +20,8 @@ class AcceptanceController extends Controller
     public function create()
     {
         $currentUser = Session::get('user');
-        // Gli amministratori (ruolo 1) e i Responsabili Laboratorio (ruolo 4) non possono creare nuove accettazioni.
-        if (isset($currentUser['user17025']) && ($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4)) {
+        // Admin (1), RL (4) e QA (5) non possono creare nuove accettazioni.
+        if (isset($currentUser['user17025']) && in_array($currentUser['user17025'], [1, 4, 5])) {
             return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuove accettazioni.');
         }
 
@@ -334,9 +334,10 @@ class AcceptanceController extends Controller
         $user = Session::get('user');
         $isAdmin = isset($user['user17025']) && $user['user17025'] == 1;
         $isLabManager = isset($user['user17025']) && $user['user17025'] == 4;
+        $isQA = isset($user['user17025']) && $user['user17025'] == 5;
         $isOwner = $acceptance->user_id === $user['id'];
 
-        if (!$isOwner || $isAdmin || $isLabManager) {
+        if (!$isOwner || $isAdmin || $isLabManager || $isQA) {
             abort(403, 'Azione non autorizzata.');
         }
 
@@ -486,6 +487,25 @@ class AcceptanceController extends Controller
             ? $acceptance->testCResult->rl_signed_at->format('d.m.Y')
             : now()->format('d.m.Y');
 
+        // Separiamo i numeri delle piastre per il Test B (MA61) per temperatura
+        $platesB35 = [];
+        $platesB22 = [];
+        if ($acceptance->testBResult) {
+            $res = $acceptance->testBResult;
+            // Estraiamo le 6 piastre per i 35°C (Run 1)
+            $platesB35 = array_values(array_filter([
+                $res->plate_id_start_plate1_35_run1, $res->plate_id_start_plate2_35_run1,
+                $res->plate_id_mid_plate1_35_run1,   $res->plate_id_mid_plate2_35_run1,
+                $res->plate_id_end_plate1_35_run1,   $res->plate_id_end_plate2_35_run1
+            ]));
+            // Estraiamo le 6 piastre per i 22°C (Run 1)
+            $platesB22 = array_values(array_filter([
+                $res->plate_id_start_plate1_22_run1, $res->plate_id_start_plate2_22_run1,
+                $res->plate_id_mid_plate1_22_run1,   $res->plate_id_mid_plate2_22_run1,
+                $res->plate_id_end_plate1_22_run1,   $res->plate_id_end_plate2_22_run1
+            ]));
+        }
+
         // Prepara i dati per la vista
         $data = [
             'acceptance' => $acceptance,
@@ -496,6 +516,8 @@ class AcceptanceController extends Controller
             'productInfo' => $productInfo,
             'report_date' => $report_date,
             'methodRevisions' => $methodRevisions,
+            'platesB35' => $platesB35,
+            'platesB22' => $platesB22,
         ];
 
         // Aggiungo la variabile isPdfComplete ai dati passati alla vista

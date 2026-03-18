@@ -28,7 +28,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <div>
-                @if(!($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4))
+                @if(!in_array($currentUser['user17025'] ?? null, [1, 4, 5]))
                     <a href="{{ route('acceptance.create') }}" class="btn btn-success">
                         <i class="fas fa-plus-circle me-2"></i>Nuova Accettazione
                     </a>
@@ -47,8 +47,8 @@
                     @php
                         $user = Session::get('user');
                         $roleId = $user['user17025'] ?? null;
-                        $roleMap = [1 => 'Admin', 3 => 'Tecnico di Laboratorio', 4 => 'Responsabile Laboratorio'];
-                        $badgeColorMap = [1 => 'bg-danger', 3 => 'bg-primary', 4 => 'bg-success'];
+                        $roleMap = [1 => 'Admin', 3 => 'Tecnico di Laboratorio', 4 => 'Responsabile Laboratorio', 5 => 'Responsabile Assicurazione Qualità'];
+                        $badgeColorMap = [1 => 'bg-danger', 3 => 'bg-primary', 4 => 'bg-success', 5 => 'bg-info text-dark'];
                         $roleName = $roleMap[$roleId] ?? 'N/D';
                         $badgeColor = $badgeColorMap[$roleId] ?? 'bg-secondary';
                     @endphp

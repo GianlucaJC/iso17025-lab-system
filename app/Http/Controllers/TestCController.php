@@ -27,8 +27,8 @@ class TestCController extends Controller
         }
 
         $currentUser = Session::get('user');
-        // Gli amministratori (ruolo 1) e i Responsabili Laboratorio (ruolo 4) non possono creare test.
-        if (isset($currentUser['user17025']) && ($currentUser['user17025'] == 1 || $currentUser['user17025'] == 4)) {
+        // Admin (1), RL (4) e QA (5) non possono creare test.
+        if (isset($currentUser['user17025']) && in_array($currentUser['user17025'], [1, 4, 5])) {
             return redirect()->route('acceptance.index')->with('error', 'Gli amministratori non possono creare nuovi test.');
         }
 

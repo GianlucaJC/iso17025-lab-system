@@ -219,19 +219,9 @@
         @if($testBResult)
             <div class="test-section">
                 <h3>3. MA_61_Contaminazione microbica</h3>
-                @php
-                    $testBPlates = array_filter([
-                        $testBResult->plate_id_start_plate1_35_run1, $testBResult->plate_id_start_plate2_35_run1,
-                        $testBResult->plate_id_mid_plate1_35_run1,   $testBResult->plate_id_mid_plate2_35_run1,
-                        $testBResult->plate_id_end_plate1_35_run1,   $testBResult->plate_id_end_plate2_35_run1,
-                        $testBResult->plate_id_start_plate1_22_run1, $testBResult->plate_id_start_plate2_22_run1,
-                        $testBResult->plate_id_mid_plate1_22_run1,   $testBResult->plate_id_mid_plate2_22_run1,
-                        $testBResult->plate_id_end_plate1_22_run1,   $testBResult->plate_id_end_plate2_22_run1,
-                    ]);
-                @endphp
                 <table class="info-table">
                     <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</td></tr>
-                    <tr><td><strong>ID Campione:</strong></td><td>{{ implode(' – ', $testBPlates) }}</td></tr>
+                    <tr><td><strong>ID Campioni:</strong></td><td><strong>Incubazione 35°C:</strong> {{ implode(' – ', $platesB35) }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Incubazione 22°C:</strong> {{ implode(' – ', $platesB22) }}</td></tr>
                 </table>
                 <table>
                     <thead><tr><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
