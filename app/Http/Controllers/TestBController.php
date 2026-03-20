@@ -436,6 +436,12 @@ class TestBController extends Controller
         // Aggiorna il record con i dati della validazione
         $test_b_result->rl_signature_id = $currentUser['id'];
         $test_b_result->rl_signed_at = now();
+
+        // Assicurati che il modello dell'accettazione sia aggiornato prima di controllare lo stato di annullamento
+        $test_b_result->acceptance->refresh();
+
+        // Check if the acceptance was previously annulled and can now be un-annulled
+        $test_b_result->acceptance->checkAndClearAnnulmentIfRevalidated();
         $test_b_result->save();
         return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('success', 'Test B validato con successo dal Responsabile Laboratorio!');
     }

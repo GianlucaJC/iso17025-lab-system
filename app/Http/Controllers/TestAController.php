@@ -338,6 +338,12 @@ class TestAController extends Controller
         }
 
         $test_a_result->update(['rl_signature_id' => $currentUser['id'], 'rl_signed_at' => now()]);
+
+        // Assicurati che il modello dell'accettazione sia aggiornato prima di controllare lo stato di annullamento
+        $test_a_result->acceptance->refresh();
+
+        // Check if the acceptance was previously annulled and can now be un-annulled
+        $test_a_result->acceptance->checkAndClearAnnulmentIfRevalidated();
         return redirect()->route('acceptance.index', ['highlight' => $test_a_result->acceptance_id])->with('success', 'Test A validato con successo dal Responsabile Laboratorio!');
     }
 

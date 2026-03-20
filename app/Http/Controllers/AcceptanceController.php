@@ -161,7 +161,7 @@ class AcceptanceController extends Controller
 
         // Add is_pdf_complete and detailed test statuses to each acceptance
         $acceptances->each(function ($acceptance) {
-            $acceptance->is_pdf_complete = $this->isPdfComplete($acceptance);
+            $acceptance->is_pdf_complete = $acceptance->isPdfComplete();
 
             // Helper function to determine status based on the test result record
             $getTestStatus = function ($testResult, $isTwoPhase = false) {
@@ -567,7 +567,7 @@ class AcceptanceController extends Controller
         ];
 
         // Aggiungo la variabile isPdfComplete ai dati passati alla vista
-        $data['isPdfComplete'] = $this->isPdfComplete($acceptance);
+        $data['isPdfComplete'] = $acceptance->isPdfComplete();
 
         $pdf = Pdf::loadView('acceptance.pdf', $data);
 
@@ -579,40 +579,5 @@ class AcceptanceController extends Controller
 
         // Mostra il PDF nel browser senza forzare il download
         return $pdf->stream($fileName);
-    }
-
-    /**
-     * Checks if an Acceptance record is complete for PDF generation.
-     * An acceptance is considered complete if all its required tests have been validated by the RL.
-     *
-     * @param Acceptance $acceptance
-     * @return bool
-     */
-    private function isPdfComplete(Acceptance $acceptance): bool
-    {
-        // Se il rapporto è stato annullato, non è mai considerato completo
-        if ($acceptance->annulled_at) {
-            return false;
-        }
-
-        // Se il campione è non conforme, non sono richiesti test, quindi il PDF è considerato completo.
-        if ($acceptance->sample_conformity === 'non_conforme') {
-            return true;
-        }
-
-        $requiredTests = $acceptance->tests ?? [];
-
-        // Se il campione è conforme ma non sono stati selezionati test, non è completo.
-        if (empty($requiredTests) && $acceptance->sample_conformity === 'conforme') {
-            return false;
-        }
-
-        foreach ($requiredTests as $testKey) {
-            if ($testKey === 'test1' && (!$acceptance->testAResult || !$acceptance->testAResult->rl_signed_at)) return false;
-            if ($testKey === 'test2' && (!$acceptance->testBResult || !$acceptance->testBResult->rl_signed_at)) return false;
-            if ($testKey === 'test3' && (!$acceptance->testCResult || !$acceptance->testCResult->rl_signed_at)) return false;
-        }
-
-        return true; // All required tests are present and validated
     }
 }

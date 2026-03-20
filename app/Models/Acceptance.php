@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use App\Traits\Auditable;
 
 
@@ -86,5 +87,46 @@ class Acceptance extends Model
     public function testCResult(): HasOne
     {
         return $this->hasOne(TestCResult::class);
+    }
+
+    /**
+     * Checks if an Acceptance record is complete for PDF generation.
+     * An acceptance is considered complete if all its required tests have been validated by the RL.
+     * This method does NOT consider the `annulled_at` status.
+     *
+     * @return bool
+     */
+    public function isPdfComplete(): bool
+    {
+        // If the sample is non-conforming, no tests are required, so the PDF is considered complete.
+        if ($this->sample_conformity === 'non_conforme') {
+            return true;
+        }
+
+        $requiredTests = $this->tests ?? [];
+
+        // If the sample is conforming but no tests were selected, it's not complete.
+        if (empty($requiredTests) && $this->sample_conformity === 'conforme') {
+            return false;
+        }
+
+        // Eager load relationships if not already loaded
+        $this->loadMissing('testAResult', 'testBResult', 'testCResult');
+
+        foreach ($requiredTests as $testKey) {
+            if ($testKey === 'test1' && (!$this->testAResult || !$this->testAResult->rl_signed_at)) return false;
+            if ($testKey === 'test2' && (!$this->testBResult || !$this->testBResult->rl_signed_at)) return false;
+            if ($testKey === 'test3' && (!$this->testCResult || !$this->testCResult->rl_signed_at)) return false;
+        }
+
+        return true; // All required tests are present and validated
+    }
+
+    public function checkAndClearAnnulmentIfRevalidated(): void
+    {
+        if ($this->annulled_at && $this->isPdfComplete()) {
+            $this->update(['annulled_at' => null, 'annulment_reason' => null]);
+            Log::info("Acceptance ID {$this->id} annulment cleared due to full re-validation.");
+        }
     }
 }
