@@ -106,7 +106,7 @@ class Acceptance extends Model
         $requiredTests = $this->tests ?? [];
 
         // If the sample is conforming but no tests were selected, it's not complete.
-        if (empty($requiredTests) && $this->sample_conformity === 'conforme') {
+        if ($this->sample_conformity === 'conforme' && empty($requiredTests)) {
             return false;
         }
 
@@ -114,9 +114,15 @@ class Acceptance extends Model
         $this->loadMissing('testAResult', 'testBResult', 'testCResult');
 
         foreach ($requiredTests as $testKey) {
-            if ($testKey === 'test1' && (!$this->testAResult || !$this->testAResult->rl_signed_at)) return false;
-            if ($testKey === 'test2' && (!$this->testBResult || !$this->testBResult->rl_signed_at)) return false;
-            if ($testKey === 'test3' && (!$this->testCResult || !$this->testCResult->rl_signed_at)) return false;
+            if ($testKey === 'test1' && (!$this->testAResult || !$this->testAResult->rl_signed_at)) {
+                return false;
+            }
+            if ($testKey === 'test2' && (!$this->testBResult || !$this->testBResult->rl_signed_at)) {
+                return false;
+            }
+            if ($testKey === 'test3' && (!$this->testCResult || !$this->testCResult->rl_signed_at)) {
+                return false;
+            }
         }
 
         return true; // All required tests are present and validated
@@ -124,9 +130,17 @@ class Acceptance extends Model
 
     public function checkAndClearAnnulmentIfRevalidated(): void
     {
+        // Assicurati che il modello dell'accettazione sia fresco dal database
+        $this->refresh();
+
+        // Ricarica esplicitamente le relazioni per assicurarti che anche i loro dati siano freschi.
+        // Questo è cruciale perché `loadMissing` all'interno di `isPdfComplete` potrebbe non ricaricare
+        // se la relazione era già stata caricata (anche se obsoleta) prima del refresh.
+        $this->load('testAResult', 'testBResult', 'testCResult');
+
         if ($this->annulled_at && $this->isPdfComplete()) {
             $this->update(['annulled_at' => null, 'annulment_reason' => null]);
-            Log::info("Acceptance ID {$this->id} annulment cleared due to full re-validation.");
+            $this->refresh(); // Aggiorna l'istanza del modello dopo l'update per riflettere i cambiamenti
         }
     }
 }

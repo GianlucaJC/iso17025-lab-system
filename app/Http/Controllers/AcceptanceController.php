@@ -79,10 +79,18 @@ class AcceptanceController extends Controller
 
         $acceptancesQuery = Acceptance::query(); // Start with a base query
         
+        // Se una specifica accettazione è stata evidenziata, assicurati che venga caricata fresca
+        $highlightId = $request->input('highlight');
+        if ($highlightId) {
+            // Forza il ricaricamento della specifica accettazione per assicurare l'ultimo stato di annulled_at.
+            // Questo è cruciale se l'annullamento è stato appena rimosso e si sta reindirizzando all'indice.
+            Acceptance::find($highlightId)?->refresh();
+        }
+        
         // Se viene richiesto di evidenziare una riga specifica, ignoriamo i filtri
         // per assicurarci che la riga sia visibile, e resettiamo i valori dei filtri.
         if ($request->has('highlight')) {
-            $filterTestAStatus = 'all';
+            $filterTestAStatus = 'all'; 
             $filterTestBStatus = 'all';
             $filterTestCStatus = 'all';
         } else {
