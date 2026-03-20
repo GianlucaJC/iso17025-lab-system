@@ -638,8 +638,8 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const form = $('<form>', {
-                            'method': 'POST',
-                            'action': `/acceptance/${id}/annul`
+                            'method': 'POST', // Utilizza il helper route di Laravel per generare l'URL corretto
+                            'action': `{{ route('acceptance.annul', ['acceptance' => ':id']) }}`.replace(':id', id)
                         }).append($('<input>', { 'type': 'hidden', 'name': '_token', 'value': '{{ csrf_token() }}' }))
                           .append($('<input>', { 'type': 'hidden', 'name': 'annulment_reason', 'value': result.value }));
                         $('body').append(form);
