@@ -41,7 +41,8 @@ class Acceptance extends Model
         'sample_conformity',
         'non_conformity_reason',
         'annulled_at',
-        'annulment_reason'
+        'annulment_reason',
+        'pdf_revision_count',
     ];
 
     /**
@@ -55,6 +56,7 @@ class Acceptance extends Model
         'double_tests' => 'array',
         'dele' => 'datetime', // Indica a Laravel di trattare 'dele' come un oggetto Carbon
         'annulled_at' => 'datetime',
+        'pdf_revision_count' => 'integer',
     ];
 
     /**
@@ -139,7 +141,11 @@ class Acceptance extends Model
         $this->load('testAResult', 'testBResult', 'testCResult');
 
         if ($this->annulled_at && $this->isPdfComplete()) {
-            $this->update(['annulled_at' => null, 'annulment_reason' => null]);
+            $this->update([
+                'annulled_at' => null,
+                'annulment_reason' => null,
+                'pdf_revision_count' => $this->pdf_revision_count + 1, // Increment the revision count
+            ]);
             $this->refresh(); // Aggiorna l'istanza del modello dopo l'update per riflettere i cambiamenti
         }
     }

@@ -572,6 +572,7 @@ class AcceptanceController extends Controller
             'methodRevisions' => $methodRevisions,
             'platesB35' => $platesB35,
             'platesB22' => $platesB22,
+            'pdfRevisionCount' => $acceptance->pdf_revision_count, // Pass the revision count
         ];
 
         // Aggiungo la variabile isPdfComplete ai dati passati alla vista

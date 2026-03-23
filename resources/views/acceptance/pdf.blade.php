@@ -113,7 +113,7 @@
         </div>
 
         <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
-            <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_0<br>
+            <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_{{ $pdfRevisionCount }}<br>
             <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
         </div>
 
