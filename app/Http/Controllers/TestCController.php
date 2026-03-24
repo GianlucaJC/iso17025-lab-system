@@ -393,16 +393,24 @@ class TestCController extends Controller
             return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('error', 'Il test è già stato validato.');
         }
 
+        $acceptance = $test_c_result->acceptance;
+
         // Aggiorna il record con i dati della validazione
         $test_c_result->rl_signature_id = $currentUser['id'];
         $test_c_result->rl_signed_at = now();
-
-        // Assicurati che il modello dell'accettazione sia aggiornato prima di controllare lo stato di annullamento
-        $test_c_result->acceptance->refresh();
-
-        // Check if the acceptance was previously annulled and can now be un-annulled
-        $test_c_result->acceptance->checkAndClearAnnulmentIfRevalidated();
         $test_c_result->save();
+
+        // Assicurati che il modello dell'accettazione sia aggiornato prima di controllare lo stato
+        $acceptance->refresh();
+
+        // Se il PDF diventa completo dopo questa validazione, gestisci la revisione e l'annullamento.
+        if ($acceptance->isPdfComplete()) {
+            // Se era stato annullato, questa è una ri-validazione.
+            if ($acceptance->annulled_at) {
+                $acceptance->increment('pdf_revision_count');
+                $acceptance->update(['annulled_at' => null, 'annulment_reason' => null]);
+            }
+        }
 
         return redirect()->route('acceptance.index', ['highlight' => $test_c_result->acceptance_id])->with('success', 'Test C validato con successo dal Responsabile Laboratorio!');
     }

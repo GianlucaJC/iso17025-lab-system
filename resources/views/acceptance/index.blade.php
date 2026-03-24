@@ -471,7 +471,7 @@
                                         @endif
 
                                 {{-- Bottone Annulla RdP (solo RL o RAQ e solo se completo o non già annullato) --}}
-                                @if(($isLabManager || $isQA) && $acceptance->is_pdf_complete && !$acceptance->annulled_at)
+                                @if(($isLabManager || $isQA) && $acceptance->is_pdf_complete)
                                             <button type="button" class="btn btn-sm btn-outline-danger ms-1 annul-rdp-btn" 
                                                     data-id="{{ $acceptance->id }}" data-number="{{ $acceptance->acceptance_number }}" title="Annulla RdP">
                                                 <i class="fas fa-ban"></i> Annulla

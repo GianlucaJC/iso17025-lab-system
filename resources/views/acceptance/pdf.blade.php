@@ -41,44 +41,55 @@
 <body>
     @php
         $approvalDate = null;
-        $reportDate = $report_date; // Mantiene la data originale come fallback
-        $watermarkText = ''; // Inizializza la variabile per evitare errori
+        $reportDate = $report_date; // Fallback to original report date
+        $watermarkText = '';
 
+        $isAnnulledAndUntouched = false;
         if ($acceptance->annulled_at) {
+            // L'annullamento azzera le firme. Se una firma è presente, significa che è stata apposta un'azione.
+            $isActionTaken = ($testAResult && $testAResult->lab_signed_at) ||
+                             ($testBResult && $testBResult->lab_signed_at) ||
+                             ($testCResult && $testCResult->lab_signed_at) ||
+                             ($testAResult && $testAResult->rl_signed_at) ||
+                             ($testBResult && $testBResult->rl_signed_at) ||
+                             ($testCResult && $testCResult->rl_signed_at);
+
+            // Se non ci sono firme, controlliamo se c'è stata una modifica manuale.
+            if (!$isActionTaken) {
+                $annulmentDate = \Carbon\Carbon::parse($acceptance->annulled_at);
+                // Un piccolo buffer temporale aiuta a distinguere una modifica manuale dall'aggiornamento automatico durante l'annullamento.
+                $annulmentBufferDate = $annulmentDate->copy()->addSeconds(2);
+                if (($testAResult && $testAResult->updated_at->gt($annulmentBufferDate)) ||
+                    ($testBResult && $testBResult->updated_at->gt($annulmentBufferDate)) ||
+                    ($testCResult && $testCResult->updated_at->gt($annulmentBufferDate))) {
+                    $isActionTaken = true;
+                }
+            }
+
+            if (!$isActionTaken) {
+                $isAnnulledAndUntouched = true;
+            }
+        }
+
+        if ($isAnnulledAndUntouched) {
             $watermarkText = 'ANNULLATO il ' . \Carbon\Carbon::parse($acceptance->annulled_at)->format('d.m.Y');
         } elseif ($isPdfComplete) {
+            // Il PDF è completo, cerchiamo la data di validazione più recente.
             $validationDates = [];
-            // Raccoglie tutte le date di validazione disponibili per i test richiesti
-            if (in_array('test1', $acceptance->tests) && $testAResult && $testAResult->rl_signed_at) {
-                $validationDates[] = $testAResult->rl_signed_at;
-            }
-            if (in_array('test2', $acceptance->tests) && $testBResult && $testBResult->rl_signed_at) {
-                $validationDates[] = $testBResult->rl_signed_at;
-            }
-            if (in_array('test3', $acceptance->tests) && $testCResult && $testCResult->rl_signed_at) {
-                $validationDates[] = $testCResult->rl_signed_at;
-            }
+            if (in_array('test1', $acceptance->tests) && $testAResult && $testAResult->rl_signed_at) $validationDates[] = $testAResult->rl_signed_at;
+            if (in_array('test2', $acceptance->tests) && $testBResult && $testBResult->rl_signed_at) $validationDates[] = $testBResult->rl_signed_at;
+            if (in_array('test3', $acceptance->tests) && $testCResult && $testCResult->rl_signed_at) $validationDates[] = $testCResult->rl_signed_at;
 
             if (!empty($validationDates)) {
-                // Trova la data più recente e la usa sia per l'approvazione che per il report
                 $latestDate = max($validationDates);
                 $approvalDate = $latestDate->format('d.m.Y');
                 $reportDate = $approvalDate;
             }
         } else {
-            // PDF non è completo, determina la filigrana corretta
-            $hasAnyRlSignedTest = false;
-            $requiredTests = $acceptance->tests ?? [];
-
-            if (in_array('test1', $requiredTests) && $testAResult && $testAResult->rl_signed_at) {
-                $hasAnyRlSignedTest = true;
-            }
-            if (!$hasAnyRlSignedTest && in_array('test2', $requiredTests) && $testBResult && $testBResult->rl_signed_at) {
-                $hasAnyRlSignedTest = true;
-            }
-            if (!$hasAnyRlSignedTest && in_array('test3', $requiredTests) && $testCResult && $testCResult->rl_signed_at) {
-                $hasAnyRlSignedTest = true;
-            }
+            // Il PDF non è completo, determiniamo la filigrana corretta.
+            $hasAnyRlSignedTest = (in_array('test1', $acceptance->tests) && $testAResult && $testAResult->rl_signed_at) ||
+                                  (in_array('test2', $acceptance->tests) && $testBResult && $testBResult->rl_signed_at) ||
+                                  (in_array('test3', $acceptance->tests) && $testCResult && $testCResult->rl_signed_at);
 
             if ($hasAnyRlSignedTest) {
                 $watermarkText = 'RdP incompleto';
@@ -113,7 +124,7 @@
         </div>
 
         <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
-            <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}_{{ $pdfRevisionCount }}<br>
+            <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}@if($isPdfComplete)_{{ $pdfRevisionCount }}@endif<br>
             <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
         </div>
 
