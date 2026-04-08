@@ -439,8 +439,8 @@ class TestCController extends Controller
             'pipette_inoculation' => 'required|string|max:255',
             'incubator' => 'required|string|max:255',
             'incubation_start_date' => 'required|date',
-            'incubation_start_time' => 'required|date_format:H:i',
-            'temperature' => 'required|numeric',
+            'incubation_start_time' => 'required|date_format:H:i', // Keep this required for start_datetime calculation
+            'temperature' => 'nullable|numeric', // Changed to nullable
         ];
 
         // Phase 2 Rules
@@ -472,8 +472,8 @@ class TestCController extends Controller
                 'pipette_inoculation_run2' => 'required|string|max:255',
                 'incubator_run2' => 'required|string|max:255',
                 'incubation_start_date_run2' => 'required|date',
-                'incubation_start_time_run2' => 'required|date_format:H:i',
-                'temperature_run2' => 'required|numeric',
+                'incubation_start_time_run2' => 'required|date_format:H:i', // Keep this required for start_datetime calculation
+                'temperature_run2' => 'nullable|numeric', // Changed to nullable
             ];
             $initial_rules = array_merge($initial_rules, $initial_rules_run2);
 
@@ -636,6 +636,16 @@ class TestCController extends Controller
             $data['ufc_50_percent_tsa_mid_lotto_run2'] = $request->has('ufc_50_percent_tsa_mid_lotto_run2') ? 1 : 0;
             $data['ufc_50_percent_tsa_end_lotto_run2'] = $request->has('ufc_50_percent_tsa_end_lotto_run2') ? 1 : 0;
         }
+        return $data;
+
+        // Set default temperature if not provided
+        if (!isset($data['temperature'])) {
+            $data['temperature'] = 35;
+        }
+        if ($is_double_test_c && !isset($data['temperature_run2'])) {
+            $data['temperature_run2'] = 35;
+        }
+
         return $data;
     }
 

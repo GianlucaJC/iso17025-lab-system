@@ -65,7 +65,7 @@
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test C: {{ $methodDisplayName }}
+                    : {{ $methodDisplayName }}
                 </h5>
             </div>
 
@@ -138,7 +138,9 @@
                                         <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
                                             @foreach($pipettes as $pipette)
-                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>
+                                                    {{ $pipette->identifier }} {{ $pipette->description ? '('.$pipette->description.')' : '' }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -147,7 +149,9 @@
                                         <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
                                             @foreach($pipettes as $pipette)
-                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>
+                                                    {{ $pipette->identifier }} {{ $pipette->description ? '('.$pipette->description.')' : '' }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -156,7 +160,9 @@
                                         <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
                                             @foreach($pipettes as $pipette)
-                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>
+                                                    {{ $pipette->identifier }} {{ $pipette->description ? '('.$pipette->description.')' : '' }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -171,7 +177,9 @@
                                     <select class="form-select" id="incubator{{ $run_suffix }}" name="incubator{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
                                         @foreach($incubators as $incubator) {{-- Variabile $incubators definita nel controller --}}
-                                            <option value="{{ $incubator->identifier }}" {{ old('incubator'.$run_suffix, $is_edit ? $test_c_result->{'incubator'.$run_suffix} : '') == $incubator->identifier ? 'selected' : '' }}>{{ $incubator->identifier }}</option>
+                                            <option value="{{ $incubator->identifier }}" {{ old('incubator'.$run_suffix, $is_edit ? $test_c_result->{'incubator'.$run_suffix} : '') == $incubator->identifier ? 'selected' : '' }}>
+                                                {{ $incubator->identifier }} {{ $incubator->description ? '('.$incubator->description.')' : '' }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -191,9 +199,9 @@
                                 </div>
                             </div>
                             <div class="row mb-3 align-items-end">
-                                <div class="col-md-2 initial-data-section">
+                                <div class="col-md-2 initial-data-section d-none"> {{-- Campo nascosto come richiesto --}}
                                     <label for="temperature" class="form-label">Temp.(°C)</label>
-                                    <input type="number" step="0.1" class="form-control" id="temperature" name="temperature" value="{{ old('temperature', $is_edit ? $test_c_result->temperature : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="number" step="0.1" class="form-control" id="temperature" name="temperature" value="{{ old('temperature', $is_edit ? $test_c_result->temperature : '35') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                                 <div class="col-md-2 final-results-section">
                                     <label for="tsa_growth_ufc" class="form-label">Crescita UFC</label> {{-- Changed to text input with numeric filter --}}
@@ -314,7 +322,9 @@
                                         <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
                                             @foreach($pipettes as $pipette)
-                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_1'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_1'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>
+                                                    {{ $pipette->identifier }} {{ $pipette->description ? '('.$pipette->description.')' : '' }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -323,7 +333,9 @@
                                         <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
                                             @foreach($pipettes as $pipette)
-                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_dilution_2'.$run_suffix, $is_edit ? $test_c_result->{'pipette_dilution_2'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>
+                                                    {{ $pipette->identifier }} {{ $pipette->description ? '('.$pipette->description.')' : '' }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -332,7 +344,9 @@
                                         <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
                                             @foreach($pipettes as $pipette)
-                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>{{ $pipette->identifier }}</option>
+                                                <option value="{{ $pipette->identifier }}" {{ old('pipette_inoculation'.$run_suffix, $is_edit ? $test_c_result->{'pipette_inoculation'.$run_suffix} : '') == $pipette->identifier ? 'selected' : '' }}>
+                                                    {{ $pipette->identifier }} {{ $pipette->description ? '('.$pipette->description.')' : '' }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -347,7 +361,9 @@
                                     <select class="form-select" id="incubator{{ $run_suffix }}" name="incubator{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                         <option value="">Seleziona...</option>
                                         @foreach($incubators as $incubator)
-                                            <option value="{{ $incubator->identifier }}" {{ old('incubator'.$run_suffix, $is_edit ? $test_c_result->{'incubator'.$run_suffix} : '') == $incubator->identifier ? 'selected' : '' }}>{{ $incubator->identifier }}</option>
+                                            <option value="{{ $incubator->identifier }}" {{ old('incubator'.$run_suffix, $is_edit ? $test_c_result->{'incubator'.$run_suffix} : '') == $incubator->identifier ? 'selected' : '' }}>
+                                                {{ $incubator->identifier }} {{ $incubator->description ? '('.$incubator->description.')' : '' }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -367,9 +383,9 @@
                                 </div>
                             </div>
                             <div class="row mb-3 align-items-end">
-                                <div class="col-md-2 initial-data-section">
+                                <div class="col-md-2 initial-data-section d-none"> {{-- Campo nascosto come richiesto --}}
                                     <label for="temperature{{ $run_suffix }}" class="form-label">Temp.(°C)</label>
-                                    <input type="number" step="0.1" class="form-control" id="temperature{{ $run_suffix }}" name="temperature{{ $run_suffix }}" value="{{ old('temperature'.$run_suffix, $is_edit ? $test_c_result->{'temperature'.$run_suffix} : '') }}" {{ $is_readonly ? 'disabled' : '' }} required>
+                                    <input type="number" step="0.1" class="form-control" id="temperature{{ $run_suffix }}" name="temperature{{ $run_suffix }}" value="{{ old('temperature'.$run_suffix, $is_edit ? $test_c_result->{'temperature'.$run_suffix} : '35') }}" {{ $is_readonly ? 'disabled' : '' }}>
                                 </div>
                                 <div class="col-md-2 final-results-section">
                                     <label for="tsa_growth_ufc{{ $run_suffix }}" class="form-label">Crescita UFC</label> {{-- Changed to text input with numeric filter --}}
@@ -559,8 +575,7 @@
                                     @else
                                         <strong>ID: {{ $test_c_result->lab_signature_id }}</strong>
                                     @endif
-                                    <br>
-                                    il {{ $test_c_result->lab_signed_at->format('d/m/Y H:i') }}
+
                                 </p>
                             @endif
                         </div>
@@ -574,8 +589,7 @@
                                     @else
                                         <strong>ID: {{ $test_c_result->rl_signature_id }}</strong>
                                     @endif
-                                    <br>
-                                    il {{ $test_c_result->rl_signed_at->format('d/m/Y H:i') }}
+
                                 </p>
                             @else
                                 <p class="text-muted">Non ancora validato</p>
@@ -638,9 +652,55 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+
             const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
             const nonComplianceSection = document.getElementById('non-compliance-section');
             const nonComplianceInput = document.getElementById('non_compliance_ref');
+
+            // Funzione per la validazione della data di fine incubazione del Test C
+            function validateTestCIncubationDates(runSuffix = '') {
+                const startDateInput = document.querySelector(`input[name="incubation_start_date${runSuffix}"]`);
+                const endDateInput = document.querySelector(`input[name="incubation_end_date${runSuffix}"]`);
+
+                if (!startDateInput || !endDateInput) return;
+
+                endDateInput.addEventListener('change', function() {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        return; // Una delle date non è valida, non procedere con la validazione
+                    }
+
+                    // Calcola la data di fine attesa (start_date + 1 giorno)
+                    const expectedEndDate = new Date(startDate);
+                    expectedEndDate.setDate(startDate.getDate() + 1);
+
+                    // Confronta solo le date (ignorando l'ora)
+                    const actualEndDateStr = endDate.toISOString().split('T')[0];
+                    const expectedEndDateStr = expectedEndDate.toISOString().split('T')[0];
+
+                    if (actualEndDateStr !== expectedEndDateStr) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Attenzione!',
+                            html: `La data di fine incubazione (${endDateInput.value}) per il Test C dovrebbe essere esattamente un giorno dopo la data di inizio incubazione (${startDateInput.value}).`,
+                            confirmButtonText: 'Ho capito',
+                            customClass: {
+                                confirmButton: 'btn btn-warning'
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Applica la validazione per il Run 1
+            validateTestCIncubationDates('');
+            // Se esiste il doppio test, applica la validazione anche per il Run 2
+            // Assumendo che gli input per il Run 2 abbiano un suffisso '_run2'
+            if (document.querySelector('input[name="incubation_start_date_run2"]')) {
+                validateTestCIncubationDates('_run2');
+            }
 
             function toggleNonComplianceField() {
                 const isNonIdoneo = document.getElementById('outcome_non_idoneo').checked;

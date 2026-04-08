@@ -43,6 +43,21 @@
         $approvalDate = null;
         $reportDate = $report_date; // Fallback to original report date
         $watermarkText = '';
+        $last_sign = null; // Inizializzazione della nuova variabile
+
+        // Raccogli le date di firma del tecnico (lab_signed_at)
+        $labSignedDates = [];
+        if ($testAResult && $testAResult->lab_signed_at) {
+            $labSignedDates[] = $testAResult->lab_signed_at;
+        }
+        if ($testBResult && $testBResult->lab_signed_at) {
+            $labSignedDates[] = $testBResult->lab_signed_at;
+        }
+        if ($testCResult && $testCResult->lab_signed_at) {
+            $labSignedDates[] = $testCResult->lab_signed_at;
+        }
+        if (!empty($labSignedDates)) $last_sign = max($labSignedDates); // Prende la data più recente
+  
 
         $isAnnulledAndUntouched = false;
         if ($acceptance->annulled_at) {
@@ -74,15 +89,10 @@
         if ($isAnnulledAndUntouched) {
             $watermarkText = 'ANNULLATO il ' . \Carbon\Carbon::parse($acceptance->annulled_at)->format('d.m.Y');
         } elseif ($isPdfComplete) {
-            // Il PDF è completo, cerchiamo la data di validazione più recente.
-            $validationDates = [];
-            if (in_array('test1', $acceptance->tests) && $testAResult && $testAResult->rl_signed_at) $validationDates[] = $testAResult->rl_signed_at;
-            if (in_array('test2', $acceptance->tests) && $testBResult && $testBResult->rl_signed_at) $validationDates[] = $testBResult->rl_signed_at;
-            if (in_array('test3', $acceptance->tests) && $testCResult && $testCResult->rl_signed_at) $validationDates[] = $testCResult->rl_signed_at;
-
-            if (!empty($validationDates)) {
-                $latestDate = max($validationDates);
-                $approvalDate = $latestDate->format('d.m.Y');
+            // Il PDF è completo
+            if ($last_sign!=null) {
+                $last_sign=$last_sign->format('d.m.Y');
+                $approvalDate = $last_sign;
                 $reportDate = $approvalDate;
             }
         } else {

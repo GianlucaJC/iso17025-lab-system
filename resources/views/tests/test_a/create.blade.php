@@ -73,7 +73,7 @@
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test A: MA_09_Misurazione del pH ({{ $methodRevisionA }})
+                    : MA_09_Misurazione del pH ({{ $methodRevisionA }})
                 </h3>
             </div>
             <div class="card-body p-4">
@@ -272,7 +272,7 @@
                         <div class="col-md-4">
                             <h6>Firma Tecnico di Laboratorio</h6>
                             @if($test_a_result->lab_signed_at)
-                                <p class="text-success">Firmato da <strong>{{ $usersMap[$test_a_result->lab_signature_id]['operatore'] ?? 'N/D' }}</strong><br>il {{ $test_a_result->lab_signed_at->format('d/m/Y H:i') }}</p>
+                                <p class="text-success">Firmato da <strong>{{ $usersMap[$test_a_result->lab_signature_id]['operatore'] ?? 'N/D' }}</strong>
                             @else
                                 <p class="text-muted">Non ancora firmato</p>
                             @endif
@@ -280,7 +280,7 @@
                         <div class="col-md-4">
                             <h6>Validazione Responsabile Laboratorio</h6>
                             @if($test_a_result->rl_signed_at)
-                                <p class="text-primary">Validato da <strong>{{ $usersMap[$test_a_result->rl_signature_id]['operatore'] ?? 'N/D' }}</strong><br>il {{ $test_a_result->rl_signed_at->format('d/m/Y H:i') }}</p>
+                                <p class="text-primary">Validato da <strong>{{ $usersMap[$test_a_result->rl_signature_id]['operatore'] ?? 'N/D' }}</strong>
                             @else
                                 <p class="text-muted">Non ancora validato</p>
                                 @if($test_a_result->lab_signed_at && !$test_a_result->rl_signed_at && isset($currentUser['user17025']) && $currentUser['user17025'] == 4)

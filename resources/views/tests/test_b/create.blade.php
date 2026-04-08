@@ -89,7 +89,7 @@
                     @else
                         <i class="fas fa-vial me-2"></i>Esecuzione
                     @endif
-                    Test B: {{ $methodDisplayName }}
+                    : {{ $methodDisplayName }}
                 </h5>
             </div>
             <div class="card-body p-4">
@@ -432,8 +432,7 @@
                                     @else
                                         <strong>ID: {{ $test_b_result->lab_signature_id }}</strong>
                                     @endif
-                                    <br>
-                                    il {{ $test_b_result->lab_signed_at->format('d/m/Y H:i') }}
+
                                 </p>
                             @else
                                 <p class="text-muted">Non ancora firmato</p>
@@ -449,8 +448,7 @@
                                     @else
                                         <strong>ID: {{ $test_b_result->rl_signature_id }}</strong>
                                     @endif
-                                    <br>
-                                    il {{ $test_b_result->rl_signed_at->format('d/m/Y H:i') }}
+
                                 </p>
                             @else
                                 <p class="text-muted">Non ancora validato</p>
@@ -578,6 +576,50 @@
                     }
                 });
             });
+
+            // Funzione per la validazione delle date di incubazione del Test B
+            function validateTestBIncubationDates(temp, runSuffix = '') {
+                const startDateInput = document.querySelector(`input[name="incubation_start_date_${temp}_run${runSuffix}"]`);
+                const endDateInput = document.querySelector(`input[name="incubation_end_date_${temp}_run${runSuffix}"]`);
+
+                if (!startDateInput || !endDateInput) return;
+
+                endDateInput.addEventListener('change', function() {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        return; // Una delle date non è valida, non procedere con la validazione
+                    }
+
+                    // Calcola la data minima di fine attesa (start_date + 7 giorni)
+                    const minExpectedEndDate = new Date(startDate);
+                    minExpectedEndDate.setDate(startDate.getDate() + 7);
+
+                    // Confronta le date
+                    if (endDate.getTime() < minExpectedEndDate.getTime()) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Attenzione!',
+                            html: `La data di fine incubazione (${endDateInput.value}) per il Test B a ${temp}°C dovrebbe essere almeno 7 giorni dopo la data di inizio incubazione (${startDateInput.value}).`,
+                            confirmButtonText: 'Ho capito',
+                            customClass: {
+                                confirmButton: 'btn btn-warning'
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Applica la validazione per il Run 1 (35°C e 22°C)
+            validateTestBIncubationDates('35', '1');
+            validateTestBIncubationDates('22', '1');
+
+            // Se esiste il doppio test, applica la validazione anche per il Run 2
+            if (document.querySelector('input[name="incubation_start_date_35_run2"]')) {
+                validateTestBIncubationDates('35', '2');
+                validateTestBIncubationDates('22', '2');
+            }
 
             // Gestione modale documentazione
             const showDocsBtn = document.getElementById('show-docs-btn');
