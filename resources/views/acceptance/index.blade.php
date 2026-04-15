@@ -121,10 +121,10 @@
                 {{-- Legenda Test Eseguiti --}}
                 <div class="p-3 border rounded bg-light mt-3">
                     <h6 class="mb-2">Legenda Test Eseguiti:</h6>
-                    <ul class="list-unstyled mb-0 d-flex flex-wrap gap-3 small">
-                        <li><span class="badge bg-secondary">Test A</span>: MA_09_Misurazione del pH ({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</li>
-                        <li><span class="badge bg-secondary">Test B</span>: MA_61_Contaminazione microbica ({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</li>
-                        <li><span class="badge bg-secondary">Test C</span>: MA_60_Valutazione produttività XLD ({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</li>
+                    <ul class="list-unstyled mb-0 d-flex flex-wrap gap-3 small text-nowrap">
+                        <li><span class="badge bg-secondary">MA_09</span>: Misurazione del pH ({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">MA_61</span>: Contaminazione microbica ({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">MA_60</span>: Valutazione produttività XLD ({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</li>
                         <li><span class="badge bg-info text-dark">2x</span>: Eseguito in doppio</li>
                     </ul>
                 </div>
@@ -145,7 +145,7 @@
                         <hr class="mt-3 mb-3">
                         <form method="GET" action="{{ route('acceptance.index') }}" class="row g-3 align-items-end">
                             <div class="col-md-3">
-                                <label for="filter_test_a_status" class="form-label">Stato Test A</label>
+                                <label for="filter_test_a_status" class="form-label">Stato MA_09</label>
                                 <select class="form-select" id="filter_test_a_status" name="filter_test_a_status">
                                     <option value="all" {{ $filterTestAStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
                                     <option value="not_compiled" {{ $filterTestAStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
@@ -155,7 +155,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="filter_test_b_status" class="form-label">Stato Test B</label>
+                                <label for="filter_test_b_status" class="form-label">Stato MA_61</label>
                                 <select class="form-select" id="filter_test_b_status" name="filter_test_b_status">
                                     <option value="all" {{ $filterTestBStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
                                     <option value="not_compiled" {{ $filterTestBStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
@@ -166,7 +166,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="filter_test_c_status" class="form-label">Stato Test C</label>
+                                <label for="filter_test_c_status" class="form-label">Stato MA_60</label>
                                 <select class="form-select" id="filter_test_c_status" name="filter_test_c_status">
                                     <option value="all" {{ $filterTestCStatus == 'all' ? 'selected' : '' }}>Tutti gli stati</option>
                                     <option value="not_compiled" {{ $filterTestCStatus == 'not_compiled' ? 'selected' : '' }}>Non compilato</option>
@@ -193,9 +193,9 @@
                             <th>Data Accettazione</th>
                             <th>Test Eseguiti</th>
                             <th>Data Creazione</th>
-                            <th>Stato Test A</th>
-                            <th>Stato Test B</th>
-                            <th>Stato Test C</th>
+                            <th>Stato MA_09</th>
+                            <th>Stato MA_61</th>
+                            <th>Stato MA_60</th>
                             <th>Esecuzione Test</th>
                             <th>Azioni</th>
                         </tr>
@@ -203,14 +203,14 @@
                     <tbody>
                         @php
                             $testNameMap = [
-                                'test1' => 'Test A',
-                                'test2' => 'Test B',
-                                'test3' => 'Test C'
+                                'test1' => 'MA_09',
+                                'test2' => 'MA_61',
+                                'test3' => 'MA_60'
                             ];
                             $fullTestNameMap = [ // Mappa completa per la legenda
-                                'test1' => 'MA_09_Misurazione del pH',
-                                'test2' => 'MA_61_Contaminazione microbica',
-                                'test3' => 'MA_60_Valutazione produttività XLD'
+                                'test1' => 'MA_09_Misurazione del pH', // Not directly used in the table body, but good to keep consistent if used elsewhere.
+                                'test2' => 'MA_61_Contaminazione microbica', // Not directly used in the table body, but good to keep consistent if used elsewhere.
+                                'test3' => 'MA_60_Valutazione produttività XLD' // Not directly used in the table body, but good to keep consistent if used elsewhere.
                             ];
                             $currentUser = Session::get('user');
                         @endphp
@@ -325,34 +325,34 @@
                                             @if(in_array('test1', $acceptance->tests))
                                                 @php $isOwnerA = $acceptance->testAResult && $acceptance->testAResult->operator_id == $currentUser['id']; @endphp
                                                 @switch($acceptance->test_a_status)
-                                                    @case('validated')
-                                                        <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success" title="Visualizza Test A (Validato)"><i class="fas fa-user-check"></i> Test A</a>
+                                                    @case('validated') {{-- Changed 'Test A' to 'MA_09' --}}
+                                                        <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success" title="Visualizza MA_09 (Validato)"><i class="fas fa-user-check"></i> MA_09</a>
                                                         @break
-                                                    @case('signed')
-                                                        <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-primary" title="Visualizza Test A (Firmato)"><i class="fas fa-signature"></i> Test A</a>
+                                                    @case('signed') {{-- Changed 'Test A' to 'MA_09' --}}
+                                                        <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-primary" title="Visualizza MA_09 (Firmato)"><i class="fas fa-signature"></i> MA_09</a>
                                                         @break
                                                     @case('ready_to_sign')
                                                         @if($isOwnerA && !$isAdmin)
-                                                            <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati Test A"><i class="fas fa-edit"></i> Test A</a>
+                                                            <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati MA_09"><i class="fas fa-edit"></i> MA_09</a>
                                                             @if($isLabTechnician)
                                                                 <form action="{{ route('test-a.sign', $acceptance->testAResult) }}" method="POST" class="d-inline sign-form">
                                                                     @csrf
-                                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Firma Test A"><i class="fas fa-signature"></i> Firma</button>
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Firma MA_09"><i class="fas fa-signature"></i> Firma</button>
                                                                 </form>
                                                             @endif
                                                         @else
-                                                            <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test A"><i class="fas fa-eye"></i> Test A</a>
+                                                            <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati MA_09"><i class="fas fa-eye"></i> MA_09</a>
                                                         @endif
                                                         @break
                                                     @case('not_compiled')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary" title="Esegui Test A: MA_09_Misurazione del pH"><i class="fas fa-vial"></i> Test A</a>
+                                                            <a href="{{ route('test-a.create', $acceptance) }}" class="btn btn-sm btn-outline-primary" title="Esegui MA_09: MA_09_Misurazione del pH"><i class="fas fa-vial"></i> MA_09</a>
                                                         @endif
                                                         @break
                                                 @endswitch
                                                 {{-- Pulsante Cronologia per Test A --}}
                                                 @if($isAdmin && $acceptance->testAResult)
-                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $acceptance->testAResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche Test A"><i class="fas fa-history"></i></a>
+                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $acceptance->testAResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche MA_09"><i class="fas fa-history"></i></a>
                                                 @endif
                                             @endif
                                         </div>
@@ -360,34 +360,34 @@
                                             @if(in_array('test2', $acceptance->tests))
                                                 @switch($acceptance->test_b_status)
                                                     @case('validated')
-                                                        <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success" title="Visualizza Test B (Validato)"><i class="fas fa-user-check"></i> Test B</a>
+                                                        <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-success" title="Visualizza MA_61 (Validato)"><i class="fas fa-user-check"></i> MA_61</a>
                                                         @break
                                                     @case('signed')
-                                                        <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-primary" title="Visualizza Test B (Firmato)"><i class="fas fa-signature"></i> Test B</a>
+                                                        <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-primary" title="Visualizza MA_61 (Firmato)"><i class="fas fa-signature"></i> MA_61</a>
                                                         @break
                                                     @case('ready_to_sign')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati Test B"><i class="fas fa-edit"></i> Test B</a>
+                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati MA_61"><i class="fas fa-edit"></i> MA_61</a>
                                                             @if($isLabTechnician) {{-- This inner if is now redundant but harmless --}}
                                                                 <form action="{{ route('test-b.sign', $acceptance->testBResult) }}" method="POST" class="d-inline sign-form">
                                                                     @csrf
-                                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Firma Test B"><i class="fas fa-signature"></i> Firma</button>
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Firma MA_61"><i class="fas fa-signature"></i> Firma</button>
                                                                 </form>
                                                             @endif
                                                         @else
-                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test B"><i class="fas fa-eye"></i> Test B</a>
+                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati MA_61"><i class="fas fa-eye"></i> MA_61</a>
                                                         @endif
                                                         @break
                                                     @case('in_compilation')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning" title="Completa/Modifica Risultati Test B"><i class="fas fa-edit"></i> Test B</a>
+                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-warning" title="Completa/Modifica Risultati MA_61"><i class="fas fa-edit"></i> MA_61</a>
                                                         @else
-                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test B"><i class="fas fa-eye"></i> Test B</a>
+                                                            <a href="{{ route('test-b.edit', $acceptance->testBResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati MA_61"><i class="fas fa-eye"></i> MA_61</a>
                                                         @endif
                                                         @break
                                                     @case('not_compiled')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-b.create', $acceptance) }}" class="btn btn-sm btn-outline-primary" title="Esegui Test B: MA_61_Contaminazione microbica"><i class="fas fa-vial"></i> Test B</a>
+                                                            <a href="{{ route('test-b.create', $acceptance) }}" class="btn btn-sm btn-outline-primary" title="Esegui Test: MA_61_Contaminazione microbica"><i class="fas fa-vial"></i> MA_61</a>
                                                         @endif
                                                         @break
                                                 @endswitch
@@ -401,40 +401,40 @@
                                             @if(in_array('test3', $acceptance->tests))
                                                 @switch($acceptance->test_c_status)
                                                     @case('validated')
-                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-success" title="Visualizza Test C (Validato)"><i class="fas fa-user-check"></i> Test C</a>
+                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-success" title="Visualizza MA_60 (Validato)"><i class="fas fa-user-check"></i> MA_60</a>
                                                         @break
                                                     @case('signed')
-                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-primary" title="Visualizza Test C (Firmato)"><i class="fas fa-signature"></i> Test C</a>
+                                                        <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-primary" title="Visualizza MA_60 (Firmato)"><i class="fas fa-signature"></i> MA_60</a>
                                                         @break
                                                     @case('ready_to_sign')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati Test C"><i class="fas fa-edit"></i> Test C</a>
+                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning" title="Modifica Risultati MA_60"><i class="fas fa-edit"></i> MA_60</a>
                                                             @if($isLabTechnician) {{-- This inner if is now redundant but harmless --}}
                                                                 <form action="{{ route('test-c.sign', $acceptance->testCResult) }}" method="POST" class="d-inline sign-form">
                                                                     @csrf
-                                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Firma Test C"><i class="fas fa-signature"></i> Firma</button>
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Firma MA_60"><i class="fas fa-signature"></i> Firma</button>
                                                                 </form>
                                                             @endif
                                                         @else
-                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test C"><i class="fas fa-eye"></i> Test C</a>
+                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati MA_60"><i class="fas fa-eye"></i> MA_60</a>
                                                         @endif
                                                         @break
                                                     @case('in_compilation')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning" title="Completa/Modifica Risultati Test C"><i class="fas fa-edit"></i> Test C</a>
+                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-warning" title="Completa/Modifica Risultati MA_60"><i class="fas fa-edit"></i> MA_60</a>
                                                         @else
-                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati Test C"><i class="fas fa-eye"></i> Test C</a>
+                                                            <a href="{{ route('test-c.edit', $acceptance->testCResult) }}" class="btn btn-sm btn-info" title="Visualizza Risultati MA_60"><i class="fas fa-eye"></i> MA_60</a>
                                                         @endif
                                                         @break
                                                     @case('not_compiled')
                                                         @if($isLabTechnician && !$isAdmin)
-                                                            <a href="{{ route('test-c.create', $acceptance) }}" class="btn btn-sm btn-outline-primary" title="Esegui Test C: MA_60_Valutazione produttività XLD"><i class="fas fa-vial"></i> Test C</a>
+                                                            <a href="{{ route('test-c.create', $acceptance) }}" class="btn btn-sm btn-outline-primary" title="Esegui MA_60:Valutazione produttività XLD"><i class="fas fa-vial"></i> MA_60</a>
                                                         @endif
                                                         @break
                                                 @endswitch
                                                 {{-- Pulsante Cronologia per Test C --}}
                                                 @if($isAdmin && $acceptance->testCResult)
-                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-c-result', 'id' => $acceptance->testCResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche Test C"><i class="fas fa-history"></i></a>
+                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-c-result', 'id' => $acceptance->testCResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche MA_60"><i class="fas fa-history"></i></a>
                                                 @endif
                                             @endif
                                         </div>
