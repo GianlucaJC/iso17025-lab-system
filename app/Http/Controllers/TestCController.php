@@ -182,23 +182,23 @@ class TestCController extends Controller
         TestCResult::create($dataToSave);
 
         // --- Generazione URL Google Calendar ---
-        $reminderDays = env('TEST_C_INCUBATION_REMINDER_DAYS', 7);
+        $reminderDays = env('TEST_C_INCUBATION_REMINDER_DAYS', 1);
         $startDate = \Carbon\Carbon::parse($dataToSave['test_start_datetime']);
         $reminderDate = $startDate->copy()->addDays($reminderDays);
 
         $eventStartDate = $reminderDate->format('Ymd');
         $eventEndDate = $reminderDate->copy()->addDay()->format('Ymd'); // All-day event
 
-        $title = urlencode("Completamento Test C - Lotto: {$acceptance->lotto}");
+        $title = urlencode("Completamento MA_60 - Lotto: {$acceptance->lotto}");
         $details = urlencode(
-            "Promemoria per completare il Test C (MA_60_Valutazione produttività XLD) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
+            "Promemoria per completare MA_60_Valutazione produttività XLD per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
             "Link all'applicazione: " . route('acceptance.index')
         );
 
         $calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$eventStartDate}/{$eventEndDate}&details={$details}";
 
         return redirect()->route('acceptance.index', ['highlight' => $acceptance->id])
-            ->with('success', 'Risultati iniziali del Test C salvati con successo!')
+            ->with('success', 'Risultati iniziali del MA_60 salvati con successo!')
             ->with('calendarUrl', $calendarUrl);
     }
 

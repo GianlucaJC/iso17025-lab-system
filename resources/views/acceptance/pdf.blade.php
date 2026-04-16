@@ -196,7 +196,7 @@
                         <tr>
                             <td>Valore di pH (25°C)</td>
                             <td>7.4 ± 0.2</td>
-                            <td>{{ number_format($testAResult->ph_value, 2) }} ± 0.2 ± INC</td> {{-- 'INC' è un placeholder --}}
+                            <td>{{ number_format($testAResult->ph_value, 2) }} ± 0.2</td> {{-- 'INC' è un placeholder --}}
                         </tr>
                     </tbody>
                 </table>

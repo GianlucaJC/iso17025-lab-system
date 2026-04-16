@@ -23,7 +23,7 @@ class TestBController extends Controller
     public function create(Acceptance $acceptance)
     {
         if (!in_array('test2', $acceptance->tests)) {
-            return redirect()->route('acceptance.index')->with('error', 'Il Test B non è previsto per questa accettazione.');
+            return redirect()->route('acceptance.index')->with('error', 'MA_61 non è previsto per questa accettazione.');
         }
 
         $currentUser = Session::get('user');
@@ -208,9 +208,9 @@ class TestBController extends Controller
         $eventStartDate = $reminderDate->format('Ymd');
         $eventEndDate = $reminderDate->copy()->addDay()->format('Ymd'); // All-day event, so end date is the next day
 
-        $title = urlencode("Completamento Test B - Lotto: {$acceptance->lotto}");
+        $title = urlencode("Completamento MA_61 - Lotto: {$acceptance->lotto}");
         $details = urlencode(
-            "Promemoria per completare il Test B (MA_61_Contaminazione microbica) per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
+            "Promemoria per completare MA_61_Contaminazione microbica per l'accettazione N. {$acceptance->acceptance_number}.\n\n" .
             "Link all'applicazione: " . route('acceptance.index')
         );
 
