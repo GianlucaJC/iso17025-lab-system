@@ -485,7 +485,7 @@ class TestBController extends Controller
 
         // Regole per la seconda fase di compilazione (Completamento)
         $completion_rules = [
-            'incubation_end_date_35_run1' => 'required|date|after_or_equal:incubation_start_date_35_run1',
+            'incubation_end_date_35_run1' => 'required|date',
             'incubation_end_time_35_run1' => 'required|date_format:H:i',
             'growth_result_35_start_plate1_run1' => $growthRule,
             'growth_result_35_start_plate2_run1' => $growthRule,
@@ -493,7 +493,7 @@ class TestBController extends Controller
             'growth_result_35_mid_plate2_run1' => $growthRule,
             'growth_result_35_end_plate1_run1' => $growthRule,
             'growth_result_35_end_plate2_run1' => $growthRule,
-            'incubation_end_date_22_run1' => 'required|date|after_or_equal:incubation_start_date_22_run1',
+            'incubation_end_date_22_run1' => 'required|date',
             'incubation_end_time_22_run1' => 'required|date_format:H:i',
             'growth_result_22_start_plate1_run1' => $growthRule,
             'growth_result_22_start_plate2_run1' => $growthRule,
@@ -521,7 +521,7 @@ class TestBController extends Controller
             $initial_rules = array_merge($initial_rules, $initial_rules_run2);
 
             $completion_rules_run2 = [
-                'incubation_end_date_35_run2' => 'required|date|after_or_equal:incubation_start_date_35_run2',
+                'incubation_end_date_35_run2' => 'required|date',
                 'incubation_end_time_35_run2' => 'required|date_format:H:i',
                 'growth_result_35_start_plate1_run2' => $growthRule,
                 'growth_result_35_start_plate2_run2' => $growthRule,
@@ -529,7 +529,7 @@ class TestBController extends Controller
                 'growth_result_35_mid_plate2_run2' => $growthRule,
                 'growth_result_35_end_plate1_run2' => $growthRule,
                 'growth_result_35_end_plate2_run2' => $growthRule,
-                'incubation_end_date_22_run2' => 'required|date|after_or_equal:incubation_start_date_22_run2',
+                'incubation_end_date_22_run2' => 'required|date',
                 'incubation_end_time_22_run2' => 'required|date_format:H:i',
                 'growth_result_22_start_plate1_run2' => $growthRule,
                 'growth_result_22_start_plate2_run2' => $growthRule,
@@ -589,7 +589,7 @@ class TestBController extends Controller
             'max' => 'Il campo :attribute non può superare i :max caratteri.',
             'date' => 'Il campo :attribute deve essere una data valida.',
             'date_format' => 'Il campo :attribute deve essere nel formato HH:MM.',
-            'after_or_equal' => 'Il campo :attribute deve essere una data successiva o uguale a :date.',
+            // 'after_or_equal' => 'Il campo :attribute deve essere una data successiva o uguale a :date.',
             'numeric' => 'Il campo :attribute deve essere un numero.',
             'min' => 'Il campo :attribute deve essere almeno :min.',
             'in' => 'Il valore selezionato per :attribute non è valido.',
@@ -600,7 +600,7 @@ class TestBController extends Controller
             'incubation_start_date_35_run1.required' => 'La data di inizio incubazione (35°C, Run 1) è obbligatoria.',
             'incubation_start_time_35_run1.required' => 'L\'ora di inizio incubazione (35°C, Run 1) è obbligatoria.',
             'incubation_end_date_35_run1.required' => 'La data di fine incubazione (35°C, Run 1) è obbligatoria.',
-            'incubation_end_date_35_run1.after_or_equal' => 'La data di fine incubazione (35°C, Run 1) deve essere successiva o uguale alla data di inizio.',
+            // 'incubation_end_date_35_run1.after_or_equal' => 'La data di fine incubazione (35°C, Run 1) deve essere successiva o uguale alla data di inizio.',
             'incubation_end_time_35_run1.required' => 'L\'ora di fine incubazione (35°C, Run 1) è obbligatoria.',
             'temperature_35_run1.required' => 'La temperatura (35°C, Run 1) è obbligatoria.',
             'growth_result_35_start_plate1_run1.required' => 'Il risultato di crescita (Inizio, P1, 35°C, Run 1) è obbligatorio.',
@@ -614,7 +614,7 @@ class TestBController extends Controller
             'incubation_start_date_22_run1.required' => 'La data di inizio incubazione (22°C, Run 1) è obbligatoria.',
             'incubation_start_time_22_run1.required' => 'L\'ora di inizio incubazione (22°C, Run 1) è obbligatoria.',
             'incubation_end_date_22_run1.required' => 'La data di fine incubazione (22°C, Run 1) è obbligatoria.',
-            'incubation_end_date_22_run1.after_or_equal' => 'La data di fine incubazione (22°C, Run 1) deve essere successiva o uguale alla data di inizio.',
+            // 'incubation_end_date_22_run1.after_or_equal' => 'La data di fine incubazione (22°C, Run 1) deve essere successiva o uguale alla data di inizio.',
             'incubation_end_time_22_run1.required' => 'L\'ora di fine incubazione (22°C, Run 1) è obbligatoria.',
             'temperature_22_run1.required' => 'La temperatura (22°C, Run 1) è obbligatoria.',
             'growth_result_22_start_plate1_run1.required' => 'Il risultato di crescita (Inizio, P1, 22°C, Run 1) è obbligatorio.',
@@ -632,7 +632,7 @@ class TestBController extends Controller
             'incubation_start_date_35_run2.required' => 'La data di inizio incubazione (35°C, Run 2) è obbligatoria.',
             'incubation_start_time_35_run2.required' => 'L\'ora di inizio incubazione (35°C, Run 2) è obbligatoria.',
             'incubation_end_date_35_run2.required' => 'La data di fine incubazione (35°C, Run 2) è obbligatoria.',
-            'incubation_end_date_35_run2.after_or_equal' => 'La data di fine incubazione (35°C, Run 2) deve essere successiva o uguale alla data di inizio.',
+            // 'incubation_end_date_35_run2.after_or_equal' => 'La data di fine incubazione (35°C, Run 2) deve essere successiva o uguale alla data di inizio.',
             'incubation_end_time_35_run2.required' => 'L\'ora di fine incubazione (35°C, Run 2) è obbligatoria.',
             'temperature_35_run2.required' => 'La temperatura (35°C, Run 2) è obbligatoria.',
             'growth_result_35_start_plate1_run2.required' => 'Il risultato di crescita (Inizio, P1, 35°C, Run 2) è obbligatorio.',
@@ -646,7 +646,7 @@ class TestBController extends Controller
             'incubation_start_date_22_run2.required' => 'La data di inizio incubazione (22°C, Run 2) è obbligatoria.',
             'incubation_start_time_22_run2.required' => 'L\'ora di inizio incubazione (22°C, Run 2) è obbligatorio.',
             'incubation_end_date_22_run2.required' => 'La data di fine incubazione (22°C, Run 2) è obbligatoria.',
-            'incubation_end_date_22_run2.after_or_equal' => 'La data di fine incubazione (22°C, Run 2) deve essere successiva o uguale alla data di inizio.',
+            // 'incubation_end_date_22_run2.after_or_equal' => 'La data di fine incubazione (22°C, Run 2) deve essere successiva o uguale alla data di inizio.',
             'incubation_end_time_22_run2.required' => 'L\'ora di fine incubazione (22°C, Run 2) è obbligatoria.',
             'temperature_22_run2.required' => 'La temperatura (22°C, Run 2) è obbligatoria.',
             'growth_result_22_start_plate1_run2.required' => 'Il risultato di crescita (Inizio, P1, 22°C, Run 2) è obbligatorio.',
@@ -660,7 +660,31 @@ class TestBController extends Controller
             'modification_reason.min' => 'La motivazione della modifica deve contenere almeno :min caratteri.',
         ];
 
-        return $request->validate($rules, $messages);
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules, $messages);
+
+        $validator->after(function ($validator) use ($request) {
+            $datePairs = [
+                ['end' => 'incubation_end_date_35_run1', 'start' => 'incubation_start_date_35_run1', 'label' => '35°C, Run 1'],
+                ['end' => 'incubation_end_date_22_run1', 'start' => 'incubation_start_date_22_run1', 'label' => '22°C, Run 1'],
+                ['end' => 'incubation_end_date_35_run2', 'start' => 'incubation_start_date_35_run2', 'label' => '35°C, Run 2'],
+                ['end' => 'incubation_end_date_22_run2', 'start' => 'incubation_start_date_22_run2', 'label' => '22°C, Run 2'],
+            ];
+
+            foreach ($datePairs as $pair) {
+                $startDate = $request->input($pair['start']);
+                $endDate = $request->input($pair['end']);
+
+                // Il controllo viene eseguito solo se entrambe le date sono presenti e valide,
+                // dato che le regole 'required' e 'date' sono già state verificate.
+                if ($startDate && $endDate) {
+                    if (\Carbon\Carbon::parse($endDate)->isBefore(\Carbon\Carbon::parse($startDate))) {
+                        $validator->errors()->add($pair['end'], "La data di fine incubazione ({$pair['label']}) deve essere successiva o uguale alla data di inizio.");
+                    }
+                }
+            }
+        });
+
+        return $validator->validate();
     }
 
     /**

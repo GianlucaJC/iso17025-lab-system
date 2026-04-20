@@ -664,7 +664,10 @@
 
                 if (!startDateInput || !endDateInput) return;
 
-                endDateInput.addEventListener('change', function() {
+                // Usiamo l'evento 'blur' invece di 'change'.
+                // 'change' in Chrome si attiva anche con date incomplete (es. anno '2' invece di '2024'), causando falsi allarmi.
+                // 'blur' si attiva solo quando l'utente lascia il campo, garantendo che la data sia completa e formalmente corretta.
+                endDateInput.addEventListener('blur', function() {
                     const startDate = new Date(startDateInput.value);
                     const endDate = new Date(endDateInput.value);
 
