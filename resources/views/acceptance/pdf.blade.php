@@ -209,6 +209,18 @@
                         </tr>
                     </tbody>
                 </table>
+                @if($hasDoubleTestA)
+                    <table style="margin-top:6px;">
+                        <thead><tr><th>Parametro (Doppio)</th><th>Specifiche</th><th>Risultato Doppio e Incertezza</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Valore di pH (25°C) - Run 2</td>
+                                <td>7.4 ± 0.2</td>
+                                <td>{{ isset($testAResult->ph_value_double) ? number_format($testAResult->ph_value_double, 2) . ' ± 0.2' : 'N/D' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @endif
                 <table class="info-table" style="margin-top: 5px;">
                     <tr>
                         <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testAResult->test_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
@@ -241,6 +253,19 @@
                         </tr>
                     </tbody>
                 </table>
+                @if($hasDoubleTestC)
+                    <table style="margin-top:6px;">
+                        <thead><tr><th>Ceppo di controllo (Doppio)</th><th>Incubazione</th><th>Specifiche</th><th>Risultato (Run 2)</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Salmonella typhimurium ATCC 14028</td>
+                                <td>24 ± 3h a 35 ± 2°C</td>
+                                <td>Colonie rosse con centro nero</td>
+                                <td>{{ isset($testCResult->tsa_growth_result_run2) ? ($testCResult->tsa_growth_result_run2 == 'rilevata' ? 'Rilevata' : 'Non Rilevata') : 'N/D' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @endif
                 <table class="info-table" style="margin-top: 5px;">
                     <tr>
                         <td style="width: 25%;"><strong>Data Inizio Analisi:</strong></td><td style="width: 25%;">{{ \Carbon\Carbon::parse($testCResult->test_start_datetime)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
@@ -291,6 +316,33 @@
                             <td>Nessuna crescita</td>
                             <td>{{ $growth_22 }}</td>
                         </tr>
+                        @if($hasDoubleTestB)
+                            @php
+                                $growth_35_run2 = 'Nessuna crescita';
+                                if (
+                                    ($testBResult->growth_result_35_start_plate1_run2 ?? null) == 'rilevata' || ($testBResult->growth_result_35_start_plate2_run2 ?? null) == 'rilevata' ||
+                                    ($testBResult->growth_result_35_mid_plate1_run2 ?? null) == 'rilevata'   || ($testBResult->growth_result_35_mid_plate2_run2 ?? null) == 'rilevata'   ||
+                                    ($testBResult->growth_result_35_end_plate1_run2 ?? null) == 'rilevata'   || ($testBResult->growth_result_35_end_plate2_run2 ?? null) == 'rilevata'
+                                ) { $growth_35_run2 = 'Crescita rilevata'; }
+
+                                $growth_22_run2 = 'Nessuna crescita';
+                                if (
+                                    ($testBResult->growth_result_22_start_plate1_run2 ?? null) == 'rilevata' || ($testBResult->growth_result_22_start_plate2_run2 ?? null) == 'rilevata' ||
+                                    ($testBResult->growth_result_22_mid_plate1_run2 ?? null) == 'rilevata'   || ($testBResult->growth_result_22_mid_plate2_run2 ?? null) == 'rilevata'   ||
+                                    ($testBResult->growth_result_22_end_plate1_run2 ?? null) == 'rilevata'   || ($testBResult->growth_result_22_end_plate2_run2 ?? null) == 'rilevata'
+                                ) { $growth_22_run2 = 'Crescita rilevata'; }
+                            @endphp
+                            <tr>
+                                <td><strong>Run 2 (Doppio) - 35 ± 2°C, 7 giorni</strong></td>
+                                <td><strong>Nessuna crescita</strong></td>
+                                <td><strong>{{ $growth_35_run2 }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Run 2 (Doppio) - 22,5 ± 2°C, 7 giorni</strong></td>
+                                <td><strong>Nessuna crescita</strong></td>
+                                <td><strong>{{ $growth_22_run2 }}</strong></td>
+                            </tr>
+                        @endif
                     </tbody>
                 </table>
                 <table class="info-table" style="margin-top: 5px;">
