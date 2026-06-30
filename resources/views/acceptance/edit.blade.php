@@ -520,11 +520,11 @@
                     if (checkbox.checked) {
                         if (doubleContainer) doubleContainer.style.display = 'inline-block';
                         if (plateGroup) plateGroup.classList.remove('d-none');
-                        // Only show double plate group if double checkbox is checked AND not disabled
-                        if (doubleCheckbox && doubleCheckbox.checked && !doubleCheckbox.disabled) {
+                        // Only show double plate group if double checkbox is checked.
+                        if (doubleCheckbox && doubleCheckbox.checked) {
                             if (doublePlateGroup) doublePlateGroup.classList.remove('d-none');
                         } else {
-                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none'); // Hide if not checked or disabled
+                            if (doublePlateGroup) doublePlateGroup.classList.add('d-none');
                         }
                     } else {
                         if (doubleContainer) doubleContainer.style.display = 'none';
