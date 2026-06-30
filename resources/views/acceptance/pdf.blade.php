@@ -44,6 +44,10 @@
         $reportDate = $report_date; // Fallback to original report date
         $watermarkText = '';
         $last_sign = null; // Inizializzazione della nuova variabile
+        $doubleTests = is_array($acceptance->double_tests ?? null) ? $acceptance->double_tests : [];
+        $hasDoubleTestA = in_array('test1', $doubleTests);
+        $hasDoubleTestB = in_array('test2', $doubleTests);
+        $hasDoubleTestC = in_array('test3', $doubleTests);
 
         // Raccogli le date di firma del tecnico (lab_signed_at)
         $labSignedDates = [];
@@ -187,6 +191,11 @@
                 <table class="info-table">
                     <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</td></tr>
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
+                    @if($hasDoubleTestA)
+                        <tr><td><strong>ID Campione (Doppio):</strong></td><td>{{ $acceptance->plates[2] ?? 'N/D' }}</td></tr>
+                        <tr><td><strong>ID pH-metro (Doppio):</strong></td><td>{{ $testAResult->ph_meter_double ?? 'N/D' }}</td></tr>
+                        <tr><td><strong>Sonda pH (Doppio):</strong></td><td>{{ $testAResult->ph_probe_double ?? 'N/D' }}</td></tr>
+                    @endif
                     <tr><td><strong>ID pH-metro:</strong></td><td>{{ $testAResult->ph_meter ?? 'N/D' }}</td></tr>
                     <tr><td><strong>Sonda pH:</strong></td><td>{{ $testAResult->ph_probe ?? 'N/D' }}</td></tr>
                 </table>
@@ -216,6 +225,9 @@
                 <table class="info-table">
                     <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</td></tr>
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
+                    @if($hasDoubleTestC)
+                        <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td><strong>Run 2:</strong> {{ $testCResult->plate_id_start_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto_run2 ?? 'N/D' }}</td></tr>
+                    @endif
                     <tr><td><strong>Inoculo:</strong></td><td>&#8804; 100 CFU</td></tr>
                 </table>
                 <table>
@@ -245,6 +257,9 @@
                 <table class="info-table">
                     <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</td></tr>
                     <tr><td><strong>ID Campioni:</strong></td><td><strong>Incubazione 35°C:</strong> {{ implode(' – ', $platesB35) }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Incubazione 22°C:</strong> {{ implode(' – ', $platesB22) }}</td></tr>
+                    @if($hasDoubleTestB)
+                        <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td><strong>35°C:</strong> {{ $testBResult->plate_id_start_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_35_run2 ?? 'N/D' }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>22°C:</strong> {{ $testBResult->plate_id_start_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_22_run2 ?? 'N/D' }}</td></tr>
+                    @endif
                 </table>
                 <table>
                     <thead><tr><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
