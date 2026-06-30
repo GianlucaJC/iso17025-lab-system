@@ -333,14 +333,14 @@
                                 ) { $growth_22_run2 = 'Crescita rilevata'; }
                             @endphp
                             <tr>
-                                <td><strong>Run 2 (Doppio) - 35 ± 2°C, 7 giorni</strong></td>
-                                <td><strong>Nessuna crescita</strong></td>
-                                <td><strong>{{ $growth_35_run2 }}</strong></td>
+                                <td>Run 2 (Doppio) - 35 ± 2°C, 7 giorni</td>
+                                <td>Nessuna crescita</td>
+                                <td>{{ $growth_35_run2 }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Run 2 (Doppio) - 22,5 ± 2°C, 7 giorni</strong></td>
-                                <td><strong>Nessuna crescita</strong></td>
-                                <td><strong>{{ $growth_22_run2 }}</strong></td>
+                                <td>Run 2 (Doppio) - 22,5 ± 2°C, 7 giorni</td>
+                                <td>Nessuna crescita</td>
+                                <td>{{ $growth_22_run2 }}</td>
                             </tr>
                         @endif
                     </tbody>
