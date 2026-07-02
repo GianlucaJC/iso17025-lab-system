@@ -122,9 +122,9 @@
                 <div class="p-3 border rounded bg-light mt-3">
                     <h6 class="mb-2">Legenda Test Eseguiti:</h6>
                     <ul class="list-unstyled mb-0 d-flex flex-wrap gap-3 small text-nowrap">
-                        <li><span class="badge bg-secondary">MA_09</span>: Misurazione del pH ({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</li>
-                        <li><span class="badge bg-secondary">MA_61</span>: Contaminazione microbica ({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</li>
-                        <li><span class="badge bg-secondary">MA_60</span>: Valutazione produttività XLD ({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">MA_09_Misurazione del pH</span> ({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">MA_61_Contaminazione microbica</span> ({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</li>
+                        <li><span class="badge bg-secondary">MA_60_Valutazione produttività XLD</span> ({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</li>
                         <li><span class="badge bg-info text-dark">2x</span>: Eseguito in doppio</li>
                     </ul>
                 </div>
@@ -203,14 +203,14 @@
                     <tbody>
                         @php
                             $testNameMap = [
-                                'test1' => 'MA_09',
-                                'test2' => 'MA_61',
-                                'test3' => 'MA_60'
+                                'test1' => 'MA_09_Misurazione del pH',
+                                'test2' => 'MA_61_Contaminazione microbica',
+                                'test3' => 'MA_60_Valutazione produttività XLD'
                             ];
                             $fullTestNameMap = [ // Mappa completa per la legenda
-                                'test1' => 'MA_09_Misurazione del pH', // Not directly used in the table body, but good to keep consistent if used elsewhere.
-                                'test2' => 'MA_61_Contaminazione microbica', // Not directly used in the table body, but good to keep consistent if used elsewhere.
-                                'test3' => 'MA_60_Valutazione produttività XLD' // Not directly used in the table body, but good to keep consistent if used elsewhere.
+                                'test1' => 'MA_09_Misurazione del pH',
+                                'test2' => 'MA_61_Contaminazione microbica',
+                                'test3' => 'MA_60_Valutazione produttività XLD'
                             ];
                             $currentUser = Session::get('user');
                         @endphp
@@ -241,7 +241,7 @@
                                 
                                 <td>{{ $acceptance->created_at->format('Y/m/d H:i') }}</td>
 
-                                {{-- Stato Test A --}}
+                                {{-- Stato MA_09_Misurazione del pH --}}
                                 <td>
                                     @if(in_array('test1', $acceptance->tests))
                                         @switch($acceptance->test_a_status)
@@ -265,7 +265,7 @@
                                     @endif
                                 </td>
 
-                                {{-- Stato Test B --}}
+                                {{-- Stato MA_61_Contaminazione microbica --}}
                                 <td>
                                     @if(in_array('test2', $acceptance->tests))
                                         @switch($acceptance->test_b_status)
@@ -292,7 +292,7 @@
                                     @endif
                                 </td>
 
-                                {{-- Stato Test C --}}
+                                {{-- Stato MA_60_Valutazione produttività XLD --}}
                                 <td>
                                     @if(in_array('test3', $acceptance->tests))
                                         @switch($acceptance->test_c_status)
@@ -325,10 +325,10 @@
                                             @if(in_array('test1', $acceptance->tests))
                                                 @php $isOwnerA = $acceptance->testAResult && $acceptance->testAResult->operator_id == $currentUser['id']; @endphp
                                                 @switch($acceptance->test_a_status)
-                                                    @case('validated') {{-- Changed 'Test A' to 'MA_09' --}}
+                                                    @case('validated') {{-- MA_09_Misurazione del pH --}}
                                                         <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-success" title="Visualizza MA_09 (Validato)"><i class="fas fa-user-check"></i> MA_09</a>
                                                         @break
-                                                    @case('signed') {{-- Changed 'Test A' to 'MA_09' --}}
+                                                    @case('signed') {{-- MA_09_Misurazione del pH --}}
                                                         <a href="{{ route('test-a.edit', $acceptance->testAResult) }}" class="btn btn-sm btn-primary" title="Visualizza MA_09 (Firmato)"><i class="fas fa-signature"></i> MA_09</a>
                                                         @break
                                                     @case('ready_to_sign')
@@ -350,7 +350,7 @@
                                                         @endif
                                                         @break
                                                 @endswitch
-                                                {{-- Pulsante Cronologia per Test A --}}
+                                                {{-- Pulsante Cronologia per MA_09_Misurazione del pH --}}
                                                 @if($isAdmin && $acceptance->testAResult)
                                                     <a href="{{ route('history.show', ['modelNameShort' => 'test-a-result', 'id' => $acceptance->testAResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche MA_09"><i class="fas fa-history"></i></a>
                                                 @endif
@@ -391,9 +391,9 @@
                                                         @endif
                                                         @break
                                                 @endswitch
-                                                {{-- Pulsante Cronologia per Test B --}}
+                                                {{-- Pulsante Cronologia per MA_61_Contaminazione microbica --}}
                                                 @if($isAdmin && $acceptance->testBResult)
-                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-b-result', 'id' => $acceptance->testBResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche Test B"><i class="fas fa-history"></i></a>
+                                                    <a href="{{ route('history.show', ['modelNameShort' => 'test-b-result', 'id' => $acceptance->testBResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche MA_61_Contaminazione microbica"><i class="fas fa-history"></i></a>
                                                 @endif
                                             @endif
                                         </div>
@@ -432,7 +432,7 @@
                                                         @endif
                                                         @break
                                                 @endswitch
-                                                {{-- Pulsante Cronologia per Test C --}}
+                                                {{-- Pulsante Cronologia per MA_60_Valutazione produttività XLD --}}
                                                 @if($isAdmin && $acceptance->testCResult)
                                                     <a href="{{ route('history.show', ['modelNameShort' => 'test-c-result', 'id' => $acceptance->testCResult->id]) }}" class="btn btn-sm btn-outline-secondary" title="Cronologia Modifiche MA_60"><i class="fas fa-history"></i></a>
                                                 @endif

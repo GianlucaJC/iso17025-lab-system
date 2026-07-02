@@ -127,7 +127,7 @@
                                 <h6 class="mt-4">Preparazione e Diluizione</h6>
                                 <div class="row mb-3">
                                     <div class="col-md-3">
-                                        <label class="form-label">Piastra di TSA Sheep Blood</label>
+                                        <label class="form-label">Piastra di TSA</label>
                                         @php
                                             $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
                                         @endphp
@@ -170,7 +170,7 @@
                             </div>
 
                             {{-- Incubazione --}}
-                            <h6 class="mt-4">Incubazione Tryptic Soy Agar</h6>
+                            <h6 class="mt-4">Incubazione</h6>
                             <div class="row mb-3 align-items-end">
                                 <div class="col-md-4 initial-data-section">
                                     <label for="incubator{{ $run_suffix }}" class="form-label">Incubatore</label>
@@ -311,7 +311,7 @@
                                 <h6 class="mt-4">Preparazione e Diluizione</h6>
                                 <div class="row mb-3">
                                     <div class="col-md-3">
-                                        <label class="form-label">Piastra di TSA Sheep Blood</label>
+                                        <label class="form-label">Piastra di TSA</label>
                                         @php
                                             $tsa_plate = $selected_plates_run2['tsa_sheep_blood'];
                                         @endphp
@@ -354,7 +354,7 @@
                             </div>
 
                             {{-- Incubazione --}}
-                            <h6 class="mt-4">Incubazione Tryptic Soy Agar</h6>
+                            <h6 class="mt-4">Incubazione</h6>
                             <div class="row mb-3 align-items-end">
                                 <div class="col-md-4 initial-data-section">
                                     <label for="incubator{{ $run_suffix }}" class="form-label">Incubatore</label>
