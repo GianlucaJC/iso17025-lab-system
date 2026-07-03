@@ -162,7 +162,7 @@
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test1" id="test1" name="tests[]" @if(in_array('test1', $selectedTests)) checked @endif>
                                 <label class="form-check-label small" for="test1">
-                                    Test A (MA_09_Misurazione del pH) <span class="text-muted">({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</span>
+                                    MA_09_Misurazione del pH <span class="text-muted">({{ $methodRevisions['test_a']->revision_string ?? 'N/D' }})</span>
                                 </label>
                             </div>
                             <div class="form-check form-check-inline ms-3" id="double-test1-container" style="display: none;">
@@ -174,7 +174,7 @@
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test2" id="test2" name="tests[]" @if(in_array('test2', $selectedTests)) checked @endif>
                                 <label class="form-check-label small" for="test2">
-                                    Test B (MA_61_Contaminazione microbica) <span class="text-muted">({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</span>
+                                    MA_61_Contaminazione microbica <span class="text-muted">({{ $methodRevisions['test_b']->revision_string ?? 'N/D' }})</span>
                                 </label>
                             </div>
                             <div class="form-check form-check-inline ms-3" id="double-test2-container" style="display: none;">
@@ -186,7 +186,7 @@
                             <div class="form-check">
                                 <input class="form-check-input test-checkbox" type="checkbox" value="test3" id="test3" name="tests[]" @if(in_array('test3', $selectedTests)) checked @endif>
                                 <label class="form-check-label small" for="test3">
-                                    Test C (MA_60_Valutazione produttività XLD) <span class="text-muted">({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</span>
+                                    MA_60_Valutazione produttività XLD <span class="text-muted">({{ $methodRevisions['test_c']->revision_string ?? 'N/D' }})</span>
                                 </label>
                             </div>
                             <div class="form-check form-check-inline ms-3" id="double-test3-container" style="display: none;">
