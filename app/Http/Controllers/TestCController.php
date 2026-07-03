@@ -437,6 +437,7 @@ class TestCController extends Controller
             'pipette_dilution_1' => 'required|string|max:255',
             'pipette_dilution_2' => 'required|string|max:255',
             'pipette_inoculation' => 'required|string|max:255',
+            'salmonella_typhimurium_plate_lot' => 'nullable|string|max:255',
             'incubator' => 'required|string|max:255',
             'incubation_start_date' => 'required|date',
             'incubation_start_time' => 'required|date_format:H:i', // Keep this required for start_datetime calculation
@@ -470,6 +471,7 @@ class TestCController extends Controller
                 'pipette_dilution_1_run2' => 'required|string|max:255',
                 'pipette_dilution_2_run2' => 'required|string|max:255',
                 'pipette_inoculation_run2' => 'required|string|max:255',
+                'salmonella_typhimurium_plate_lot_run2' => 'nullable|string|max:255',
                 'incubator_run2' => 'required|string|max:255',
                 'incubation_start_date_run2' => 'required|date',
                 'incubation_start_time_run2' => 'required|date_format:H:i', // Keep this required for start_datetime calculation
