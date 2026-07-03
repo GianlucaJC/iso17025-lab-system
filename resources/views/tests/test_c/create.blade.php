@@ -126,14 +126,18 @@
                                 {{-- Preparazione --}}
                                 <h6 class="mt-4">Preparazione e Diluizione</h6>
                                 <div class="row mb-3">
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label class="form-label">Piastra di TSA</label>
                                         @php
                                             $tsa_plate = ($run_suffix === '_run2' ? $selected_plates_run2['tsa_sheep_blood'] : $selected_plates['tsa_sheep_blood']);
                                         @endphp
                                         <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
+                                        <label for="salmonella_typhimurium_plate_lot{{ $run_suffix }}" class="form-label">Lotto <em>Salmonella typhimurium</em> ATCC 14028</label>
+                                        <input type="text" class="form-control" id="salmonella_typhimurium_plate_lot{{ $run_suffix }}" name="salmonella_typhimurium_plate_lot{{ $run_suffix }}" value="{{ old('salmonella_typhimurium_plate_lot'.$run_suffix, $is_edit ? $test_c_result->{'salmonella_typhimurium_plate_lot'.$run_suffix} : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    </div>
+                                    <div class="col-md-2">
                                         <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
                                         <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
@@ -144,7 +148,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label for="pipette_dilution_2{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:100</label>
                                         <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
@@ -155,7 +159,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label for="pipette_inoculation{{ $run_suffix }}" class="form-label">Pipetta Inoculo 100 µl</label>
                                         <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
@@ -310,14 +314,18 @@
                                 {{-- Preparazione --}}
                                 <h6 class="mt-4">Preparazione e Diluizione</h6>
                                 <div class="row mb-3">
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label class="form-label">Piastra di TSA</label>
                                         @php
                                             $tsa_plate = $selected_plates_run2['tsa_sheep_blood'];
                                         @endphp
                                         <p><span class="badge bg-secondary">{{ $tsa_plate['id'] ?? 'N/A' }}</span> / <span class="badge bg-info text-dark">{{ $tsa_plate['lot'] ?? 'N/A' }}</span></p>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
+                                        <label for="salmonella_typhimurium_plate_lot{{ $run_suffix }}" class="form-label">Lotto <em>Salmonella typhimurium</em> ATCC 14028</label>
+                                        <input type="text" class="form-control" id="salmonella_typhimurium_plate_lot{{ $run_suffix }}" name="salmonella_typhimurium_plate_lot{{ $run_suffix }}" value="{{ old('salmonella_typhimurium_plate_lot'.$run_suffix, $is_edit ? $test_c_result->{'salmonella_typhimurium_plate_lot'.$run_suffix} : '') }}" {{ $is_readonly ? 'disabled' : '' }}>
+                                    </div>
+                                    <div class="col-md-2">
                                         <label for="pipette_dilution_1{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:10</label>
                                         <select class="form-select" id="pipette_dilution_1{{ $run_suffix }}" name="pipette_dilution_1{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
@@ -328,7 +336,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label for="pipette_dilution_2{{ $run_suffix }}" class="form-label">Pipetta Diluizione 1:100</label>
                                         <select class="form-select" id="pipette_dilution_2{{ $run_suffix }}" name="pipette_dilution_2{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
@@ -339,7 +347,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label for="pipette_inoculation{{ $run_suffix }}" class="form-label">Pipetta Inoculo 100 µl</label>
                                         <select class="form-select" id="pipette_inoculation{{ $run_suffix }}" name="pipette_inoculation{{ $run_suffix }}" {{ $is_readonly ? 'disabled' : '' }} required>
                                             <option value="">Seleziona...</option>
