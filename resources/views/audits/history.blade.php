@@ -106,7 +106,7 @@
     </main>
 
     <footer class="mt-auto text-center py-3 bg-white">
-        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
+        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software - versione 1.0</small>
     </footer>
 </body>
 </html>

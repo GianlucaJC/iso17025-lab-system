@@ -107,7 +107,7 @@
     </main>
 
     <footer class="mt-auto text-center py-3 bg-light">
-        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
+        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software - versione 1.0</small>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

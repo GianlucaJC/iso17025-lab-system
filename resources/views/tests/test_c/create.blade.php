@@ -630,7 +630,7 @@
     </main>
 
     <footer class="mt-auto text-center py-3 bg-light">
-        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software</small>
+        <small class="text-muted">&copy; Liofilchem srl - Software by Custom Software - versione 1.0</small>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
