@@ -408,7 +408,7 @@ class TestCController extends Controller
             // Se era stato annullato, questa è una ri-validazione.
             if ($acceptance->annulled_at) {
                 $acceptance->increment('pdf_revision_count');
-                $acceptance->update(['annulled_at' => null, 'annulment_reason' => null]);
+                $acceptance->update(['annulled_at' => null]);
             }
         }
 

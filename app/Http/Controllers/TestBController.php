@@ -448,7 +448,7 @@ class TestBController extends Controller
             // Se era stato annullato, questa è una ri-validazione.
             if ($acceptance->annulled_at) {
                 $acceptance->increment('pdf_revision_count');
-                $acceptance->update(['annulled_at' => null, 'annulment_reason' => null]);
+                $acceptance->update(['annulled_at' => null]);
             }
         }
         return redirect()->route('acceptance.index', ['highlight' => $test_b_result->acceptance_id])->with('success', 'Test B validato con successo dal Responsabile Laboratorio!');

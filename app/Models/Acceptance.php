@@ -143,7 +143,6 @@ class Acceptance extends Model
         if ($this->annulled_at && $this->isPdfComplete()) {
             $this->update([
                 'annulled_at' => null,
-                'annulment_reason' => null,
                 'pdf_revision_count' => $this->pdf_revision_count + 1, // Increment the revision count
             ]);
             $this->refresh(); // Aggiorna l'istanza del modello dopo l'update per riflettere i cambiamenti

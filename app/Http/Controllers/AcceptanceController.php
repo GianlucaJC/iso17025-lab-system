@@ -573,6 +573,8 @@ class AcceptanceController extends Controller
             'platesB35' => $platesB35,
             'platesB22' => $platesB22,
             'pdfRevisionCount' => $acceptance->pdf_revision_count, // Pass the revision count
+            'replacementReason' => $acceptance->pdf_revision_count > 0 ? $acceptance->annulment_reason : null,
+            'previousReportNumber' => $acceptance->pdf_revision_count > 0 ? $acceptance->acceptance_number . '_' . ($acceptance->pdf_revision_count - 1) : null,
         ];
 
         // Aggiungo la variabile isPdfComplete ai dati passati alla vista

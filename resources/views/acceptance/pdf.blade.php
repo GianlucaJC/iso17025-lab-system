@@ -140,6 +140,12 @@
         <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
             <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}@if($isPdfComplete)_{{ $pdfRevisionCount }}@endif<br>
             <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
+            @if($pdfRevisionCount > 0)
+                <div style="margin-top: 6px; font-size: 9px; line-height: 1.2; text-align: center;">
+                    Questo Rapporto di Prova annulla e sostituisce il RdP {{ $previousReportNumber }}.
+                    @if(!empty($replacementReason))<br>Motivo della sostituzione: {{ $replacementReason }}@endif
+                </div>
+            @endif
         </div>
 
         <h2>Dati Generali</h2>
