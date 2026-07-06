@@ -217,10 +217,10 @@
                 </table>
                 @if($hasDoubleTestA)
                     <table style="margin-top:6px;">
-                        <thead><tr><th>Parametro (Doppio)</th><th>Specifiche</th><th>Risultato Doppio e Incertezza</th></tr></thead>
+                        <thead><tr><th>Parametro (Doppio)</th><th>Specifiche</th><th>Risultato e Incertezza</th></tr></thead>
                         <tbody>
                             <tr>
-                                <td>Valore di pH (25°C) - Run 2</td>
+                                <td>Valore di pH (25°C)</td>
                                 <td>7.4 ± 0.2</td>
                                 <td>{{ isset($testAResult->ph_value_double) ? number_format($testAResult->ph_value_double, 2) . ' ± 0.2' : 'N/D' }}</td>
                             </tr>
@@ -244,7 +244,7 @@
                     <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</td></tr>
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
                     @if($hasDoubleTestC)
-                        <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td><strong>Run 2:</strong> {{ $testCResult->plate_id_start_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto_run2 ?? 'N/D' }}</td></tr>
+                        <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td>{{ $testCResult->plate_id_start_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto_run2 ?? 'N/D' }}</td></tr>
                     @endif
                     <tr><td><strong>Inoculo:</strong></td><td>&#8804; 100 CFU</td></tr>
                 </table>
@@ -261,7 +261,7 @@
                 </table>
                 @if($hasDoubleTestC)
                     <table style="margin-top:6px;">
-                        <thead><tr><th>Ceppo di controllo (Doppio)</th><th>Incubazione</th><th>Specifiche</th><th>Risultato (Run 2)</th></tr></thead>
+                        <thead><tr><th>Ceppo di controllo (Doppio)</th><th>Incubazione</th><th>Specifiche</th><th>Risultato</th></tr></thead>
                         <tbody>
                             <tr>
                                 <td>Salmonella typhimurium ATCC 14028</td>
@@ -339,12 +339,12 @@
                                 ) { $growth_22_run2 = 'Crescita rilevata'; }
                             @endphp
                             <tr>
-                                <td>Run 2 (Doppio) - 35 ± 2°C, 7 giorni</td>
+                                <td>(Doppio) - 35 ± 2°C, 7 giorni</td>
                                 <td>Nessuna crescita</td>
                                 <td>{{ $growth_35_run2 }}</td>
                             </tr>
                             <tr>
-                                <td>Run 2 (Doppio) - 22,5 ± 2°C, 7 giorni</td>
+                                <td>(Doppio) - 22,5 ± 2°C, 7 giorni</td>
                                 <td>Nessuna crescita</td>
                                 <td>{{ $growth_22_run2 }}</td>
                             </tr>
