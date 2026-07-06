@@ -206,7 +206,7 @@
                             $plates = old('plates', array_fill(0, 40, null));
                             $test_definitions = [
                                 'test1' => [
-                                    'name' => 'Test A (MA_09_Misurazione del pH) (' . ($methodRevisions['test_a']->revision_string ?? 'N/D') . ')',
+                                    'name' => 'MA_09_Misurazione del pH (' . ($methodRevisions['test_a']->revision_string ?? 'N/D') . ')',
                                     'std_plates' => [
                                         0 => 'ID Piastra', // Solo la piastra principale
                                     ],
@@ -215,7 +215,7 @@
                                     ],
                                 ],
                                 'test2' => [
-                                    'name' => 'Test B (MA_61_Contaminazione microbica) (' . ($methodRevisions['test_b']->revision_string ?? 'N/D') . ')',
+                                    'name' => 'MA_61_Contaminazione microbica (' . ($methodRevisions['test_b']->revision_string ?? 'N/D') . ')',
                                     'std_plates' => [
                                         '35°C +/- 2°' => [
                                             '1° Gruppo Piastre' => [4, 5],
@@ -242,7 +242,7 @@
                                     ],
                                 ],
                                 'test3' => [
-                                    'name' => 'Test C (MA_60_Valutazione produttività XLD) (' . ($methodRevisions['test_c']->revision_string ?? 'N/D') . ')',
+                                    'name' => 'MA_60_Valutazione produttività XLD (' . ($methodRevisions['test_c']->revision_string ?? 'N/D') . ')',
                                     'std_plates' => [
                                         28 => 'ID Piastra 1',
                                         29 => 'ID Piastra 2',

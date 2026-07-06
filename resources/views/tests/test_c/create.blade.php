@@ -234,7 +234,7 @@
                                         <thead>
                                             <tr>
                                                 <th class="d-none">Campione</th> {{-- Hidden as requested --}}
-                                                <th>ID Piastra / Lotto</th>
+                                                <th>N. Acc.Piastra</th>
                                                 <th>UFC</th>
                                                 <th>UFC &ge;50% UFC su TSA</th>
                                                 <th>Crescita Rilevata</th>
@@ -276,7 +276,7 @@
                                 <h6 class="mt-4">Bianco di Controllo</h6>
                                 <div class="row align-items-center">
                                     <div class="col-md-3">
-                                        <label class="form-label">ID Piastra / Lotto</label>
+                                        <label class="form-label">N. Acc.Piastra</label>
                                         @php
                                             $control_blank_plate = $current_plates['control_blank'];
                                         @endphp
@@ -422,7 +422,7 @@
                                         <thead>
                                             <tr>
                                                 <th class="d-none">Campione</th> {{-- Hidden as requested --}}
-                                                <th>ID Piastra / Lotto</th>
+                                                <th>N. Acc.Piastra</th>
                                                 <th>UFC</th>
                                                 <th>UFC &ge;50% UFC su TSA</th>
                                                 <th>Crescita Rilevata</th>
@@ -464,7 +464,7 @@
                                 <h6 class="mt-4">Bianco di Controllo</h6>
                                 <div class="row align-items-center">
                                     <div class="col-md-3">
-                                        <label class="form-label">ID Piastra / Lotto</label>
+                                        <label class="form-label">N. Acc.Piastra</label>
                                         @php
                                             $control_blank_plate = $current_plates['control_blank'];
                                         @endphp
@@ -494,7 +494,7 @@
 
                     {{-- Esito --}}
                     <fieldset class="mb-4 final-results-section">
-                        <legend class="h5">Risultato di Conformità dello Stato Microbiologico</legend>
+
 
                         {{-- Risultato Produttività --}}
                         <div class="row mt-2 mb-3">
