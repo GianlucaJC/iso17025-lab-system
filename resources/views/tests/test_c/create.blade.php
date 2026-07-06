@@ -13,7 +13,7 @@
         $method = $methodRevisions['test_c'] ?? null;
         $methodDisplayName = $method ? ($method->method_name . ' (' . $method->revision_string . ')') : 'MA_60_Valutazione produttività XLD';
     @endphp
-    <title>{{ $form_title }} Test C - {{ $method ? $method->method_name : 'MA_60_Valutazione produttività XLD' }}</title>
+    <title>{{ $form_title }}  {{ $method ? $method->method_name : 'MA_60_Valutazione produttività XLD' }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -695,7 +695,7 @@
                         Swal.fire({
                             icon: 'warning',
                             title: 'Attenzione!',
-                            html: `La data di fine incubazione (${endDateInput.value}) per il Test C dovrebbe essere esattamente un giorno dopo la data di inizio incubazione (${startDateInput.value}).`,
+                            html: `La data di fine incubazione (${endDateInput.value}) per il Test dovrebbe essere esattamente un giorno dopo la data di inizio incubazione (${startDateInput.value}).`,
                             confirmButtonText: 'Ho capito',
                             customClass: {
                                 confirmButton: 'btn btn-warning'

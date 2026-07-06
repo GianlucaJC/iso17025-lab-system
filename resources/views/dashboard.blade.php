@@ -14,6 +14,9 @@
             <div>
                 <a class="navbar-brand" href="{{ route('dashboard') }}">Pannello</a>
                 <a class="nav-link d-inline-block" href="{{ route('acceptance.index') }}">Elenco Accettazioni</a>
+                @if(Session::has('user') && (Session::get('user')['user17025'] ?? null) == 1)
+                    <a class="nav-link d-inline-block" href="{{ route('admin.ambiente') }}">Ambiente lavoro</a>
+                @endif
             </div>
             <div class="d-flex align-items-center">
                 @if(Session::has('user'))
@@ -35,22 +38,31 @@
                         $roleName = $roleMap[$roleId] ?? 'N/D';
                         $badgeColor = $badgeColorMap[$roleId] ?? 'bg-secondary';
                     @endphp
+
                     <span class="navbar-text me-3">
-                        <i class="fas fa-user me-1"></i>
-                        {{ $user['operatore'] ?? $user['username'] }}
-                        <span class="badge rounded-pill {{ $badgeColor }} ms-1">{{ $roleName }}</span>
+                        <a class="text-decoration-none d-inline-flex align-items-center" href="{{ $roleId == 1 ? route('admin.ambiente') : '#' }}">
+                            <i class="fas fa-user me-2"></i>
+                            <span>{{ $user['operatore'] ?? $user['username'] }}</span>
+                            <span class="badge rounded-pill {{ $badgeColor }} ms-1">{{ $roleName }}</span>
+                        </a>
                     </span>
+                    <!-- Il logout deve essere una richiesta POST per sicurezza -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
                 @endif
-                <!-- Il logout deve essere una richiesta POST per sicurezza -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger">
-                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                    </button>
-                </form>
             </div>
         </div>
     </nav>
+
+    @if(config('app.debug') && Session::has('user'))
+        <div class="container mt-2">
+            <div class="alert alert-info">Debug user session: <pre class="mb-0">{{ print_r(Session::get('user'), true) }}</pre></div>
+        </div>
+    @endif
 
     <main class="container mt-4 flex-grow-1">
         @if(Session::has('user'))

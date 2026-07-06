@@ -11,7 +11,7 @@
         $methodRevisionA = $methodRevisions['test_a']->revision_string ?? 'N/D';
         $is_double_test_a = $is_double_test_a ?? false;
     @endphp
-    <title>{{ $form_title }} Test A - MA_09_Misurazione del pH ({{ $methodRevisionA }})</title>
+    <title>{{ $form_title }} MA_09_Misurazione del pH ({{ $methodRevisionA }})</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">

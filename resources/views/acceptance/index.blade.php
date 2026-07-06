@@ -62,9 +62,19 @@
                         $badgeColor = $badgeColorMap[$roleId] ?? 'bg-secondary';
                     @endphp
                     <span class="navbar-text me-3">
-                        <i class="fas fa-user me-1"></i>
-                        {{ $user['operatore'] ?? $user['username'] }}
-                        <span class="badge rounded-pill {{ $badgeColor }} ms-1">{{ $roleName }}</span>
+                        @if($roleId == 1)
+                            <a class="text-decoration-none d-inline-flex align-items-center" href="{{ route('admin.ambiente') }}">
+                                <i class="fas fa-user me-1"></i>
+                                {{ $user['operatore'] ?? $user['username'] }}
+                                <span class="badge rounded-pill {{ $badgeColor }} ms-1">{{ $roleName }}</span>
+                            </a>
+                        @else
+                            <span class="d-inline-flex align-items-center">
+                                <i class="fas fa-user me-1"></i>
+                                {{ $user['operatore'] ?? $user['username'] }}
+                                <span class="badge rounded-pill {{ $badgeColor }} ms-1">{{ $roleName }}</span>
+                            </span>
+                        @endif
                     </span>
                 @endif
                 <form method="POST" action="{{ route('logout') }}">

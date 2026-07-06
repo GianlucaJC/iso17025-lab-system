@@ -162,3 +162,9 @@ use App\Http\Controllers\AuditController;
 Route::get('/history/{modelNameShort}/{id}', [AuditController::class, 'show'])
     ->name('history.show')
     ->middleware('auth.api');
+
+use App\Http\Controllers\AdminEnvController;
+Route::middleware(['auth.session'])->group(function () {
+    Route::get('/admin/ambiente-lavoro', [AdminEnvController::class, 'index'])->name('admin.ambiente');
+    Route::post('/admin/ambiente-lavoro', [AdminEnvController::class, 'update'])->name('admin.ambiente.update');
+});

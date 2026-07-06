@@ -13,7 +13,7 @@
         $method = $methodRevisions['test_b'] ?? null;
         $methodDisplayName = $method ? ($method->method_name . ' (' . $method->revision_string . ')') : 'MA_61_Contaminazione microbica';
     @endphp
-    <title>{{ $form_title }} Test B - {{ $methodDisplayName }}</title>
+    <title>{{ $form_title }} {{ $methodDisplayName }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -604,7 +604,7 @@
                         Swal.fire({
                             icon: 'warning',
                             title: 'Attenzione!',
-                            html: `La data di fine incubazione (${endDateInput.value}) per il Test B a ${temp}°C dovrebbe essere almeno 7 giorni dopo la data di inizio incubazione (${startDateInput.value}).`,
+                            html: `La data di fine incubazione (${endDateInput.value}) per il Test a ${temp}°C dovrebbe essere almeno 7 giorni dopo la data di inizio incubazione (${startDateInput.value}).`,
                             confirmButtonText: 'Ho capito',
                             customClass: {
                                 confirmButton: 'btn btn-warning'
