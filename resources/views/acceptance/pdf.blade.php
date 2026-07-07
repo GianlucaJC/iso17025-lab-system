@@ -50,7 +50,7 @@
         $hasDoubleTestC = in_array('test3', $doubleTests);
 
         // Calcola la data di scadenza sommando 6 mesi alla data di campionamento
-        $calculatedExpiryDate = \Carbon\Carbon::parse($acceptance->sampling_date)->addMonths(6);
+        $calculatedExpiryDate = \Carbon\Carbon::parse($acceptance->sampling_date)->addDays(180);
 
         // Raccogli le date di firma del tecnico (lab_signed_at)
         $labSignedDates = [];
