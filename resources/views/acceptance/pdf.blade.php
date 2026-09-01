@@ -134,12 +134,6 @@
     @endif
 
     <main>
-        <div style="text-align: right; margin-bottom: 10px;">
-            <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
-            Via Uruguay 64026,<br>
-            Roseto degli Abruzzi (TE) Italia
-        </div>
-
         <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
             <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}@if($isPdfComplete)_{{ $pdfRevisionCount }}@endif<br>
             <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
@@ -151,7 +145,12 @@
             @endif
         </div>
 
-        <h2>Dati Generali</h2>
+        <div style="text-align: right; margin-bottom: 10px;">
+            <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
+            Via Uruguay 64026,<br>
+            Roseto degli Abruzzi (TE) Italia
+        </div>
+
         <table class="info-table">
             <tr>
                 <td style="width: 25%;"><strong>N. Accettazione:</strong></td>
@@ -162,16 +161,12 @@
                 <td>{{ \Carbon\Carbon::parse($acceptance->sampling_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
             <tr>
-                <td><strong>Campionato da:</strong></td>
-                <td>Operatore di Produzione</td>
-            </tr>
-            <tr>
                 <td><strong>Data accettazione:</strong></td>
                 <td>{{ \Carbon\Carbon::parse($acceptance->acceptance_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
         </table>
 
-        <h2>Informazioni Prodotto</h2>
+        <h2>Prodotto</h2>
         <table class="info-table">
             <tr>
                 <td style="width: 25%;"><strong>Prodotto:</strong></td>
@@ -191,21 +186,14 @@
             </tr>
         </table>
 
-        <h2>Analisi Effettuate</h2>
-
         {{-- 1. Controllo del pH (Test A) --}}
         @if($testAResult)
             <div class="test-section">
-                <h3>1. MA_09_Misurazione del pH</h3>
+                <h3>1. Controllo del pH - Metodo di Prova {{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
-                    <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</td></tr>
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
-                    <tr><td><strong>ID pH-metro:</strong></td><td>{{ $testAResult->ph_meter ?? 'N/D' }}</td></tr>
-                    <tr><td><strong>Sonda pH:</strong></td><td>{{ $testAResult->ph_probe ?? 'N/D' }}</td></tr>                    
                     @if($hasDoubleTestA)
                         <tr><td><strong>ID Campione (Doppio):</strong></td><td>{{ $acceptance->plates[2] ?? 'N/D' }}</td></tr>
-                        <tr><td><strong>ID pH-metro (Doppio):</strong></td><td>{{ $testAResult->ph_meter_double ?? 'N/D' }}</td></tr>
-                        <tr><td><strong>Sonda pH (Doppio):</strong></td><td>{{ $testAResult->ph_probe_double ?? 'N/D' }}</td></tr>
                     @endif
 
                 </table>
@@ -243,9 +231,8 @@
         {{-- 2. Produttività, Metodo Qualitativo (Test C) --}}
         @if($testCResult)
             <div class="test-section">
-                <h3>2. MA_60_Valutazione produttività XLD</h3>
+                <h3>2. Produttività, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
-                    <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</td></tr>
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
                     @if($hasDoubleTestC)
                         <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td>{{ $testCResult->plate_id_start_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto_run2 ?? 'N/D' }}</td></tr>
@@ -288,10 +275,9 @@
         {{-- 3. Controllo della contaminazione microbica (Test B) --}}
         @if($testBResult)
             <div class="test-section">
-                <h3>3. MA_61_Contaminazione microbica</h3>
+                <h3>3. Controllo della contaminazione microbica, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
-                    <tr><td style="width: 25%;"><strong>Metodo di Prova:</strong></td><td style="width: 75%;">{{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</td></tr>
-                    <tr><td><strong>ID Campioni:</strong></td><td><strong>Incubazione 35°C:</strong> {{ implode(' – ', $platesB35) }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Incubazione 22°C:</strong> {{ implode(' – ', $platesB22) }}</td></tr>
+                    <tr><td><strong>ID Campioni:</strong></td><td><strong>35 ± 2°C, 7 giorni:</strong> {{ implode(' – ', $platesB35) }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>22,5 ± 2,5°C, 7 giorni:</strong> {{ implode(' – ', $platesB22) }}</td></tr>
                     @if($hasDoubleTestB)
                         <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td><strong>35°C:</strong> {{ $testBResult->plate_id_start_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_35_run2 ?? 'N/D' }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>22°C:</strong> {{ $testBResult->plate_id_start_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_22_run2 ?? 'N/D' }}</td></tr>
                     @endif
@@ -322,7 +308,7 @@
                             <td>{{ $growth_35 }}</td>
                         </tr>
                         <tr>
-                            <td>22,5 ± 2°C, 7 giorni</td>
+                            <td>22,5 ± 2,5°C, 7 giorni</td>
                             <td>Nessuna crescita</td>
                             <td>{{ $growth_22 }}</td>
                         </tr>
@@ -348,7 +334,7 @@
                                 <td>{{ $growth_35_run2 }}</td>
                             </tr>
                             <tr>
-                                <td>(Doppio) - 22,5 ± 2°C, 7 giorni</td>
+                                <td>(Doppio) - 22,5 ± 2,5°C, 7 giorni</td>
                                 <td>Nessuna crescita</td>
                                 <td>{{ $growth_22_run2 }}</td>
                             </tr>
