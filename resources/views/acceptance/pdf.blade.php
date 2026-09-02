@@ -5,7 +5,7 @@
     <title>Rapporto di Prova {{ $acceptance->acceptance_number }}</title>
     <style>
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #333; }
-        @page { margin: 200px 40px 70px 40px; }
+        @page { margin: 220px 40px 70px 40px; }
         header { position: fixed; top: -190px; left: 0px; right: 0px; }
         footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 50px; text-align: center; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
         h1, h2, h3 { font-weight: normal; }
@@ -122,11 +122,17 @@
                     <img src="{{ public_path('images/header.png') }}" style="width: 100%; height: auto;">
                 </td>
             </tr>
+            <tr>
+                <td style="border: none; text-align: center; padding: 0; font-size: 12px;">
+                    <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}@if($isPdfComplete)_{{ $pdfRevisionCount }}@endif<br>
+                    <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
+                </td>
+            </tr>
         </table>
     </header>
 
     <footer>
-        Liofilchem® s.r.l. Via Uruguay 64026, Roseto degli Abruzzi (TE) Italia Tel +39 0858930745 - Fax +39 0858930330 - Accredia n. 02165.
+        Liofilchem® s.r.l. Via Uruguay 64026, Roseto degli Abruzzi (TE) Italia Tel +39 0858930745 - Fax +39 0858930330 - Accredia n. 02165. RdP rev.4/16.03.2026
     </footer>
 
     @if(!$isPdfComplete)
@@ -134,19 +140,15 @@
     @endif
 
     <main>
-        <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
-            <strong>N. RAPPORTO DI PROVA:</strong> {{ $acceptance->acceptance_number }}@if($isPdfComplete)_{{ $pdfRevisionCount }}@endif<br>
-            <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
-            @if($pdfRevisionCount > 0)
-                <div style="margin-top: 6px; font-size: 9px; line-height: 1.2; text-align: center;">
-                    Questo Rapporto di Prova annulla e sostituisce il RdP {{ $previousReportNumber }}.
-                    @if(!empty($replacementReason))<br>Motivo della sostituzione: {{ $replacementReason }}@endif
-                </div>
-            @endif
-        </div>
+        @if($pdfRevisionCount > 0)
+            <div style="margin: 0 0 20px; font-size: 9px; line-height: 1.2; text-align: center;">
+                Questo Rapporto di Prova annulla e sostituisce il RdP {{ $previousReportNumber }}.
+                @if(!empty($replacementReason))<br>Motivo della sostituzione: {{ $replacementReason }}@endif
+            </div>
+        @endif
 
-        <div style="text-align: right; margin-bottom: 10px;">
-            <strong>A Liofilchem ® s.r.l.- Direzione Aziendale</strong><br>
+        <div style="text-align: right; margin-top: 12px; margin-bottom: 10px;">
+            <strong>A Liofilchem<sup>®</sup> s.r.l. - Direzione Aziendale</strong><br>
             Via Uruguay 64026,<br>
             Roseto degli Abruzzi (TE) Italia
         </div>
@@ -157,7 +159,7 @@
                 <td style="width: 75%;">{{ $acceptance->acceptance_number }}</td>
             </tr>
             <tr>
-                <td><strong>Data di campionamento:</strong></td>
+                <td><strong>Data di campionamento<sup>(1)</sup>:</strong></td>
                 <td>{{ \Carbon\Carbon::parse($acceptance->sampling_date)->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
             <tr>
@@ -166,22 +168,21 @@
             </tr>
         </table>
 
-        <h2>Prodotto</h2>
         <table class="info-table">
             <tr>
-                <td style="width: 25%;"><strong>Prodotto:</strong></td>
+                <td style="width: 25%;"><strong>Prodotto<sup>(1)</sup>:</strong></td>
                 <td style="width: 75%;">{{ $productInfo['name'] }}</td>
             </tr>
             <tr>
-                <td><strong>Codice:</strong></td>
+                <td><strong>Codice<sup>(1)</sup>:</strong></td>
                 <td>{{ $productInfo['code'] }}</td>
             </tr>
             <tr>
-                <td><strong>Lotto:</strong></td>
+                <td><strong>Lotto<sup>(1)</sup>:</strong></td>
                 <td>{{ $acceptance->lotto }}</td>
             </tr>
             <tr>
-                <td><strong>Data di scadenza:</strong></td>
+                <td><strong>Data di scadenza<sup>(1)</sup>:</strong></td>
                 <td>{{ $calculatedExpiryDate->format('d.m.Y') }}</td> {{-- Usa il fuso orario globale --}}
             </tr>
         </table>
@@ -189,7 +190,7 @@
         {{-- 1. Controllo del pH (Test A) --}}
         @if($testAResult)
             <div class="test-section">
-                <h3>1. Controllo del pH - Metodo di Prova {{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</h3>
+                <h3>Controllo del pH - Metodo di Prova {{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
                     @if($hasDoubleTestA)
@@ -231,7 +232,7 @@
         {{-- 2. Produttività, Metodo Qualitativo (Test C) --}}
         @if($testCResult)
             <div class="test-section">
-                <h3>2. Produttività, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</h3>
+                <h3>Produttività, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
                     <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
                     @if($hasDoubleTestC)
@@ -275,11 +276,13 @@
         {{-- 3. Controllo della contaminazione microbica (Test B) --}}
         @if($testBResult)
             <div class="test-section">
-                <h3>3. Controllo della contaminazione microbica, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</h3>
+                <h3>Controllo della contaminazione microbica, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_b']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
-                    <tr><td><strong>ID Campioni:</strong></td><td><strong>35 ± 2°C, 7 giorni:</strong> {{ implode(' – ', $platesB35) }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>22,5 ± 2,5°C, 7 giorni:</strong> {{ implode(' – ', $platesB22) }}</td></tr>
+                    <tr><td style="width: 25%;"><strong>ID Campioni:</strong></td><td><strong>35 ± 2°C, 7 giorni:</strong> {{ implode(' – ', $platesB35) }}</td></tr>
+                    <tr><td></td><td><strong>22,5 ± 2,5°C, 7 giorni:</strong> {{ implode(' – ', $platesB22) }}</td></tr>
                     @if($hasDoubleTestB)
-                        <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td><strong>35°C:</strong> {{ $testBResult->plate_id_start_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_35_run2 ?? 'N/D' }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>22°C:</strong> {{ $testBResult->plate_id_start_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_22_run2 ?? 'N/D' }}</td></tr>
+                        <tr><td><strong>ID Campioni (Doppio):</strong></td><td><strong>35 ± 2°C, 7 giorni:</strong> {{ $testBResult->plate_id_start_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_35_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_35_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_35_run2 ?? 'N/D' }}</td></tr>
+                        <tr><td></td><td><strong>22,5 ± 2,5°C, 7 giorni:</strong> {{ $testBResult->plate_id_start_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_start_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_mid_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_mid_plate2_22_run2 ?? 'N/D' }} · {{ $testBResult->plate_id_end_plate1_22_run2 ?? 'N/D' }} / {{ $testBResult->plate_id_end_plate2_22_run2 ?? 'N/D' }}</td></tr>
                     @endif
                 </table>
                 <table>
@@ -352,30 +355,24 @@
 
         <table class="signatures">
             <tr>
-                <td style="width: 50%;">
+                <td style="width: 33.33%;">
                     <strong>Approvato il:</strong> {{ $approvalDate ?? '________________' }}
                 </td>
-                <td style="width: 50%;">
+                <td style="width: 33.33%;">
                     @if($isPdfComplete)
                         <strong>Firma:</strong> Documento firmato elettronicamente
                     @else
                         <strong>Firma:</strong> _________________________
                     @endif
                 </td>
-            </tr>
-             <tr>
-                <td>
+                <td style="width: 33.33%;">
                     <strong>Responsabile di Laboratorio:</strong>
                     {{ $approvalDate ? 'Dott. F. D’Emidio' : '_________________________' }}
-                </td>
-                <td>
-                    {{-- Spazio per la firma autografa --}}
                 </td>
             </tr>
         </table>
 
-        <div class="notes-section" style="margin-top: 120px;">
-            <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
+        <div class="notes-section" style="margin-top: 120px; padding-top: 12px;">
             <h3>NOTA:</h3>
             <p style="font-size: 9px; text-align: justify;">
                 L'incertezza riportata in questo documento è l'incertezza estesa ottenuta moltiplicando l'incertezza tipo composta per un fattore di
