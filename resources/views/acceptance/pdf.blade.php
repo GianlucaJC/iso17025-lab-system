@@ -33,6 +33,9 @@
         .test-section {
             page-break-inside: avoid;
         }
+        .test-section + .test-section {
+            margin-top: 12px;
+        }
         .notes-section {
             page-break-inside: avoid;
         }
@@ -192,7 +195,7 @@
             <div class="test-section">
                 <h3>Controllo del pH - Metodo di Prova {{ $methodRevisions['test_a']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
-                    <tr><td><strong>ID Campione:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>ID Campioni:</strong></td><td>{{ $acceptance->plates[0] ?? 'N/D' }}</td></tr>
                     @if($hasDoubleTestA)
                         <tr><td><strong>ID Campione (Doppio):</strong></td><td>{{ $acceptance->plates[2] ?? 'N/D' }}</td></tr>
                     @endif
@@ -234,7 +237,7 @@
             <div class="test-section">
                 <h3>Produttività, Metodo Qualitativo - Metodo di Prova {{ $methodRevisions['test_c']->revision_string ?? 'N/D' }}</h3>
                 <table class="info-table">
-                    <tr><td><strong>ID Campione:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
+                    <tr><td><strong>ID Campioni:</strong></td><td>{{ $testCResult->plate_id_start_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto ?? 'N/D' }}</td></tr>
                     @if($hasDoubleTestC)
                         <tr><td><strong>Indicazioni piastre (Doppio):</strong></td><td>{{ $testCResult->plate_id_start_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_mid_lotto_run2 ?? 'N/D' }}, {{ $testCResult->plate_id_end_lotto_run2 ?? 'N/D' }}</td></tr>
                     @endif
