@@ -19,7 +19,7 @@
         .info-table strong { font-weight: bold; }
         .info-table td { border: none; padding: 2px 0; }
         .signatures { margin-top: 25px; border: none; }
-        .signatures td { border: none; padding: 5px 0; }
+        .signatures td { border: none; padding: 30px 0 5px; }
         .watermark {
             position: fixed;
             top: 50%;
