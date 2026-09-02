@@ -7,7 +7,8 @@
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #333; }
         @page { margin: 220px 40px 70px 40px; }
         header { position: fixed; top: -190px; left: 0px; right: 0px; }
-        footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 50px; text-align: center; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
+        footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 60px; text-align: left; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
+        .footer-revision { margin-bottom: 8px; }
         h1, h2, h3 { font-weight: normal; }
         h1 { font-size: 16px; text-align: center; margin-bottom: 20px; text-decoration: underline; }
         h2 { font-size: 12px; border-bottom: 1px solid #555; padding-bottom: 3px; margin-top: 15px; margin-bottom: 8px; }
@@ -135,7 +136,8 @@
     </header>
 
     <footer>
-        Liofilchem® s.r.l. Via Uruguay 64026, Roseto degli Abruzzi (TE) Italia Tel +39 0858930745 - Fax +39 0858930330 - Accredia n. 02165. RdP rev.4/16.03.2026
+        <div class="footer-revision">RdP rev.4 / 16.03.2026</div>
+        <div>Liofilchem® s.r.l. Via Uruguay - 64026, Roseto degli Abruzzi (TE) Italia - Tel +39 0858930745 - Fax +39 0858930330</div>
     </footer>
 
     @if(!$isPdfComplete)
