@@ -159,7 +159,7 @@
                     @php
                         $incubation_types = [
                             '35' => ['label' => '35±2°C', 'color' => 'bg-danger-subtle'],
-                            '22' => ['label' => '22±2°C', 'color' => 'bg-primary-subtle']
+                            '22' => ['label' => '22.5 ± 2.5°C', 'color' => 'bg-primary-subtle']
                         ];
                     @endphp
 

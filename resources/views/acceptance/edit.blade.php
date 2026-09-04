@@ -233,7 +233,7 @@
                                             '2° Gruppo Piastre' => [6, 7],
                                             '3° Gruppo Piastre' => [8, 9],
                                         ],
-                                        '22°C' => [
+                                        '22.5 ± 2.5°C' => [
                                             '1° Gruppo Piastre' => [10, 11],
                                             '2° Gruppo Piastre' => [12, 13],
                                             '3° Gruppo Piastre' => [14, 15],
@@ -245,7 +245,7 @@
                                             '2° Gruppo Piastre' => [18, 19],
                                             '3° Gruppo Piastre' => [20, 21],
                                         ],
-                                        '22°C' => [
+                                        '22.5 ± 2.5°C' => [
                                             '1° Gruppo Piastre' => [22, 23],
                                             '2° Gruppo Piastre' => [24, 25],
                                             '3° Gruppo Piastre' => [26, 27],
