@@ -5,8 +5,8 @@
     <title>Rapporto di Prova {{ $acceptance->acceptance_number }}</title>
     <style>
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #333; }
-        @page { margin: 220px 40px 70px 40px; }
-        header { position: fixed; top: -190px; left: 0px; right: 0px; }
+        @page { margin: {{ $pdfRevisionCount > 0 ? '270px' : '220px' }} 40px 70px 40px; }
+        header { position: fixed; top: {{ $pdfRevisionCount > 0 ? '-240px' : '-190px' }}; left: 0px; right: 0px; }
         footer { position: fixed; bottom: -60px; left: 0px; right: 0px; height: 60px; text-align: left; font-size: 8px; border-top: 1px solid #ccc; padding-top: 5px; }
         .footer-revision { margin-bottom: 8px; }
         h1, h2, h3 { font-weight: normal; }
