@@ -228,7 +228,7 @@
                                 'test2' => [
                                     'name' => 'MA_61_Contaminazione microbica (' . ($methodRevisions['test_b']->revision_string ?? 'N/D') . ')',
                                     'std_plates' => [
-                                        '35°C' => [
+                                        '35 ± 2°C' => [
                                             '1° Gruppo Piastre' => [4, 5],
                                             '2° Gruppo Piastre' => [6, 7],
                                             '3° Gruppo Piastre' => [8, 9],
@@ -240,7 +240,7 @@
                                         ],
                                     ],
                                     'dbl_plates' => [
-                                        '35°C' => [
+                                        '35 ± 2°C' => [
                                             '1° Gruppo Piastre' => [16, 17],
                                             '2° Gruppo Piastre' => [18, 19],
                                             '3° Gruppo Piastre' => [20, 21],
