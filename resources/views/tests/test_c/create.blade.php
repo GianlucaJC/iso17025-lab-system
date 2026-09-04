@@ -228,7 +228,7 @@
 
                             <div class="final-results-section">
                                 {{-- Risultati Inoculo --}}
-                                <h6 class="mt-4">Risultati Inoculo 1000 - 10000 UFC</h6>
+                                <h6 class="mt-4">50 - 100 UFC</h6>
                                 <div class="table-responsive">
                                     <table class="table table-bordered text-center">
                                         <thead>
@@ -416,7 +416,7 @@
 
                             <div class="final-results-section">
                                 {{-- Risultati Inoculo --}}
-                                <h6 class="mt-4">Risultati Inoculo 1000 - 10000 UFC</h6>
+                                <h6 class="mt-4">50 - 100 UFC</h6>
                                 <div class="table-responsive">
                                     <table class="table table-bordered text-center">
                                         <thead>
