@@ -132,6 +132,14 @@
                     <strong>Data Rapporto di Prova:</strong> {{ $reportDate }}
                 </td>
             </tr>
+            @if($pdfRevisionCount > 0)
+                <tr>
+                    <td style="border: none; text-align: center; padding: 8px 0 0; font-size: 9px; line-height: 1.2;">
+                        Questo Rapporto di Prova annulla e sostituisce il RdP {{ $previousReportNumber }}.
+                        @if(!empty($replacementReason))<br>Motivo della sostituzione: {{ $replacementReason }}@endif
+                    </td>
+                </tr>
+            @endif
         </table>
     </header>
 
@@ -145,13 +153,6 @@
     @endif
 
     <main>
-        @if($pdfRevisionCount > 0)
-            <div style="margin: 0 0 20px; font-size: 9px; line-height: 1.2; text-align: center;">
-                Questo Rapporto di Prova annulla e sostituisce il RdP {{ $previousReportNumber }}.
-                @if(!empty($replacementReason))<br>Motivo della sostituzione: {{ $replacementReason }}@endif
-            </div>
-        @endif
-
         <div style="text-align: right; margin-top: 12px; margin-bottom: 10px;">
             <strong>A Liofilchem<sup>®</sup> s.r.l. - Direzione Aziendale</strong><br>
             Via Uruguay 64026,<br>
